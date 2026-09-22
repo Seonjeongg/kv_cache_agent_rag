@@ -1,14 +1,25 @@
-"""초기화 노드: 비교 대상 기술 2종 확정. (담당: 공통·통합)"""
+"""초기화 노드: 비교 대상 기술 2개 확정"""
 from __future__ import annotations
 
 from state import AgentState
 
+# 기술 선택 Agent 정의
+TECHNOLOGY_SPECS = {
+    "software": {
+        "name": "DeepSeek-V2 MLA",
+        "approach": "모델 구조 기반 KV 압축",
+    },
+    "hardware": {
+        "name": "ITME",
+        "approach": "CXL-Hybrid 메모리 확장",
+    },
+}
 
-def technology_selection_agent(state: AgentState) -> dict:
+# 기술 선택 Agent 정의
+def technology_selection_agent(_state: AgentState) -> dict:
     return {
         "selected_technologies": {
-            "software": {"name": "DeepSeek-V2 MLA", "approach": "모델 구조 기반 KV 압축"},
-            "hardware": {"name": "ITME", "approach": "CXL-Hybrid 메모리 확장"},
+            side: spec.copy() for side, spec in TECHNOLOGY_SPECS.items()
         },
         "selection_reason": (
             "동일한 KV cache 병목을 모델 구조와 메모리 시스템이라는 서로 다른 계층에서 "
