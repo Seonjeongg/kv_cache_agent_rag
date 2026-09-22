@@ -54,6 +54,8 @@
 
 ## Architecture
 
+![LangGraph Agentic RAG Architecture](docs/architecture.png)
+
 ```
 __start__ -> technology_selection -> technical_research
 technical_research -> market_evaluation, stakeholder_evaluation, domain_evaluation (Fan-out)
@@ -96,6 +98,9 @@ python evaluate.py
 평가셋의 `ground_truth_chunk_ids`는 PDF 원문 청크를 직접 확인해 지정하며, 청크 크기나 임베딩 모델을
 변경하면 색인과 정답 ID를 함께 갱신해야 합니다.
 
+평가 결과는 전체 Hit@K/MRR뿐 아니라 질문별 rank, 매칭된 청크 ID, 검색 후보 청크 ID를 함께 확인할 수
+있도록 구성했습니다. 따라서 검색 실패 질문을 다시 확인하거나 정답 청크·질의·임베딩 설정을 개선할 수 있습니다.
+
 프롬프트는 별도 `prompts/` 디렉토리 대신 각 `agents/*.py` 파일 내부에 함께 관리함
 (Agent 로직과 프롬프트를 한 파일에서 같이 보는 편이 유지보수에 더 낫다고 판단).
 
@@ -109,12 +114,26 @@ cp .env.example .env   # OPENAI_API_KEY와 EMBEDDING_MODEL 확인
 python app.py
 ```
 
-`config.py`의 `FAST_MODE`를 `False`로 바꾸면 최종 실행 모드(재시도 최대 2회, Agent당 검색 5개,
-기준별 질의)로 동작합니다. 제출용 최종 보고서는 `FAST_MODE = False`로 생성하세요.
+`config.py`의 `FAST_MODE`는 빠른 구조 확인과 최종 실행을 구분합니다.
+
+- `FAST_MODE=True` : 재시도 없이 실행하고 검색 결과 수와 보고서 입력을 줄입니다. 도메인 평가 기준도
+  하나의 통합 질의로 축약해 빠르게 Graph 동작을 확인합니다.
+- `FAST_MODE=False` : 최대 2회 재시도, Agent당 검색 5개, 도메인 평가 기준별 질의로 실행합니다.
+
+제출용 최종 보고서는 `FAST_MODE = False`로 생성하세요.
 
 ## Contributors
-- 곽민규 : 기술 조사 및 DeepSeek-V2 MLA 분석
-- 김선정 : Agentic RAG 구현, OpenAI API 연동
-- 이지원 : 시장성 및 이해관계자 관점 조사, 도메인 분석
-- 임유리 : Rag 검색 평가 및 통합
-- 현용찬 : agent 프롬프트 작성 및 발표
+
+아래 역할은 포크 `hyc`의 현용찬 커밋과 원본 `main`에 반영된 팀원별 기능 커밋을
+변경 파일과 커밋 내용을 기준으로 정리했습니다.
+
+| 팀원 | 주요 역할 | 주요 변경 영역 | 근거 커밋 |
+| --- | --- | --- | --- |
+| P209 곽민규 | 이해관계자 평가 Agent 담당 | `agents/stakeholder_evaluation.py`의 질의 템플릿 분리 및 주석 보완 | `499e608` |
+| P213 김선정 | Agentic RAG 통합 및 종합·검증·보고서 담당 | OpenAI API 연동, 임베딩·재현성 개선, `agents/synthesis.py`의 종합 평가·Judge·보고서 생성 | `665a43a`, `ac9403a`, `777a720`, `8a26658` |
+| P229 이지원 | 시장성 평가 Agent 담당 | `agents/market_evaluation.py` 리팩토링 및 시장성 조사 흐름 보완 | `fefa828` |
+| P231 임유리 | 기술 선정 및 기술 조사 Agent 담당 | `agents/technology_selection.py`, `agents/technical_research.py`의 기술·TRL 분석 명세 보완 | `52a9e01` |
+| P240 현용찬 | Retriever 평가 및 도메인 평가 담당, 발표·통합 | `evaluate.py`의 정답 청크·재정렬 평가 주석, `agents/domain_evaluation.py`의 기술별 도메인 질의 구조 정리 | `cbfb7da` |
+
+각 Agent는 독립된 역할을 수행하지만, 최종 결과는 LangGraph의 State와
+Fan-out/Fan-in 흐름을 통해 하나의 평가 보고서로 통합됩니다.
