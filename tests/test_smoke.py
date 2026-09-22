@@ -7,6 +7,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from agents.synthesis import has_usable_analysis, validation_judge
+import evaluate as retriever_evaluation
+from agents.domain_evaluation import (
+    DOMAIN_CRITERIA,
+    build_domain_queries,
+    normalize_domain_analysis,
+)
 from app import validate_report
 from evidence import format_references, make_evidence_id
 from rag import _rerank, split_text
@@ -96,6 +102,73 @@ def test_graph_builds_with_all_nodes_wired():
         "synthesis", "validation", "report_generation",
     }
     assert expected.issubset(node_names), node_names
+
+
+def test_evaluate_retriever_reports_question_level_details():
+    def fake_retrieve(*args, **kwargs):
+        return [
+            {"chunk_id": "wrong", "page": 1},
+            {"chunk_id": "target", "page": 2},
+        ]
+
+    original_retrieve = retriever_evaluation.retrieve
+    retriever_evaluation.retrieve = fake_retrieve
+    try:
+        result = retriever_evaluation.evaluate_retriever(
+            [
+                {
+                    "id": "case-1",
+                    "question": "질문",
+                    "technology": "DeepSeek-V2 MLA",
+                    "ground_truth_chunk_ids": ["target"],
+                }
+            ],
+            k=2,
+            candidate_k=4,
+        )
+    finally:
+        retriever_evaluation.retrieve = original_retrieve
+
+    assert result["Hit@2"] == 1.0
+    assert result["MRR"] == 0.5
+    assert result["details"][0]["matched_chunk_id"] == "target"
+    assert result["details"][0]["retrieved_chunk_ids"] == ["wrong", "target"]
+
+
+def test_domain_queries_are_separated_by_technology_and_criterion():
+    queries = build_domain_queries()
+    assert len(queries) == len(DOMAIN_CRITERIA) * 2
+    assert len({item["query"] for item in queries}) == len(queries)
+    assert {item["side"] for item in queries} == {"software", "hardware"}
+    assert {item["criterion_key"] for item in queries} == {
+        item["key"] for item in DOMAIN_CRITERIA
+    }
+    for query in queries:
+        criterion = next(
+            item for item in DOMAIN_CRITERIA
+            if item["key"] == query["criterion_key"]
+        )
+        assert criterion["query_term"] in query["query"]
+
+
+def test_domain_analysis_has_a_stable_schema_for_all_criteria():
+    normalized = normalize_domain_analysis(
+        {
+            "criteria": {
+                "hbm_memory_usage": {
+                    "finding": "HBM 절감 근거",
+                    "evidence_ids": ["evidence-1"],
+                }
+            }
+        },
+        "DeepSeek-V2 MLA",
+    )
+
+    assert set(normalized["criteria"]) == {
+        item["key"] for item in DOMAIN_CRITERIA
+    }
+    assert normalized["criteria"]["hbm_memory_usage"]["finding"] == "HBM 절감 근거"
+    assert normalized["criteria"]["throughput"]["finding"] == "공개 정보 부족"
 
 
 if __name__ == "__main__":

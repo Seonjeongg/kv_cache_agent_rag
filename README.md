@@ -110,7 +110,9 @@ python app.py
 ```
 
 `config.py`의 `FAST_MODE`를 `False`로 바꾸면 최종 실행 모드(재시도 최대 2회, Agent당 검색 5개,
-기준별 질의)로 동작합니다. 제출용 최종 보고서는 `FAST_MODE = False`로 생성하세요.
+웹 결과 확장)로 동작합니다. 도메인 평가는 빠른 모드에서도 HBM·지연·처리량 등 기준별 질의를
+유지하며, 모드에 따라 기준을 하나의 질의로 합치지 않습니다. 제출용 최종 보고서는
+`FAST_MODE = False`로 생성하세요.
 
 ## Contributors
 - 곽민규 : 기술 조사 및 DeepSeek-V2 MLA 분석

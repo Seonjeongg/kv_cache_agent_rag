@@ -1,8 +1,14 @@
 """Retriever 평가: Hit@K, MRR 및 질문별 검색 결과 상세 정보."""
 from __future__ import annotations
 
+import json
+from typing import Any
+
 from rag import build_index, download_papers, load_and_chunk_papers, retrieve
 
+# 현용찬: 초기 평가셋 예시를 실제 MLA·ITME 질문 10개와 정답 청크 ID로
+# 구체화했다. 페이지 번호가 아니라 청크를 정답으로 삼아 현재 RAG
+# 파이프라인의 검색 단위를 직접 검증한다.
 EVAL_SET = [
     {
         "id": "mla-core-mechanism",
@@ -66,67 +72,122 @@ EVAL_SET = [
     },
 ]
 
+EVAL_K = 5
+CANDIDATE_K = 10
+EvalCase = dict[str, Any]
 
-def evaluate_retriever(eval_set: list[dict], k: int = 5) -> dict:
+
+def _expected_targets(item: EvalCase) -> tuple[set[str | int], str]:
+    """평가 케이스에서 정답 집합과 검색 결과의 비교 필드를 반환한다."""
+    if "ground_truth_chunk_ids" in item:
+        expected = {str(chunk_id) for chunk_id in item["ground_truth_chunk_ids"]}
+        if not expected:
+            raise ValueError(f"정답 청크 ID가 비어 있습니다: {item.get('id')}")
+        return expected, "chunk_id"
+
+    if "ground_truth_chunk_id" in item:
+        return {str(item["ground_truth_chunk_id"])}, "chunk_id"
+
+    if "expected_pages" in item:
+        return {int(page) for page in item["expected_pages"]}, "page"
+
+    raise ValueError(
+        f"{item.get('id', '<unknown>')}에 ground_truth_chunk_ids, "
+        "ground_truth_chunk_id 또는 expected_pages가 필요합니다."
+    )
+
+
+def _evaluate_case(
+    item: EvalCase,
+    *,
+    k: int,
+    candidate_k: int,
+    rerank: bool,
+) -> dict[str, Any]:
+    """한 질문을 평가하고 재현 가능한 상세 결과를 만든다."""
+    expected, match_key = _expected_targets(item)
+
+    # 현용찬: 먼저 후보를 넉넉히 검색한 뒤 lexical rerank를 적용한다.
+    # 임베딩 검색의 후보 누락 여부와 최종 top-k 순위를 함께 확인하기 위한 단계다.
+    results = retrieve(
+        item["question"],
+        item["technology"],
+        top_k=k,
+        candidate_k=max(candidate_k, k),
+        rerank=rerank,
+    )
+
+    rank = None
+    for index, result in enumerate(results, start=1):
+        if result.get(match_key) in expected:
+            rank = index
+            break
+
+    retrieved_chunk_ids = [
+        result.get("chunk_id") for result in results if result.get("chunk_id")
+    ]
+
+    # 현용찬: 점수만 출력하지 않고 질문별 rank·매칭 청크·검색 후보를
+    # 함께 저장해 실패한 질문을 사람이 재검토할 수 있도록 했다.
+    return {
+        "id": item.get("id"),
+        "technology": item["technology"],
+        "rank": rank,
+        "matched_chunk_id": results[rank - 1].get("chunk_id") if rank else None,
+        "retrieved_chunk_ids": retrieved_chunk_ids,
+        "match_key": match_key,
+        "reciprocal_rank": 1 / rank if rank else 0,
+    }
+
+
+def evaluate_retriever(
+    eval_set: list[EvalCase],
+    k: int = EVAL_K,
+    candidate_k: int = CANDIDATE_K,
+    rerank: bool = True,
+) -> dict[str, Any]:
+    """평가셋에 대해 Hit@K, MRR과 질문별 진단 결과를 계산한다."""
+    if k <= 0:
+        raise ValueError("k는 1 이상의 정수여야 합니다.")
+    if candidate_k <= 0:
+        raise ValueError("candidate_k는 1 이상의 정수여야 합니다.")
+
     if not eval_set:
         return {"message": "EVAL_SET에 검증된 정답을 입력하세요.", "evaluated": False}
 
-    hits = 0
-    reciprocal_ranks = []
-    details = []
-
-    for item in eval_set:
-        results = retrieve(
-            item["question"],
-            item["technology"],
-            top_k=k,
-            candidate_k=max(k * 2, 10),
-            rerank=True,
+    details = [
+        _evaluate_case(
+            item,
+            k=k,
+            candidate_k=candidate_k,
+            rerank=rerank,
         )
-        if "ground_truth_chunk_ids" in item:
-            expected = set(item["ground_truth_chunk_ids"])
-            match_key = "chunk_id"
-        elif "ground_truth_chunk_id" in item:
-            expected = {item["ground_truth_chunk_id"]}
-            match_key = "chunk_id"
-        elif "expected_pages" in item:
-            expected = {int(page) for page in item["expected_pages"]}
-            match_key = "page"
-        else:
-            raise ValueError(
-                f"{item.get('id', '<unknown>')}에 ground_truth_chunk_ids, ground_truth_chunk_id 또는 expected_pages가 필요합니다."
-            )
-
-        rank = None
-        for index, result in enumerate(results, start=1):
-            if result.get(match_key) in expected:
-                rank = index
-                break
-
-        if rank is not None:
-            hits += 1
-            reciprocal_ranks.append(1 / rank)
-        else:
-            reciprocal_ranks.append(0)
-        details.append({
-            "id": item.get("id"),
-            "rank": rank,
-            "matched_chunk_id": results[rank - 1]["chunk_id"] if rank else None,
-            "retrieved_chunk_ids": [result["chunk_id"] for result in results],
-        })
+        for item in eval_set
+    ]
+    hits = sum(detail["rank"] is not None for detail in details)
+    reciprocal_ranks = [detail["reciprocal_rank"] for detail in details]
 
     return {
-        f"Hit@{k}": hits / len(eval_set),
-        "MRR": sum(reciprocal_ranks) / len(reciprocal_ranks),
-        "questions": len(eval_set),
+        f"Hit@{k}": hits / len(details),
+        "MRR": sum(reciprocal_ranks) / len(details),
+        "questions": len(details),
         "evaluated": True,
         "details": details,
     }
 
 
 if __name__ == "__main__":
+    # 현용찬: 실행할 때 논문 다운로드부터 색인 생성까지 다시 수행한다.
+    # 임베딩 모델·청킹 설정이 바뀌어도 오래된 Chroma 색인을 재사용하지 않아
+    # 평가 결과를 동일한 설정에서 재현할 수 있다.
     download_papers()
     chunks = load_and_chunk_papers()
     collection = build_index(chunks)
     print(f"평가용 색인 완료: 청크 {collection.count():,}개")
-    print(evaluate_retriever(EVAL_SET, k=5))
+    print(
+        json.dumps(
+            evaluate_retriever(EVAL_SET),
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
