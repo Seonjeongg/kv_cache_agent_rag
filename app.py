@@ -8,10 +8,40 @@ from importlib.metadata import version
 
 import markdown as markdown_lib
 
-from config import EMBEDDING_MODEL, LLM_MODEL, OUTPUT_DIR, PROJECT_DIR
+from config import (
+    AGENT_RAG_TOP_K,
+    CHUNK_MAX_CHARS,
+    CHUNK_OVERLAP,
+    EMBEDDING_MODEL,
+    FAST_MODE,
+    LLM_MODEL,
+    OUTPUT_DIR,
+    PROJECT_DIR,
+    TOP_K,
+)
 from graph import build_graph
 from rag import build_index, download_papers, load_and_chunk_papers
 from state import AgentState
+
+
+REQUIRED_REPORT_HEADINGS = (
+    "# SUMMARY",
+    "# 1. 분석 배경",
+    "# 2. 기술 선정",
+    "# 3. 기술 개요",
+    "# 4. 관점별 평가",
+    "# 6. 시사점",
+    "# 7. 분석의 한계",
+    "# REFERENCE",
+)
+
+
+def validate_report(report: str) -> None:
+    missing = [heading for heading in REQUIRED_REPORT_HEADINGS if heading not in report]
+    if missing:
+        raise ValueError(f"보고서 필수 목차 누락: {missing}")
+    if report.rfind("# REFERENCE") < report.find("# SUMMARY"):
+        raise ValueError("REFERENCE는 보고서 마지막에 있어야 합니다.")
 
 
 def run_pipeline() -> dict:
@@ -37,6 +67,11 @@ def run_pipeline() -> dict:
         "llm_model": LLM_MODEL,
         "embedding_model": EMBEDDING_MODEL,
         "openai_package": version("openai"),
+        "fast_mode": FAST_MODE,
+        "chunk_max_chars": CHUNK_MAX_CHARS,
+        "chunk_overlap": CHUNK_OVERLAP,
+        "retrieval_top_k": TOP_K,
+        "agent_rag_top_k": AGENT_RAG_TOP_K,
     }
 
     print("검증 결과:", result["validation_result"])
@@ -53,6 +88,7 @@ def save_outputs(result: dict) -> dict:
     pdf_path = OUTPUT_DIR / f"kv_cache_report_{timestamp}.pdf"
     json_path = OUTPUT_DIR / f"kv_cache_state_{timestamp}.json"
 
+    validate_report(result["report"])
     markdown_path.write_text(result["report"], encoding="utf-8")
     html_body = markdown_lib.markdown(result["report"], extensions=["tables", "fenced_code"])
     html_document = f"""<!doctype html>

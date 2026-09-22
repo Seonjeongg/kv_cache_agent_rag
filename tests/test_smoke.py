@@ -7,8 +7,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from agents.synthesis import has_usable_analysis, validation_judge
+from app import validate_report
 from evidence import format_references, make_evidence_id
-from rag import split_text
+from rag import _rerank, split_text
 from graph import build_graph
 
 
@@ -21,6 +22,15 @@ def test_split_text_respects_max_chars():
 
 def test_split_text_short_text_returns_single_chunk():
     assert split_text("짧은 문장") == ["짧은 문장"]
+
+
+def test_rerank_preserves_relevant_lexical_match():
+    results = [
+        {"chunk_id": "semantic", "text": "attention memory architecture", "similarity": 0.9},
+        {"chunk_id": "exact", "text": "reduce KV cache key value elements", "similarity": 0.8},
+    ]
+    reranked = _rerank("reduce KV cache", results, top_k=2)
+    assert reranked[0]["chunk_id"] == "exact"
 
 
 def test_make_evidence_id_is_deterministic():
@@ -54,6 +64,14 @@ def test_malformed_evidence_id_does_not_retry():
     result = validation_judge(state)
     assert result["validation_result"] == "pass_with_limitations"
     assert result["retry_count"] == 0
+
+
+def test_report_requires_submission_headings():
+    report = "\n\n".join([
+        "# SUMMARY", "# 1. 분석 배경", "# 2. 기술 선정", "# 3. 기술 개요",
+        "# 4. 관점별 평가", "# 6. 시사점", "# 7. 분석의 한계", "# REFERENCE",
+    ])
+    validate_report(report)
 
 
 def test_graph_builds_with_all_nodes_wired():

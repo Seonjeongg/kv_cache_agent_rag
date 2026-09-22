@@ -82,8 +82,6 @@ def collect_evidence_ids(value) -> set[str]:
                     ids.update(str(x) for x in item)
                 elif isinstance(item, str):
                     ids.add(item)
-            elif key == "evidence_ids" and isinstance(item, list):
-                ids.update(str(x) for x in item)
             else:
                 ids.update(collect_evidence_ids(item))
     elif isinstance(value, list):
@@ -95,7 +93,7 @@ def collect_evidence_ids(value) -> set[str]:
 def _format_citation(item: dict) -> str:
     """노션 가이드의 REFERENCE 표기 형식에 맞춰 논문/웹 항목을 각각 포맷합니다.
     논문: 저자(YYYY). 논문제목. arXiv:ID. (p.페이지)
-    웹  : 사이트명(YYYY-MM-DD 또는 날짜 미상). 제목, URL
+    웹  : 사이트명(YYYY-MM-DD). 제목, URL (발행일이 없으면 날짜 생략)
     """
     if item.get("source_type") == "paper":
         paper = PAPERS.get(item.get("technology"), {})

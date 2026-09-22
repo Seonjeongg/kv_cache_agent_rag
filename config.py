@@ -28,6 +28,8 @@ LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 COLLECTION_NAME = "kv_cache_papers"
 TOP_K = 5
+CHUNK_MAX_CHARS = 900
+CHUNK_OVERLAP = 120
 
 # 첫 실행은 빠른 구조 검증 모드로 진행합니다.
 # 최종 보고서 생성 시에만 False로 바꾸세요.

@@ -1,8 +1,4 @@
-"""Retriever 평가: Hit@K, MRR.
-
-ground_truth_chunk_id를 입력하면 정확 청크 기준으로 평가하고,
-expected_pages를 입력하면 해당 페이지의 청크가 검색됐는지 평가합니다.
-"""
+"""Retriever 평가: Hit@K, MRR 및 질문별 검색 결과 상세 정보."""
 from __future__ import annotations
 
 from rag import build_index, download_papers, load_and_chunk_papers, retrieve
@@ -77,9 +73,16 @@ def evaluate_retriever(eval_set: list[dict], k: int = 5) -> dict:
 
     hits = 0
     reciprocal_ranks = []
+    details = []
 
     for item in eval_set:
-        results = retrieve(item["question"], item["technology"], top_k=k)
+        results = retrieve(
+            item["question"],
+            item["technology"],
+            top_k=k,
+            candidate_k=max(k * 2, 10),
+            rerank=True,
+        )
         if "ground_truth_chunk_ids" in item:
             expected = set(item["ground_truth_chunk_ids"])
             match_key = "chunk_id"
@@ -105,12 +108,19 @@ def evaluate_retriever(eval_set: list[dict], k: int = 5) -> dict:
             reciprocal_ranks.append(1 / rank)
         else:
             reciprocal_ranks.append(0)
+        details.append({
+            "id": item.get("id"),
+            "rank": rank,
+            "matched_chunk_id": results[rank - 1]["chunk_id"] if rank else None,
+            "retrieved_chunk_ids": [result["chunk_id"] for result in results],
+        })
 
     return {
         f"Hit@{k}": hits / len(eval_set),
         "MRR": sum(reciprocal_ranks) / len(reciprocal_ranks),
         "questions": len(eval_set),
         "evaluated": True,
+        "details": details,
     }
 
 

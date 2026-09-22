@@ -22,8 +22,8 @@
 
 ## Features
 
-- PDF 원문(DeepSeek-V2, ITME 논문) 기반 근거 추출 — PyMuPDF 파싱, 문자 단위 청킹(최대 1,400자,
-  150자 중복), ChromaDB 로컬 벡터 저장소
+- PDF 원문(DeepSeek-V2, ITME 논문) 기반 근거 추출 — PyMuPDF 파싱, 문자 단위 청킹(최대 900자,
+  120자 중복), ChromaDB 로컬 벡터 저장소
 - Tavily → DDGS → DuckDuckGo HTML 순서의 외부 웹 검색 대체 경로 (시장성·이해관계자 평가용)
 - 모든 주요 주장에 evidence_id 연결, 공개 정보 부족 시 "공개 정보 부족"으로 명시
 - 확증편향 방지 전략 : 서로 다른 실험 환경의 수치를 직접 우열 비교하지 않음, 기업 홍보 자료와
@@ -37,8 +37,8 @@
 - LLM/Generator : OpenAI API `gpt-4o-mini`
 - Judge : Python 규칙 기반 검증 함수 (`validation_judge`, LLM 미사용 — 필수 분석 결과 존재 여부,
   evidence_id 등록 여부, 근거 목록 존재 여부를 코드로 검사)
-- Retrieval : ChromaDB (Dense Retrieval, 코사인 거리) — Hit@K/MRR은 `evaluate.py`의 `EVAL_SET`에
-  팀원이 원문을 읽고 직접 지정한 정답 청크 ID를 입력해야 측정됨 (현재 미입력 상태)
+- Retrieval : ChromaDB (Dense Retrieval, 코사인 거리 + 상위 후보 lexical rerank) — `evaluate.py`의 질문별
+  `ground_truth_chunk_ids`를 기준으로 Hit@K/MRR을 측정함. 현재 10개 질문의 독립 정답 청크가 등록됨
 - Embedding : OpenAI `text-embedding-3-small` — 선정 사유는 설계서 2.6절 참고
 
 ## Agents
@@ -84,6 +84,17 @@ validation --report--> report_generation -> __end__
 
 실행이 끝나면 `outputs/`에 Markdown, HTML, PDF, 상태 JSON 보고서가 자동으로 저장됩니다.
 
+Retriever 평가는 별도로 실행합니다.
+
+```bash
+python evaluate.py
+```
+
+현재 900자 청크, 상위 10개 후보 후 lexical rerank, `text-embedding-3-small` 기준의 예시 결과는
+`Hit@5=0.90`, `MRR=0.6083`입니다.
+평가셋의 `ground_truth_chunk_ids`는 PDF 원문 청크를 직접 확인해 지정하며, 청크 크기나 임베딩 모델을
+변경하면 색인과 정답 ID를 함께 갱신해야 합니다.
+
 프롬프트는 별도 `prompts/` 디렉토리 대신 각 `agents/*.py` 파일 내부에 함께 관리함
 (Agent 로직과 프롬프트를 한 파일에서 같이 보는 편이 유지보수에 더 낫다고 판단).
 
@@ -98,7 +109,7 @@ python app.py
 ```
 
 `config.py`의 `FAST_MODE`를 `False`로 바꾸면 최종 실행 모드(재시도 최대 2회, Agent당 검색 5개,
-기준별 질의)로 동작함. 제출용 최종 보고서는 `FAST_MODE = False`로 생성할 것.
+기준별 질의)로 동작합니다. 제출용 최종 보고서는 `FAST_MODE = False`로 생성하세요.
 
 ## Contributors
 

@@ -8,9 +8,20 @@ import urllib.request
 import chromadb
 import pymupdf as fitz  # PyMuPDF: fitz는 구버전 별칭이라 경고가 발생해 새 alias로 import
 
-from config import CHROMA_DIR, COLLECTION_NAME, EMBEDDING_MODEL, PAPERS, TOP_K, openai_client
+from config import (
+    CHROMA_DIR,
+    CHUNK_MAX_CHARS,
+    CHUNK_OVERLAP,
+    COLLECTION_NAME,
+    EMBEDDING_MODEL,
+    PAPERS,
+    TOP_K,
+    openai_client,
+)
 
 _collection = None
+_TOKEN_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9-]{2,}|[가-힣]{2,}")
+_STOPWORDS = {"what", "does", "how", "the", "and", "for", "with", "from", "about", "reported"}
 
 
 def download_papers() -> dict[str, int]:
@@ -43,7 +54,11 @@ def normalize_text(text: str) -> str:
     return text.strip()
 
 
-def split_text(text: str, max_chars: int = 900, overlap: int = 120) -> list[str]:
+def split_text(
+    text: str,
+    max_chars: int = CHUNK_MAX_CHARS,
+    overlap: int = CHUNK_OVERLAP,
+) -> list[str]:
     if len(text) <= max_chars:
         return [text] if text else []
 
@@ -146,7 +161,31 @@ def get_collection():
     return _collection
 
 
-def retrieve(query: str, technology: str | None = None, top_k: int = TOP_K) -> list[dict]:
+def _rerank(query: str, results: list[dict], top_k: int) -> list[dict]:
+    query_terms = {
+        term.lower() for term in _TOKEN_PATTERN.findall(query)
+        if term.lower() not in _STOPWORDS
+    }
+    if not query_terms:
+        return results[:top_k]
+
+    scored = []
+    for result in results:
+        text_terms = {term.lower() for term in _TOKEN_PATTERN.findall(result["text"])}
+        overlap = len(query_terms & text_terms) / len(query_terms)
+        result = {**result, "lexical_overlap": overlap}
+        result["rerank_score"] = 0.85 * result["similarity"] + 0.15 * overlap
+        scored.append(result)
+    return sorted(scored, key=lambda item: item["rerank_score"], reverse=True)[:top_k]
+
+
+def retrieve(
+    query: str,
+    technology: str | None = None,
+    top_k: int = TOP_K,
+    candidate_k: int | None = None,
+    rerank: bool = False,
+) -> list[dict]:
     collection = get_collection()
     if collection.count() == 0:
         return []
@@ -159,7 +198,7 @@ def retrieve(query: str, technology: str | None = None, top_k: int = TOP_K) -> l
     where = {"technology": technology} if technology else None
     result = collection.query(
         query_embeddings=[query_embedding],
-        n_results=min(top_k, collection.count()),
+        n_results=min(candidate_k or top_k, collection.count()),
         where=where,
         include=["documents", "metadatas", "distances"],
     )
@@ -178,4 +217,4 @@ def retrieve(query: str, technology: str | None = None, top_k: int = TOP_K) -> l
             **metadata,
         })
 
-    return items
+    return _rerank(query, items, top_k) if rerank else items[:top_k]
