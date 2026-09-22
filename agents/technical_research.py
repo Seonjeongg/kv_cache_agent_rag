@@ -1,11 +1,13 @@
-"""기술 조사 Agent: 원리·성능·한계, TRL 추정. (담당: 기술 조사)"""
+"""기술 조사 Agent: 원리·성능·한계, TRL 추정"""
 from __future__ import annotations
 
 from config import AGENT_RAG_TOP_K, FAST_MODE
 from evidence import compact_evidence, rag_evidence
 from llm import ask_json
 from state import AgentState
+from agents.technology_selection import TECHNOLOGY_SPECS
 
+# 기술 성숙도 수준(Technology Readiness Level, TRL) 정의
 TRL_LEVELS = """TRL 1: 기초 원리 관찰
 TRL 2: 기술 개념과 적용 가능성 정립
 TRL 3: 핵심 기능의 개념 검증
@@ -16,7 +18,7 @@ TRL 7: 실제 운용 환경에서 프로토타입 시연
 TRL 8: 완성된 시스템의 검증
 TRL 9: 실제 운용 실적 확인"""
 
-
+# 기술 용어집 정의
 TERM_GLOSSARY = """용어집 (다른 말로 풀어쓰지 말고 아래 정의를 그대로 사용하세요):
 - MLA = Multi-head Latent Attention
 - ITME = Inference Tiered Memory Expansion
@@ -25,37 +27,35 @@ TERM_GLOSSARY = """용어집 (다른 말로 풀어쓰지 말고 아래 정의를
 - HBM = High Bandwidth Memory
 - TRL = Technology Readiness Level"""
 
-
-def technical_research_agent(state: AgentState) -> dict:
+# 기술 조사 Agent 정의
+def technical_research_agent(_state: AgentState) -> dict:
     agent_name = "technical_research"
     print("[1/6] 기술 조사 Agent 시작")
     try:
-        questions = [
+        questions = [ # 기술 조사 질문 정의
             "What problem does the technology solve, and what is its core mechanism in the paper?",
             "How does the technology reduce or manage the number of cached key-value elements per token?",
             "What evaluation environment, baselines, metrics, and performance results are reported?",
             "What architecture constraints, limitations, and deployment requirements are reported?",
             "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
         ]
-        if FAST_MODE:
-            questions = [
+        if FAST_MODE: # FAST_MODE가 활성화된 경우 질문 단순화
+            questions = [ # 기술 조사 질문 단순화 정의
                 "Explain the core mechanism, cached key-value memory reduction per token, evaluation conditions, reported performance, limitations, deployment requirements, and readiness evidence."
             ]
         analyses = {}
         trl_analyses = {}
         evidence = []
-        technology_specs = {
-            "DeepSeek-V2 MLA": ("software", "DeepSeek-V2 MLA"),
-            "ITME": ("hardware", "ITME"),
-        }
-        for technology, (side, label) in technology_specs.items():
+        for side, spec in TECHNOLOGY_SPECS.items(): # 기술 조사 수행
+            technology = spec["name"]
             technology_evidence = []
-            for question in questions:
+            for question in questions: # 기술 조사 질문에 대한 근거 수집
                 technology_evidence.extend(rag_evidence(question, technology, agent_name, top_k=AGENT_RAG_TOP_K))
             evidence.extend(technology_evidence)
 
+            # 기술 조사 프롬프트 정의
             prompt = f"""
-다음은 {label}에 대한 논문 근거입니다. 다른 기술의 사실이나 근거를 섞지 말고 {label}만 분석하세요.
+다음은 {technology}에 대한 논문 근거입니다. 다른 기술의 사실이나 근거를 섞지 말고 {technology}만 분석하세요.
 수치를 쓸 때 evidence_id를 반드시 연결하세요. 서로 다른 실험 환경의 수치를 직접 우열 비교하지 마세요.
 
 TRL은 아래 9단계 기준에 따라 공개 근거 기반으로만 추정하며, 확정이 아님을 명시하세요.
@@ -73,16 +73,16 @@ TRL은 아래 9단계 기준에 따라 공개 근거 기반으로만 추정하�
 }}
 
 근거:
-{compact_evidence(technology_evidence)}
+{compact_evidence(technology_evidence)} 
 """
             result = ask_json("당신은 중립적인 LLM 시스템 기술 분석가입니다.", prompt)
             analyses[side] = result.get("technical", {})
             trl_analyses[side] = result.get("trl", {})
         print(f"[1/6] 기술 조사 완료 - 근거 {len(evidence)}건")
-        return {
+        return { # 기술 조사 결과 반환
             "technical_analysis": analyses,
             "trl_analysis": trl_analyses,
             "references": evidence,
         }
-    except Exception as error:
+    except Exception as error: # 기술 조사 중 오류 발생 시 오류 메시지 반환
         return {"technical_analysis": {}, "trl_analysis": {}, "errors": [f"{agent_name}: {error}"]}
