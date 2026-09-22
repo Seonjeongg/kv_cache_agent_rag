@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import platform
+import re
 from datetime import datetime
 from importlib.metadata import version
 
@@ -36,12 +37,24 @@ REQUIRED_REPORT_HEADINGS = (
 )
 
 
-def validate_report(report: str) -> None:
+def validate_report(report: str, references: list[dict] | None = None) -> None:
     missing = [heading for heading in REQUIRED_REPORT_HEADINGS if heading not in report]
     if missing:
         raise ValueError(f"보고서 필수 목차 누락: {missing}")
-    if report.rfind("# REFERENCE") < report.find("# SUMMARY"):
+    reference_index = report.rfind("# REFERENCE")
+    if reference_index < report.find("# SUMMARY"):
         raise ValueError("REFERENCE는 보고서 마지막에 있어야 합니다.")
+    trailing_headings = re.findall(r"^#\s+.+$", report[reference_index:], flags=re.MULTILINE)
+    if len(trailing_headings) != 1:
+        raise ValueError("REFERENCE 뒤에 다른 보고서 제목이 있거나 REFERENCE가 중복됩니다.")
+    if not re.search(r"^- \[[a-z]+-[0-9a-f]{12}\]", report[reference_index:], flags=re.MULTILINE):
+        raise ValueError("REFERENCE 항목이 비어 있습니다.")
+    if references is not None:
+        available_ids = {item.get("evidence_id") for item in references}
+        used_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[:reference_index]))
+        missing_ids = sorted(used_ids - available_ids)
+        if missing_ids:
+            raise ValueError(f"본문에 인용된 Evidence가 REFERENCES에 없습니다: {missing_ids[:10]}")
 
 
 def run_pipeline() -> dict:
@@ -52,6 +65,8 @@ def run_pipeline() -> dict:
     print(f"Vector DB 수: {collection.count():,}")
 
     graph = build_graph()
+    if FAST_MODE:
+        print("[WARN] FAST_MODE=True: 제출용 보고서는 FAST_MODE=False로 실행하세요.")
     initial_state: AgentState = {
         "input_request": (
             "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 "
@@ -88,7 +103,7 @@ def save_outputs(result: dict) -> dict:
     pdf_path = OUTPUT_DIR / f"kv_cache_report_{timestamp}.pdf"
     json_path = OUTPUT_DIR / f"kv_cache_state_{timestamp}.json"
 
-    validate_report(result["report"])
+    validate_report(result["report"], result.get("references", []))
     markdown_path.write_text(result["report"], encoding="utf-8")
     html_body = markdown_lib.markdown(result["report"], extensions=["tables", "fenced_code"])
     html_document = f"""<!doctype html>

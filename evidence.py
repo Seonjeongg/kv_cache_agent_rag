@@ -122,7 +122,12 @@ def format_references(references: list[dict], used_ids: set[str] | None = None) 
         evidence_id = item.get("evidence_id")
         if used_ids is not None and evidence_id not in used_ids:
             continue
-        key = evidence_id or f"{item.get('url')}:{item.get('page')}"
+        if item.get("source_type") == "paper":
+            key = ("paper", item.get("url") or item.get("file_name"))
+        elif item.get("source_type") == "web":
+            key = ("web", item.get("url"))
+        else:
+            key = evidence_id or f"{item.get('url')}:{item.get('page')}"
         if key in seen:
             continue
         seen.add(key)

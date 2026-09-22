@@ -22,8 +22,8 @@
 
 ## Features
 
-- PDF 원문(DeepSeek-V2, ITME 논문) 기반 근거 추출 — PyMuPDF 파싱, 문자 단위 청킹(최대 900자,
-  120자 중복), ChromaDB 로컬 벡터 저장소
+- PDF 원문(DeepSeek-V2, ITME 논문) 기반 근거 추출 — PyMuPDF 파싱, 참고문헌 이후 페이지 제외,
+  문자 단위 청킹(최대 900자, 120자 중복), ChromaDB 로컬 벡터 저장소
 - Tavily → DDGS → DuckDuckGo HTML 순서의 외부 웹 검색 대체 경로 (시장성·이해관계자 평가용)
 - 모든 주요 주장에 evidence_id 연결, 공개 정보 부족 시 "공개 정보 부족"으로 명시
 - 확증편향 방지 전략 : 서로 다른 실험 환경의 수치를 직접 우열 비교하지 않음, 기업 홍보 자료와
@@ -90,8 +90,8 @@ Retriever 평가는 별도로 실행합니다.
 python evaluate.py
 ```
 
-현재 900자 청크, 상위 10개 후보 후 lexical rerank, `text-embedding-3-small` 기준의 예시 결과는
-`Hit@5=0.90`, `MRR=0.6083`입니다.
+현재 참고문헌 페이지 제외, 900자 청크, 상위 10개 후보 후 lexical rerank,
+`text-embedding-3-small` 기준의 최신 결과는 `Hit@5=0.90`, `MRR=0.6167`입니다.
 평가셋의 `ground_truth_chunk_ids`는 PDF 원문 청크를 직접 확인해 지정하며, 청크 크기나 임베딩 모델을
 변경하면 색인과 정답 ID를 함께 갱신해야 합니다.
 
@@ -112,10 +112,8 @@ python app.py
 기준별 질의)로 동작합니다. 제출용 최종 보고서는 `FAST_MODE = False`로 생성하세요.
 
 ## Contributors
-
-<!-- TODO: PM·PL 역할 제외, 팀원별 실제 수행 역할로 교체 -->
-- 곽민규 :
-- 김선정 :
-- 이지원 :
-- 임유리 :
-- 현용찬 :
+- 곽민규 : 기술 조사 및 DeepSeek-V2 MLA 분석
+- 김선정 : Agentic RAG 구현, OpenAI API 연동
+- 이지원 : 시장성 및 이해관계자 관점 조사, 도메인 분석
+- 임유리 : Rag 검색 평가 및 통합
+- 현용찬 : agent 프롬프트 작성 및 발표

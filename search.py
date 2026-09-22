@@ -15,6 +15,15 @@ from rag import normalize_text
 from state import Evidence
 
 
+def is_relevant_result(title: str, body: str, url: str, technology: str) -> bool:
+    text = f"{title} {body} {url}".lower()
+    keyword_groups = {
+        "DeepSeek-V2 MLA": ("deepseek", "mla", "multi-head latent", "key-value cache"),
+        "ITME": ("itme", "cxl", "hybrid memory", "tiered memory", "kv cache"),
+    }
+    return any(keyword in text for keyword in keyword_groups.get(technology, (technology.lower(),)))
+
+
 def extract_published_date(html: str) -> str | None:
     """페이지 메타데이터와 JSON-LD에서 공개일을 찾아 ISO 날짜로 반환합니다."""
     soup = BeautifulSoup(html, "html.parser")
@@ -154,6 +163,8 @@ def web_search(query: str, agent: str, technology: str, max_results: int = 4) ->
         is_tavily = item.get("provider") == "tavily"
         page_text = fetch_web_text(url) if url and FETCH_WEB_FULL_TEXT and not is_tavily else ""
         evidence_text = page_text or snippet
+        if not url or not is_relevant_result(title, evidence_text, url, technology):
+            continue
         published_date = item.get("published_date") or item.get("date")
         if not published_date and url:
             published_date = fetch_web_metadata(url)

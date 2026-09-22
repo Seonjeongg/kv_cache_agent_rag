@@ -16,8 +16,7 @@ TRL 7: 실제 운용 환경에서 프로토타입 시연
 TRL 8: 완성된 시스템의 검증
 TRL 9: 실제 운용 실적 확인"""
 
-# 소형 로컬 모델이 약어를 임의로 다른 말로 풀어써 보고서에 오류가 섞이는 것을 막기 위한 고정 용어집.
-# (실제 관찰된 오류 예: MLA -> "모듈라이즈드 레이어드 애트엔션", CXL -> "Compute Xilinx" 등 잘못된 풀이)
+
 TERM_GLOSSARY = """용어집 (다른 말로 풀어쓰지 말고 아래 정의를 그대로 사용하세요):
 - MLA = Multi-head Latent Attention
 - ITME = Inference Tiered Memory Expansion
@@ -42,13 +41,21 @@ def technical_research_agent(state: AgentState) -> dict:
             questions = [
                 "Explain the core mechanism, cached key-value memory reduction per token, evaluation conditions, reported performance, limitations, deployment requirements, and readiness evidence."
             ]
+        analyses = {}
+        trl_analyses = {}
         evidence = []
-        for technology in ["DeepSeek-V2 MLA", "ITME"]:
+        technology_specs = {
+            "DeepSeek-V2 MLA": ("software", "DeepSeek-V2 MLA"),
+            "ITME": ("hardware", "ITME"),
+        }
+        for technology, (side, label) in technology_specs.items():
+            technology_evidence = []
             for question in questions:
-                evidence.extend(rag_evidence(question, technology, agent_name, top_k=AGENT_RAG_TOP_K))
+                technology_evidence.extend(rag_evidence(question, technology, agent_name, top_k=AGENT_RAG_TOP_K))
+            evidence.extend(technology_evidence)
 
-        prompt = f"""
-다음 논문 근거만 사용해 DeepSeek-V2 MLA와 ITME를 분석하세요.
+            prompt = f"""
+다음은 {label}에 대한 논문 근거입니다. 다른 기술의 사실이나 근거를 섞지 말고 {label}만 분석하세요.
 수치를 쓸 때 evidence_id를 반드시 연결하세요. 서로 다른 실험 환경의 수치를 직접 우열 비교하지 마세요.
 
 TRL은 아래 9단계 기준에 따라 공개 근거 기반으로만 추정하며, 확정이 아님을 명시하세요.
@@ -61,24 +68,20 @@ TRL은 아래 9단계 기준에 따라 공개 근거 기반으로만 추정하�
 
 반환 JSON 구조:
 {{
-  "technical_analysis": {{
-    "software": {{"principle": "", "scope": "", "performance_claims": [], "limitations": [], "evidence_ids": []}},
-    "hardware": {{"principle": "", "scope": "", "performance_claims": [], "limitations": [], "evidence_ids": []}}
-  }},
-  "trl_analysis": {{
-    "software": {{"estimated_trl": null, "reason": "", "evidence_ids": [], "disclaimer": "공개 정보 기반 추정"}},
-    "hardware": {{"estimated_trl": null, "reason": "", "evidence_ids": [], "disclaimer": "공개 정보 기반 추정"}}
-  }}
+    "technical": {{"principle": "", "scope": "", "performance_claims": [], "limitations": [], "evidence_ids": []}},
+    "trl": {{"estimated_trl": null, "reason": "", "evidence_ids": [], "disclaimer": "공개 정보 기반 추정"}}
 }}
 
 근거:
-{compact_evidence(evidence)}
+{compact_evidence(technology_evidence)}
 """
-        result = ask_json("당신은 중립적인 LLM 시스템 기술 분석가입니다.", prompt)
+            result = ask_json("당신은 중립적인 LLM 시스템 기술 분석가입니다.", prompt)
+            analyses[side] = result.get("technical", {})
+            trl_analyses[side] = result.get("trl", {})
         print(f"[1/6] 기술 조사 완료 - 근거 {len(evidence)}건")
         return {
-            "technical_analysis": result.get("technical_analysis", {}),
-            "trl_analysis": result.get("trl_analysis", {}),
+            "technical_analysis": analyses,
+            "trl_analysis": trl_analyses,
             "references": evidence,
         }
     except Exception as error:

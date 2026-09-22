@@ -69,9 +69,22 @@ def test_malformed_evidence_id_does_not_retry():
 def test_report_requires_submission_headings():
     report = "\n\n".join([
         "# SUMMARY", "# 1. 분석 배경", "# 2. 기술 선정", "# 3. 기술 개요",
-        "# 4. 관점별 평가", "# 6. 시사점", "# 7. 분석의 한계", "# REFERENCE",
+        "# 4. 관점별 평가", "# 6. 시사점", "# 7. 분석의 한계",
+        "# REFERENCE", "- [rag-aaaaaaaaaaaa] Paper",
     ])
     validate_report(report)
+
+
+def test_report_rejects_empty_references():
+    report = "\n\n".join([
+        "# SUMMARY", "# 1. 분석 배경", "# 2. 기술 선정", "# 3. 기술 개요",
+        "# 4. 관점별 평가", "# 6. 시사점", "# 7. 분석의 한계", "# REFERENCE",
+    ])
+    try:
+        validate_report(report)
+    except ValueError:
+        return
+    raise AssertionError("빈 REFERENCE가 통과했습니다.")
 
 
 def test_graph_builds_with_all_nodes_wired():

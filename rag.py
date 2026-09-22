@@ -22,6 +22,7 @@ from config import (
 _collection = None
 _TOKEN_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9-]{2,}|[가-힣]{2,}")
 _STOPWORDS = {"what", "does", "how", "the", "and", "for", "with", "from", "about", "reported"}
+_BACK_MATTER_HEADING = re.compile(r"(?im)^\s*(references|acknowledg(?:e)?ments)\s*$")
 
 
 def download_papers() -> dict[str, int]:
@@ -89,7 +90,10 @@ def load_and_chunk_papers() -> list[dict]:
     for technology, info in PAPERS.items():
         with fitz.open(info["path"]) as document:
             for page_number, page in enumerate(document, start=1):
-                text = normalize_text(page.get_text("text"))
+                raw_text = page.get_text("text")
+                if _BACK_MATTER_HEADING.search(raw_text):
+                    break
+                text = normalize_text(raw_text)
                 for chunk_number, chunk_text in enumerate(split_text(text), start=1):
                     raw_id = f"{technology}|{page_number}|{chunk_number}|{chunk_text[:80]}"
                     chunk_id = hashlib.sha256(raw_id.encode()).hexdigest()[:20]
