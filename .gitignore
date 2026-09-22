@@ -1,0 +1,23 @@
+# Python
+.python-version
+__pycache__/
+.venv/
+venv/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# OS / Editor 
+.DS_Store
+.vscode/
+
+# Python tooling
+.pytest_cache/
+*.py[cod]
+
+# Generated local data and reports
+data/raw/
+data/chroma_kv/
+outputs/

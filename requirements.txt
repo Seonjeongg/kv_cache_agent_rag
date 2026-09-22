@@ -1,0 +1,15 @@
+langgraph
+chromadb
+ollama
+pymupdf
+tavily-python
+ddgs
+requests
+beautifulsoup4
+pydantic
+python-dotenv
+markdown
+json-repair
+typing_extensions
+# 선택: PDF 자동 생성
+weasyprint

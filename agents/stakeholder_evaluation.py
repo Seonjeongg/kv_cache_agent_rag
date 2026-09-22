@@ -1,0 +1,51 @@
+"""이해관계자 평가 Agent: 관점별 기대효과·우려. (담당: 이해관계자)"""
+from __future__ import annotations
+
+from config import FAST_MODE, WEB_MAX_RESULTS
+from evidence import compact_evidence
+from llm import ask_json
+from search import web_search
+from state import AgentState
+
+
+def stakeholder_evaluation_agent(state: AgentState) -> dict:
+    agent_name = "stakeholder_evaluation"
+    print("[3/6] 이해관계자 평가 Agent 시작")
+    try:
+        evidence = []
+        for technology in ["DeepSeek-V2 MLA", "ITME"]:
+            queries = [
+                f"{technology} developer implementation limitations",
+                f"{technology} cloud provider deployment cost",
+                f"{technology} hardware vendor ecosystem response",
+            ]
+            if FAST_MODE:
+                queries = queries[:1]
+            for query in queries:
+                evidence.extend(web_search(query, agent_name, technology, max_results=WEB_MAX_RESULTS))
+
+        prompt = f"""
+다음 근거를 클라우드 사업자, LLM 개발사, 서비스 개발자, GPU·메모리 업체, 도입 기업·운영자 관점으로 구분하세요.
+각 이해관계자의 기대효과, 우려, 도입 장벽을 분리하고 evidence_id를 연결하세요.
+직접적인 발언이나 도입 사례를 찾지 못하면 "직접 반응 근거 없음"이라고 표시하세요.
+자료에서 직접 확인되지 않는 이해관계자의 반응을 만들어내지 마세요. JSON으로 반환하세요.
+
+반환 JSON 구조:
+{{
+  "stakeholder_analysis": {{
+    "cloud_provider": {{"expectation": "", "concern": "", "evidence_ids": []}},
+    "llm_developer": {{"expectation": "", "concern": "", "evidence_ids": []}},
+    "service_developer": {{"expectation": "", "concern": "", "evidence_ids": []}},
+    "hardware_vendor": {{"expectation": "", "concern": "", "evidence_ids": []}},
+    "adopter_operator": {{"expectation": "", "concern": "", "evidence_ids": []}}
+  }}
+}}
+
+근거:
+{compact_evidence(evidence)}
+"""
+        analysis = ask_json("당신은 중립적인 기술 이해관계자 분석가입니다.", prompt)
+        print(f"[3/6] 이해관계자 평가 완료 - 근거 {len(evidence)}건")
+        return {"stakeholder_analysis": analysis, "references": evidence}
+    except Exception as error:
+        return {"stakeholder_analysis": {}, "errors": [f"{agent_name}: {error}"]}
