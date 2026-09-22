@@ -132,8 +132,8 @@ def report_generation_agent(state: AgentState) -> dict:
 - JSON 키를 제외한 모든 문자열 값은 반드시 한국어로 작성하세요.
 - 영어 근거도 한국어로 해석하되, 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
 - 하나의 문단에서 사실, 해석, 판단을 섞지 말고 각각 구분해 서술하세요.
-- 모든 수치·성능·채택·비용·TRL 주장은 문장 끝에 해당 evidence_id를 [rag-...] 또는 [web-...] 형식으로 붙이세요.
-- 시장성 절과 이해관계자 절은 반드시 수집된 웹 근거의 [web-...] ID를 포함하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
+- 보고서 본문에는 evidence_id를 표시하지 마세요. 근거 연결은 내부 분석 결과와 최종 REFERENCE에서만 유지하세요.
+- 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
 - 직접 근거가 없으면 '공개 정보 부족'이라고 쓰고, 무엇이 부족한지와 판단에 미치는 영향을 설명하세요.
 - 두 기술의 실험 환경이 다르면 수치를 직접 우열 비교하지 말고 비교 조건의 차이를 먼저 설명하세요.
@@ -218,7 +218,7 @@ def report_generation_agent(state: AgentState) -> dict:
     모든 문자열은 한국어로 작성하고, JSON 키는 입력 키를 그대로 유지하세요.
     각 절은 최소 700자, 2개 이상의 문단으로 작성하세요.
     각 문단은 관찰 또는 주장, 근거, 해석, 판단의 한계 순서로 전개하세요.
-    새로운 수치·사례·기업 반응을 만들지 말고, 주장 뒤에는 기존 evidence_id를 유지하세요.
+    새로운 수치·사례·기업 반응을 만들지 말고, 보고서 본문에는 evidence_id를 표시하지 마세요.
     근거가 부족하면 단순히 문장을 반복하지 말고, 확인되지 않은 정보와 그로 인한 비교·판단의 한계를 설명하세요.
 
 확장할 절 초안:
@@ -293,10 +293,9 @@ def report_generation_agent(state: AgentState) -> dict:
 
 {section('limitations')}"""
     used_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", body))
-    # 시장성·이해관계자 Agent가 사용한 웹 근거는 본문에서 ID가 누락되어도
-    # 최종 참고문헌에서 빠지지 않도록 분석 결과의 evidence_ids를 함께 반영합니다.
-    used_ids.update(collect_evidence_ids(state.get("market_analysis", {})))
-    used_ids.update(collect_evidence_ids(state.get("stakeholder_analysis", {})))
+    # 본문에서 ID를 숨겨도 모든 분석 결과의 근거를 참고문헌에 유지합니다.
+    used_ids.update(collect_evidence_ids(payload))
+    body = re.sub(r"\s*\[?(?:rag|web)-[a-f0-9]{12}\]?", "", body)
     references = format_references(state.get("references", []), used_ids=used_ids)
     report = body + "\n\n# REFERENCE\n\n" + references
     print("[6/6] 보고서 생성 완료")
