@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from openai import OpenAI
+import ollama
 from dotenv import load_dotenv
 from tavily import TavilyClient
 
@@ -25,8 +26,8 @@ for directory in [RAW_DIR, CHROMA_DIR, OUTPUT_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
 LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-COLLECTION_NAME = "kv_cache_papers"
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "qwen3-embedding:0.6b")
+COLLECTION_NAME = "kv_cache_papers_local"
 TOP_K = 5
 CHUNK_MAX_CHARS = 900
 CHUNK_OVERLAP = 120
@@ -43,6 +44,7 @@ JSON_NUM_PREDICT = 1400 if FAST_MODE else 2200
 REPORT_NUM_PREDICT = 2400 if FAST_MODE else 7000
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
+ollama_client = ollama.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 PAPERS = {
     "DeepSeek-V2 MLA": {

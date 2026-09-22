@@ -1,6 +1,7 @@
 langgraph==1.2.12
 chromadb==1.5.9
 openai==3.16.2
+ollama==0.6.1
 pymupdf==1.28.2
 tavily-python==0.8.4
 ddgs==9.16.0

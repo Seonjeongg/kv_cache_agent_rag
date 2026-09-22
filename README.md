@@ -39,7 +39,8 @@
   evidence_id 등록 여부, 근거 목록 존재 여부를 코드로 검사)
 - Retrieval : ChromaDB (Dense Retrieval, 코사인 거리 + 상위 후보 lexical rerank) — `evaluate.py`의 질문별
   `ground_truth_chunk_ids`를 기준으로 Hit@K/MRR을 측정함. 현재 10개 질문의 독립 정답 청크가 등록됨
-- Embedding : OpenAI `text-embedding-3-small` — 선정 사유는 설계서 2.6절 참고
+- Embedding : Ollama 오픈소스 `qwen3-embedding:0.6b` (로컬 실행) — OpenAI API 비용 없이
+  논문·질의 임베딩을 생성하며, 모델은 `EMBEDDING_MODEL` 환경변수로 변경 가능
 
 ## Agents
 
@@ -91,7 +92,7 @@ python evaluate.py
 ```
 
 현재 참고문헌 페이지 제외, 900자 청크, 상위 10개 후보 후 lexical rerank,
-`text-embedding-3-small` 기준의 최신 결과는 `Hit@5=0.90`, `MRR=0.6167`입니다.
+로컬 Ollama `qwen3-embedding:0.6b` 기준으로 평가합니다. 임베딩 모델을 변경하면 색인과 정답 ID를 함께 갱신해야 합니다.
 평가셋의 `ground_truth_chunk_ids`는 PDF 원문 청크를 직접 확인해 지정하며, 청크 크기나 임베딩 모델을
 변경하면 색인과 정답 ID를 함께 갱신해야 합니다.
 
@@ -103,7 +104,7 @@ python evaluate.py
 ```bash
 brew install pango
 pip install -r requirements.txt
-cp .env.example .env   # OPENAI_API_KEY 입력
+cp .env.example .env   # OPENAI_API_KEY와 EMBEDDING_MODEL 확인
 # 선택: TAVILY_API_KEY를 입력하지 않으면 DuckDuckGo로 자동 대체
 python app.py
 ```

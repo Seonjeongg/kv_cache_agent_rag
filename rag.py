@@ -16,6 +16,7 @@ from config import (
     EMBEDDING_MODEL,
     PAPERS,
     TOP_K,
+    ollama_client,
     openai_client,
 )
 
@@ -113,8 +114,8 @@ def embed_texts(texts: list[str], batch_size: int = 16) -> list[list[float]]:
     embeddings = []
     for start in range(0, len(texts), batch_size):
         batch = texts[start:start + batch_size]
-        response = openai_client.embeddings.create(model=EMBEDDING_MODEL, input=batch)
-        embeddings.extend(item.embedding for item in response.data)
+        response = ollama_client.embed(model=EMBEDDING_MODEL, input=batch)
+        embeddings.extend(response["embeddings"])
     return embeddings
 
 
@@ -194,10 +195,10 @@ def retrieve(
     if collection.count() == 0:
         return []
 
-    query_embedding = openai_client.embeddings.create(
+    query_embedding = ollama_client.embed(
         model=EMBEDDING_MODEL,
         input=[query],
-    ).data[0].embedding
+    )["embeddings"][0]
 
     where = {"technology": technology} if technology else None
     result = collection.query(
