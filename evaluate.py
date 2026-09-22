@@ -4,6 +4,8 @@ from __future__ import annotations
 from rag import build_index, download_papers, load_and_chunk_papers, retrieve
 
 EVAL_SET = [
+    # 수정사항: 페이지 단위 expected_pages 대신 원문과 대조한 정답 청크 ID를 사용해
+    # 검색 결과가 실제 관련 문단을 찾았는지 더 정확하게 평가한다.
     {
         "id": "mla-core-mechanism",
         "question": "How does DeepSeek-V2 MLA represent keys and values to reduce KV cache?",
@@ -76,6 +78,8 @@ def evaluate_retriever(eval_set: list[dict], k: int = 5) -> dict:
     details = []
 
     for item in eval_set:
+        # 수정사항: 최종 평가 결과는 k개로 유지하되, 후보를 더 넓게 검색한 뒤
+        # rag.retrieve()의 재정렬 결과를 평가해 단순 top-k 확장과 구분한다.
         results = retrieve(
             item["question"],
             item["technology"],
@@ -83,6 +87,8 @@ def evaluate_retriever(eval_set: list[dict], k: int = 5) -> dict:
             candidate_k=max(k * 2, 10),
             rerank=True,
         )
+        # 수정사항: 정답 청크 ID를 우선 사용하고, 기존 평가 세트와의 호환을 위해
+        # 단일 청크 ID와 페이지 기반 정답도 순서대로 지원한다.
         if "ground_truth_chunk_ids" in item:
             expected = set(item["ground_truth_chunk_ids"])
             match_key = "chunk_id"

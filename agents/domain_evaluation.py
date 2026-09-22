@@ -21,16 +21,25 @@ DOMAIN_CRITERIA = [
     "operational complexity and cost",
 ]
 
+# 수정사항: 평가 대상 기술을 상수로 관리해 반복되는 기술명 목록을 한 곳에서 유지한다.
+DOMAIN_TECHNOLOGIES = ("DeepSeek-V2 MLA", "ITME")
+
+
+def _criteria_queries() -> list[str]:
+    """실행 모드에 맞는 도메인 평가 질의를 구성한다."""
+    # 수정사항: FAST_MODE의 질의 축약 로직을 Agent 본문에서 분리해 흐름을 단순화한다.
+    if FAST_MODE:
+        return ["; ".join(DOMAIN_CRITERIA)]
+    return DOMAIN_CRITERIA
+
 
 def domain_evaluation_agent(state: AgentState) -> dict:
     agent_name = "domain_evaluation"
     print("[4/6] 도메인 평가 Agent 시작")
     try:
         evidence = []
-        for technology in ["DeepSeek-V2 MLA", "ITME"]:
-            criteria_queries = DOMAIN_CRITERIA
-            if FAST_MODE:
-                criteria_queries = ["; ".join(DOMAIN_CRITERIA)]
+        criteria_queries = _criteria_queries()
+        for technology in DOMAIN_TECHNOLOGIES:
             for criterion in criteria_queries:
                 query = f"{technology} impact on {criterion} in datacenter cloud LLM serving"
                 evidence.extend(rag_evidence(query, technology, agent_name, top_k=AGENT_RAG_TOP_K))
