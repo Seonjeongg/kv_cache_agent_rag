@@ -13,6 +13,21 @@ from state import AgentState
 VALID_EVIDENCE_ID = re.compile(r"^(?:rag|web)-[0-9a-f]{12}$")
 
 
+def has_usable_analysis(value) -> bool:
+    """오류 객체와 빈 하위 결과를 정상 분석 결과로 통과시키지 않습니다."""
+    if not isinstance(value, dict) or not value or value.get("parse_error"):
+        return False
+    meaningful = False
+    for item in value.values():
+        if isinstance(item, dict):
+            if not has_usable_analysis(item):
+                return False
+            meaningful = True
+        elif item not in ({}, [], "", None):
+            meaningful = True
+    return meaningful
+
+
 def synthesis_agent(state: AgentState) -> dict:
     print("[5/6] 종합 평가 Agent 시작")
     payload = {
@@ -49,8 +64,8 @@ def validation_judge(state: AgentState) -> dict:
     }
 
     for key, target in required.items():
-        if not state.get(key):
-            missing.append(f"{key} 누락")
+        if not has_usable_analysis(state.get(key)):
+            missing.append(f"{key} 누락 또는 오류")
             retry_targets.append(target)
 
     available_ids = {item.get("evidence_id") for item in state.get("references", [])}

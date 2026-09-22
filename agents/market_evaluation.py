@@ -49,6 +49,7 @@ def market_evaluation_agent(state: AgentState) -> dict:
 {compact_evidence(evidence)}
 """
         analysis = ask_json("당신은 중립적인 AI 인프라 시장 분석가입니다.", prompt)
+        analysis = analysis.get("market_analysis", analysis)
         print(f"[2/6] 시장 평가 완료 - 근거 {len(evidence)}건")
         return {"market_analysis": analysis, "references": evidence}
     except Exception as error:

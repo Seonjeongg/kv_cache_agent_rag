@@ -31,7 +31,7 @@ TOP_K = 5
 
 # 첫 실행은 빠른 구조 검증 모드로 진행합니다.
 # 최종 보고서 생성 시에만 False로 바꾸세요.
-FAST_MODE = False
+FAST_MODE = True
 MAX_RETRIES = 0 if FAST_MODE else 2
 AGENT_RAG_TOP_K = 2 if FAST_MODE else 5
 WEB_MAX_RESULTS = 1 if FAST_MODE else 4

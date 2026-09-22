@@ -60,3 +60,4 @@ class AgentState(TypedDict, total=False):
     report: str
     references: Annotated[list[dict], merge_references]
     errors: Annotated[list[str], add]
+    runtime_metadata: dict

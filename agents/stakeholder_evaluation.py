@@ -45,6 +45,7 @@ def stakeholder_evaluation_agent(state: AgentState) -> dict:
 {compact_evidence(evidence)}
 """
         analysis = ask_json("당신은 중립적인 기술 이해관계자 분석가입니다.", prompt)
+        analysis = analysis.get("stakeholder_analysis", analysis)
         print(f"[3/6] 이해관계자 평가 완료 - 근거 {len(evidence)}건")
         return {"stakeholder_analysis": analysis, "references": evidence}
     except Exception as error:

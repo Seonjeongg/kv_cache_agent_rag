@@ -43,7 +43,7 @@ def normalize_text(text: str) -> str:
     return text.strip()
 
 
-def split_text(text: str, max_chars: int = 1400, overlap: int = 150) -> list[str]:
+def split_text(text: str, max_chars: int = 900, overlap: int = 120) -> list[str]:
     if len(text) <= max_chars:
         return [text] if text else []
 
@@ -133,9 +133,16 @@ def build_index(chunks: list[dict]):
 
 
 def get_collection():
-    """build_index() 실행 후 생성된 컬렉션을 반환합니다."""
+    """현재 프로세스 또는 디스크에 저장된 Chroma 컬렉션을 반환합니다."""
+    global _collection
     if _collection is None:
-        raise RuntimeError("build_index()를 먼저 실행하세요.")
+        client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+        try:
+            _collection = client.get_collection(COLLECTION_NAME)
+        except Exception as error:
+            raise RuntimeError(
+                "Chroma 색인이 없습니다. 먼저 `python evaluate.py` 또는 `build_index()`를 실행하세요."
+            ) from error
     return _collection
 
 

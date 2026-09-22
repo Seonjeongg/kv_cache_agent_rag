@@ -37,18 +37,39 @@ def rag_evidence(query: str, technology: str, agent: str, top_k: int = TOP_K) ->
 
 def compact_evidence(evidence: list[dict], max_chars: int | None = None) -> str:
     max_chars = max_chars or (10000 if FAST_MODE else 24000)
+    unique = {}
+    for item in evidence:
+        unique[item.get("evidence_id") or repr(item)] = item
+    groups: dict[str, list[dict]] = {}
+    for item in unique.values():
+        groups.setdefault(item.get("technology", "unknown"), []).append(item)
+
     blocks = []
     length = 0
-    for item in evidence:
+    budget = max_chars // max(len(groups), 1)
+    for group_items in groups.values():
+        group_length = 0
+        for item in group_items:
+            block = (
+                f"[{item['evidence_id']}] {item['title']}"
+                f" | page={item.get('page')} | url={item.get('url')}\n"
+                f"{item['evidence_text'][:3000]}"
+            )
+            if group_length + len(block) > budget:
+                continue
+            blocks.append(block)
+            group_length += len(block)
+            length += len(block)
+
+    for item in unique.values():
         block = (
             f"[{item['evidence_id']}] {item['title']}"
             f" | page={item.get('page')} | url={item.get('url')}\n"
             f"{item['evidence_text'][:3000]}"
         )
-        if length + len(block) > max_chars:
-            break
-        blocks.append(block)
-        length += len(block)
+        if block not in blocks and length + len(block) <= max_chars:
+            blocks.append(block)
+            length += len(block)
     return "\n\n".join(blocks)
 
 
@@ -56,7 +77,12 @@ def collect_evidence_ids(value) -> set[str]:
     ids = set()
     if isinstance(value, dict):
         for key, item in value.items():
-            if key == "evidence_ids" and isinstance(item, list):
+            if key in {"evidence_ids", "evidence_id"}:
+                if isinstance(item, list):
+                    ids.update(str(x) for x in item)
+                elif isinstance(item, str):
+                    ids.add(item)
+            elif key == "evidence_ids" and isinstance(item, list):
                 ids.update(str(x) for x in item)
             else:
                 ids.update(collect_evidence_ids(item))
@@ -96,7 +122,7 @@ def format_references(references: list[dict], used_ids: set[str] | None = None) 
     seen = set()
     for item in references:
         evidence_id = item.get("evidence_id")
-        if used_ids and evidence_id not in used_ids:
+        if used_ids is not None and evidence_id not in used_ids:
             continue
         key = evidence_id or f"{item.get('url')}:{item.get('page')}"
         if key in seen:

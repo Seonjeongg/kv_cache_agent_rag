@@ -6,7 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from evidence import make_evidence_id
+from agents.synthesis import has_usable_analysis, validation_judge
+from evidence import format_references, make_evidence_id
 from rag import split_text
 from graph import build_graph
 
@@ -27,6 +28,32 @@ def test_make_evidence_id_is_deterministic():
     b = make_evidence_id("rag", "agent|chunk|query")
     assert a == b
     assert a.startswith("rag-")
+
+
+def test_validation_rejects_parse_error_result():
+    assert not has_usable_analysis({"parse_error": True})
+    assert not has_usable_analysis({"software": {"principle": ""}})
+
+
+def test_empty_reference_filter_stays_empty():
+    references = [{"evidence_id": "rag-aaaaaaaaaaaa", "source_type": "paper", "title": "x"}]
+    assert format_references(references, used_ids=set()) == "- 실제 활용 자료 없음"
+
+
+def test_malformed_evidence_id_does_not_retry():
+    state = {
+        "technical_analysis": {"software": {"principle": "ok"}},
+        "trl_analysis": {"software": {"reason": "ok"}},
+        "market_analysis": {"software": {"evidence_ids": ["web-ITME-1"]}},
+        "stakeholder_analysis": {"cloud_provider": {"expectation": "ok"}},
+        "domain_analysis": {"comparison": "ok"},
+        "synthesis": {"summary": "ok"},
+        "references": [{"evidence_id": "rag-aaaaaaaaaaaa"}],
+        "retry_count": 0,
+    }
+    result = validation_judge(state)
+    assert result["validation_result"] == "pass_with_limitations"
+    assert result["retry_count"] == 0
 
 
 def test_graph_builds_with_all_nodes_wired():

@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import json
+import platform
 from datetime import datetime
+from importlib.metadata import version
 
 import markdown as markdown_lib
 
-from config import OUTPUT_DIR, PROJECT_DIR
+from config import EMBEDDING_MODEL, LLM_MODEL, OUTPUT_DIR, PROJECT_DIR
 from graph import build_graph
 from rag import build_index, download_papers, load_and_chunk_papers
 from state import AgentState
@@ -29,6 +31,13 @@ def run_pipeline() -> dict:
         "errors": [],
     }
     result = graph.invoke(initial_state, config={"recursion_limit": 40})
+    result["runtime_metadata"] = {
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "llm_model": LLM_MODEL,
+        "embedding_model": EMBEDDING_MODEL,
+        "openai_package": version("openai"),
+    }
 
     print("검증 결과:", result["validation_result"])
     print("재조사 횟수:", result["retry_count"])

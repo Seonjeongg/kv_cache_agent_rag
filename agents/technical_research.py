@@ -32,15 +32,15 @@ def technical_research_agent(state: AgentState) -> dict:
     print("[1/6] 기술 조사 Agent 시작")
     try:
         questions = [
-            "What problem does the technology solve and what is its core mechanism?",
-            "How does the technology reduce or manage KV cache memory?",
-            "What evaluation environment and performance results are reported?",
-            "What limitations and deployment requirements are reported?",
-            "What evidence indicates technology readiness or real-system validation?",
+            "What problem does the technology solve, and what is its core mechanism in the paper?",
+            "How does the technology reduce or manage the number of cached key-value elements per token?",
+            "What evaluation environment, baselines, metrics, and performance results are reported?",
+            "What architecture constraints, limitations, and deployment requirements are reported?",
+            "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
         ]
         if FAST_MODE:
             questions = [
-                "Explain the core mechanism, KV-cache memory effect, reported performance, limitations, deployment requirements, and readiness evidence."
+                "Explain the core mechanism, cached key-value memory reduction per token, evaluation conditions, reported performance, limitations, deployment requirements, and readiness evidence."
             ]
         evidence = []
         for technology in ["DeepSeek-V2 MLA", "ITME"]:
