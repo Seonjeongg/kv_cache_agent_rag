@@ -1,6 +1,8 @@
 """외부 웹 검색: Tavily -> DDGS -> DuckDuckGo HTML 순서의 대체 경로."""
 from __future__ import annotations
 
+import json
+import re
 from urllib.parse import quote_plus
 
 import requests
@@ -11,6 +13,43 @@ from config import FETCH_WEB_FULL_TEXT, tavily_client
 from evidence import make_evidence_id
 from rag import normalize_text
 from state import Evidence
+
+
+def is_relevant_result(title: str, body: str, url: str, technology: str) -> bool:
+    text = f"{title} {body} {url}".lower()
+    keyword_groups = {
+        "DeepSeek-V2 MLA": ("deepseek", "mla", "multi-head latent", "key-value cache"),
+        "ITME": ("itme", "cxl", "hybrid memory", "tiered memory", "kv cache"),
+    }
+    return any(keyword in text for keyword in keyword_groups.get(technology, (technology.lower(),)))
+
+
+def extract_published_date(html: str) -> str | None:
+    """페이지 메타데이터와 JSON-LD에서 공개일을 찾아 ISO 날짜로 반환합니다."""
+    soup = BeautifulSoup(html, "html.parser")
+    candidates = []
+    for tag in soup.select("meta[content]"):
+        key = (tag.get("property") or tag.get("name") or "").lower()
+        if any(token in key for token in ("article:published_time", "datepublished", "pubdate", "date")):
+            candidates.append(tag.get("content", ""))
+
+    for script in soup.select('script[type="application/ld+json"]'):
+        try:
+            data = json.loads(script.string or script.get_text())
+        except (TypeError, json.JSONDecodeError):
+            continue
+        records = data if isinstance(data, list) else [data]
+        candidates.extend(
+            record.get("datePublished", "")
+            for record in records
+            if isinstance(record, dict)
+        )
+
+    for value in candidates:
+        match = re.search(r"\d{4}-\d{2}-\d{2}", value or "")
+        if match:
+            return match.group(0)
+    return None
 
 
 def fetch_web_text(url: str, max_chars: int = 8000) -> str:
@@ -27,6 +66,19 @@ def fetch_web_text(url: str, max_chars: int = 8000) -> str:
         return normalize_text(soup.get_text("\n"))[:max_chars]
     except Exception:
         return ""
+
+
+def fetch_web_metadata(url: str) -> str | None:
+    try:
+        response = requests.get(
+            url,
+            timeout=10,
+            headers={"User-Agent": "Mozilla/5.0 KV-Cache-Research/1.0"},
+        )
+        response.raise_for_status()
+        return extract_published_date(response.text)
+    except Exception:
+        return None
 
 
 def duckduckgo_html_search(query: str, max_results: int = 4) -> list[dict]:
@@ -111,7 +163,14 @@ def web_search(query: str, agent: str, technology: str, max_results: int = 4) ->
         is_tavily = item.get("provider") == "tavily"
         page_text = fetch_web_text(url) if url and FETCH_WEB_FULL_TEXT and not is_tavily else ""
         evidence_text = page_text or snippet
-        evidence_id = make_evidence_id("web", f"{agent}|{url}|{query}")
+        if not url or not is_relevant_result(title, evidence_text, url, technology):
+            continue
+        published_date = item.get("published_date") or item.get("date")
+        if not published_date and url:
+            published_date = fetch_web_metadata(url)
+        # 동일 URL이 여러 Agent·질의에서 발견되어도 하나의 웹 근거로 취급합니다.
+        source_key = url or f"{agent}|{query}"
+        evidence_id = make_evidence_id("web", source_key)
 
         evidence.append(Evidence(
             evidence_id=evidence_id,
@@ -123,7 +182,7 @@ def web_search(query: str, agent: str, technology: str, max_results: int = 4) ->
             evidence_text=evidence_text[:8000],
             url=url,
             retrieval_score=item.get("score"),
-            published_at=item.get("published_date"),
+            published_at=published_date,
         ).model_dump())
 
     return evidence

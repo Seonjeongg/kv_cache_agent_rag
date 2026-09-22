@@ -6,8 +6,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from evidence import make_evidence_id
-from rag import split_text
+from agents.synthesis import has_usable_analysis, validation_judge
+from app import validate_report
+from evidence import format_references, make_evidence_id
+from rag import _rerank, split_text
 from graph import build_graph
 
 
@@ -22,11 +24,67 @@ def test_split_text_short_text_returns_single_chunk():
     assert split_text("짧은 문장") == ["짧은 문장"]
 
 
+def test_rerank_preserves_relevant_lexical_match():
+    results = [
+        {"chunk_id": "semantic", "text": "attention memory architecture", "similarity": 0.9},
+        {"chunk_id": "exact", "text": "reduce KV cache key value elements", "similarity": 0.8},
+    ]
+    reranked = _rerank("reduce KV cache", results, top_k=2)
+    assert reranked[0]["chunk_id"] == "exact"
+
+
 def test_make_evidence_id_is_deterministic():
     a = make_evidence_id("rag", "agent|chunk|query")
     b = make_evidence_id("rag", "agent|chunk|query")
     assert a == b
     assert a.startswith("rag-")
+
+
+def test_validation_rejects_parse_error_result():
+    assert not has_usable_analysis({"parse_error": True})
+    assert not has_usable_analysis({"software": {"principle": ""}})
+
+
+def test_empty_reference_filter_stays_empty():
+    references = [{"evidence_id": "rag-aaaaaaaaaaaa", "source_type": "paper", "title": "x"}]
+    assert format_references(references, used_ids=set()) == "- 실제 활용 자료 없음"
+
+
+def test_malformed_evidence_id_does_not_retry():
+    state = {
+        "technical_analysis": {"software": {"principle": "ok"}},
+        "trl_analysis": {"software": {"reason": "ok"}},
+        "market_analysis": {"software": {"evidence_ids": ["web-ITME-1"]}},
+        "stakeholder_analysis": {"cloud_provider": {"expectation": "ok"}},
+        "domain_analysis": {"comparison": "ok"},
+        "synthesis": {"summary": "ok"},
+        "references": [{"evidence_id": "rag-aaaaaaaaaaaa"}],
+        "retry_count": 0,
+    }
+    result = validation_judge(state)
+    assert result["validation_result"] == "pass_with_limitations"
+    assert result["retry_count"] == 0
+
+
+def test_report_requires_submission_headings():
+    report = "\n\n".join([
+        "# SUMMARY", "# 1. 분석 배경", "# 2. 기술 선정", "# 3. 기술 개요",
+        "# 4. 관점별 평가", "# 6. 시사점", "# 7. 분석의 한계",
+        "# REFERENCE", "- [rag-aaaaaaaaaaaa] Paper",
+    ])
+    validate_report(report)
+
+
+def test_report_rejects_empty_references():
+    report = "\n\n".join([
+        "# SUMMARY", "# 1. 분석 배경", "# 2. 기술 선정", "# 3. 기술 개요",
+        "# 4. 관점별 평가", "# 6. 시사점", "# 7. 분석의 한계", "# REFERENCE",
+    ])
+    try:
+        validate_report(report)
+    except ValueError:
+        return
+    raise AssertionError("빈 REFERENCE가 통과했습니다.")
 
 
 def test_graph_builds_with_all_nodes_wired():

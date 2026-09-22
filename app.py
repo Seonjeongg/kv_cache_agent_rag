@@ -2,14 +2,59 @@
 from __future__ import annotations
 
 import json
+import platform
+import re
 from datetime import datetime
+from importlib.metadata import version
 
 import markdown as markdown_lib
 
-from config import OUTPUT_DIR, PROJECT_DIR
+from config import (
+    AGENT_RAG_TOP_K,
+    CHUNK_MAX_CHARS,
+    CHUNK_OVERLAP,
+    EMBEDDING_MODEL,
+    FAST_MODE,
+    LLM_MODEL,
+    OUTPUT_DIR,
+    PROJECT_DIR,
+    TOP_K,
+)
 from graph import build_graph
 from rag import build_index, download_papers, load_and_chunk_papers
 from state import AgentState
+
+
+REQUIRED_REPORT_HEADINGS = (
+    "# SUMMARY",
+    "# 1. 분석 배경",
+    "# 2. 기술 선정",
+    "# 3. 기술 개요",
+    "# 4. 관점별 평가",
+    "# 6. 시사점",
+    "# 7. 분석의 한계",
+    "# REFERENCE",
+)
+
+
+def validate_report(report: str, references: list[dict] | None = None) -> None:
+    missing = [heading for heading in REQUIRED_REPORT_HEADINGS if heading not in report]
+    if missing:
+        raise ValueError(f"보고서 필수 목차 누락: {missing}")
+    reference_index = report.rfind("# REFERENCE")
+    if reference_index < report.find("# SUMMARY"):
+        raise ValueError("REFERENCE는 보고서 마지막에 있어야 합니다.")
+    trailing_headings = re.findall(r"^#\s+.+$", report[reference_index:], flags=re.MULTILINE)
+    if len(trailing_headings) != 1:
+        raise ValueError("REFERENCE 뒤에 다른 보고서 제목이 있거나 REFERENCE가 중복됩니다.")
+    if not re.search(r"^- \[[a-z]+-[0-9a-f]{12}\]", report[reference_index:], flags=re.MULTILINE):
+        raise ValueError("REFERENCE 항목이 비어 있습니다.")
+    if references is not None:
+        available_ids = {item.get("evidence_id") for item in references}
+        used_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[:reference_index]))
+        missing_ids = sorted(used_ids - available_ids)
+        if missing_ids:
+            raise ValueError(f"본문에 인용된 Evidence가 REFERENCES에 없습니다: {missing_ids[:10]}")
 
 
 def run_pipeline() -> dict:
@@ -20,6 +65,8 @@ def run_pipeline() -> dict:
     print(f"Vector DB 수: {collection.count():,}")
 
     graph = build_graph()
+    if FAST_MODE:
+        print("[WARN] FAST_MODE=True: 제출용 보고서는 FAST_MODE=False로 실행하세요.")
     initial_state: AgentState = {
         "input_request": (
             "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 "
@@ -29,6 +76,18 @@ def run_pipeline() -> dict:
         "errors": [],
     }
     result = graph.invoke(initial_state, config={"recursion_limit": 40})
+    result["runtime_metadata"] = {
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "llm_model": LLM_MODEL,
+        "embedding_model": EMBEDDING_MODEL,
+        "openai_package": version("openai"),
+        "fast_mode": FAST_MODE,
+        "chunk_max_chars": CHUNK_MAX_CHARS,
+        "chunk_overlap": CHUNK_OVERLAP,
+        "retrieval_top_k": TOP_K,
+        "agent_rag_top_k": AGENT_RAG_TOP_K,
+    }
 
     print("검증 결과:", result["validation_result"])
     print("재조사 횟수:", result["retry_count"])
@@ -44,6 +103,7 @@ def save_outputs(result: dict) -> dict:
     pdf_path = OUTPUT_DIR / f"kv_cache_report_{timestamp}.pdf"
     json_path = OUTPUT_DIR / f"kv_cache_state_{timestamp}.json"
 
+    validate_report(result["report"], result.get("references", []))
     markdown_path.write_text(result["report"], encoding="utf-8")
     html_body = markdown_lib.markdown(result["report"], extensions=["tables", "fenced_code"])
     html_document = f"""<!doctype html>
@@ -54,13 +114,9 @@ def save_outputs(result: dict) -> dict:
 
     json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    try:
-        from weasyprint import HTML
-        HTML(string=html_document, base_url=str(PROJECT_DIR)).write_pdf(pdf_path)
-        print("PDF:", pdf_path)
-    except Exception as error:
-        print("PDF 자동 생성 생략:", error)
-        print("HTML을 브라우저에서 열어 PDF로 인쇄하세요:", html_path)
+    from weasyprint import HTML
+    HTML(string=html_document, base_url=str(PROJECT_DIR)).write_pdf(pdf_path)
+    print("PDF:", pdf_path)
 
     print("Markdown:", markdown_path)
     print("HTML:", html_path)

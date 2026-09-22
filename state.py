@@ -29,7 +29,12 @@ def merge_references(left: list[dict], right: list[dict]) -> list[dict]:
     """Loop와 병렬 실행에서 동일 출처가 중복되지 않게 합칩니다."""
     merged = {}
     for item in (left or []) + (right or []):
-        key = item.get("evidence_id") or item.get("url") or json.dumps(item, sort_keys=True)
+        if item.get("source_type") == "paper" and item.get("chunk_id"):
+            key = ("paper", item.get("technology"), item["chunk_id"])
+        elif item.get("source_type") == "web" and item.get("url"):
+            key = ("web", item["url"])
+        else:
+            key = item.get("evidence_id") or json.dumps(item, sort_keys=True)
         merged[key] = item
     return list(merged.values())
 
@@ -55,3 +60,4 @@ class AgentState(TypedDict, total=False):
     report: str
     references: Annotated[list[dict], merge_references]
     errors: Annotated[list[str], add]
+    runtime_metadata: dict
