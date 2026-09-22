@@ -1,9 +1,8 @@
-"""종합 평가, 근거 검증 Judge, 보고서 생성 Agent."""
+"""종합 평가, 근거 검증 Judge, 보고서 생성. (담당: 종합·검증·보고서)"""
 from __future__ import annotations
 
 import json
 import re
-from typing import Any
 
 from agents.technical_research import TERM_GLOSSARY
 from config import FAST_MODE, MAX_RETRIES, REPORT_NUM_PREDICT
@@ -11,173 +10,85 @@ from evidence import collect_evidence_ids, format_references
 from llm import ask_json
 from state import AgentState
 
-
 VALID_EVIDENCE_ID = re.compile(r"^(?:rag|web)-[0-9a-f]{12}$")
-REPORT_EVIDENCE_ID = re.compile(r"(?:rag|web)-[0-9a-f]{12}")
-
-REQUIRED_ANALYSES = {
-    "technical_analysis": "technical_research",
-    "trl_analysis": "technical_research",
-    "market_analysis": "market_evaluation",
-    "stakeholder_analysis": "stakeholder_evaluation",
-    "domain_analysis": "domain_evaluation",
-    "synthesis": "synthesis",
-}
-
-ANALYSIS_PAYLOAD_KEYS = {
-    "technical": "technical_analysis",
-    "trl": "trl_analysis",
-    "market": "market_analysis",
-    "stakeholder": "stakeholder_analysis",
-    "domain": "domain_analysis",
-}
-
-REPORT_SECTION_NAMES = (
-    "background",
-    "selection",
-    "deepseek_overview",
-    "itme_overview",
-    "trl",
-    "market",
-    "stakeholder",
-    "domain",
-    "comparison_conflicts",
-    "implications",
-    "limitations",
-)
-
-MIN_REPORT_SECTION_LENGTH = 650
-EXPANSION_NUM_PREDICT = max(REPORT_NUM_PREDICT, 5000)
 
 
-def _json(value: Any, limit: int | None = None) -> str:
-    """JSON 직렬화와 프롬프트 길이 제한을 한곳에서 처리합니다."""
-    serialized = json.dumps(value, ensure_ascii=False)
-    return serialized[:limit] if limit else serialized
-
-
-def _unwrap_analysis(state_key: str, value: Any) -> Any:
-    """Agent가 동일 키를 한 번 더 감싸 반환한 결과를 정상화합니다.
-
-    예: {"market_analysis": {"software": ...}} -> {"software": ...}
-    """
-    while (
-        isinstance(value, dict)
-        and set(value) == {state_key}
-        and isinstance(value[state_key], dict)
-    ):
-        value = value[state_key]
-    return value
-
-
-def _state_analysis(state: AgentState, state_key: str) -> dict:
-    value = _unwrap_analysis(state_key, state.get(state_key, {}))
-    return value if isinstance(value, dict) else {}
-
-
-def _analysis_payload(state: AgentState) -> dict:
-    return {
-        payload_key: _state_analysis(state, state_key)
-        for payload_key, state_key in ANALYSIS_PAYLOAD_KEYS.items()
-    }
-
-
-def has_usable_analysis(value: Any) -> bool:
-    """파싱 오류, 빈 객체, 빈 하위 분석을 정상 결과로 처리하지 않습니다."""
+def has_usable_analysis(value) -> bool:
+    """오류 객체와 빈 하위 결과를 정상 분석 결과로 통과시키지 않습니다."""
     if not isinstance(value, dict) or not value or value.get("parse_error"):
         return False
-
-    meaningful_leaf_exists = False
+    meaningful = False
     for item in value.values():
         if isinstance(item, dict):
             if not has_usable_analysis(item):
                 return False
-            meaningful_leaf_exists = True
-        elif isinstance(item, list):
-            meaningful_leaf_exists = meaningful_leaf_exists or bool(item)
-        elif item not in ("", None):
-            meaningful_leaf_exists = True
-
-    return meaningful_leaf_exists
+            meaningful = True
+        elif item not in ({}, [], "", None):
+            meaningful = True
+    return meaningful
 
 
 def synthesis_agent(state: AgentState) -> dict:
     print("[5/6] 종합 평가 Agent 시작")
+    payload = {
+        "technical": state.get("technical_analysis", {}),
+        "trl": state.get("trl_analysis", {}),
+        "market": state.get("market_analysis", {}),
+        "stakeholder": state.get("stakeholder_analysis", {}),
+        "domain": state.get("domain_analysis", {}),
+    }
     prompt = f"""
 아래 Agent 결과만 사용해 관점별 일치점, 상충점, 보완 가능성, 공개 정보의 한계를 종합하세요.
 승자나 추천 기술을 결정하지 말고 새로운 사실을 추가하지 마세요.
 각 결론에 근거가 된 evidence_id를 유지하세요. JSON으로 반환하세요.
 
 Agent 결과:
-{_json(_analysis_payload(state), limit=30000)}
+{json.dumps(payload, ensure_ascii=False)[:30000]}
 """
-    synthesis = ask_json(
-        "당신은 중립적인 기술 평가 종합 Agent입니다.",
-        prompt,
-    )
+    synthesis = ask_json("당신은 중립적인 기술 평가 종합 Agent입니다.", prompt)
     print("[5/6] 종합 평가 완료")
     return {"synthesis": synthesis}
 
 
-def _available_evidence_ids(state: AgentState) -> set[str]:
-    return {
-        evidence_id
-        for item in state.get("references", [])
-        if (evidence_id := item.get("evidence_id"))
-    }
-
-
-def _used_evidence_ids(state: AgentState) -> set[str]:
-    used_ids: set[str] = set()
-    for state_key in REQUIRED_ANALYSES:
-        analysis = _state_analysis(state, state_key)
-        used_ids.update(collect_evidence_ids(analysis))
-    return used_ids
-
-
-def _validate_evidence_ids(state: AgentState) -> tuple[list[str], list[str]]:
-    available_ids = _available_evidence_ids(state)
-    used_ids = _used_evidence_ids(state)
-
-    malformed_ids = sorted(
-        evidence_id
-        for evidence_id in used_ids
-        if not VALID_EVIDENCE_ID.fullmatch(evidence_id)
-    )
-    unknown_ids = sorted(
-        evidence_id
-        for evidence_id in used_ids
-        if VALID_EVIDENCE_ID.fullmatch(evidence_id)
-        and evidence_id not in available_ids
-    )
-    return malformed_ids, unknown_ids
-
-
 def validation_judge(state: AgentState) -> dict:
     print("[Judge] 근거와 누락 검사 시작")
-    missing: list[str] = []
-    retry_targets: list[str] = []
+    missing = []
+    retry_targets = []
+    required = {
+        "technical_analysis": "technical_research",
+        "trl_analysis": "technical_research",
+        "market_analysis": "market_evaluation",
+        "stakeholder_analysis": "stakeholder_evaluation",
+        "domain_analysis": "domain_evaluation",
+        "synthesis": "synthesis",
+    }
 
-    for state_key, target in REQUIRED_ANALYSES.items():
-        analysis = _state_analysis(state, state_key)
-        if not has_usable_analysis(analysis):
-            missing.append(f"{state_key} 누락 또는 오류")
+    for key, target in required.items():
+        if not has_usable_analysis(state.get(key)):
+            missing.append(f"{key} 누락 또는 오류")
             retry_targets.append(target)
 
-    malformed_ids, unknown_ids = _validate_evidence_ids(state)
+    available_ids = {item.get("evidence_id") for item in state.get("references", [])}
+    used_ids = set()
+    for key in required:
+        used_ids.update(collect_evidence_ids(state.get(key, {})))
+    malformed_ids = sorted(item for item in used_ids if not VALID_EVIDENCE_ID.fullmatch(item))
+    unknown_ids = sorted(
+        item for item in used_ids
+        if VALID_EVIDENCE_ID.fullmatch(item) and item not in available_ids
+    )
     if malformed_ids:
         missing.append(f"형식이 잘못된 evidence_id: {malformed_ids[:10]}")
     if unknown_ids:
         missing.append(f"존재하지 않는 evidence_id: {unknown_ids[:10]}")
 
-    references_missing = not state.get("references")
-    if references_missing:
+    if not state.get("references"):
         missing.append("Reference 근거 누락")
 
     retry_count = state.get("retry_count", 0)
-    retryable = bool(retry_targets or unknown_ids or references_missing)
-
-    if missing and retryable and retry_count < MAX_RETRIES:
+    # 모델이 만든 형식 오류는 재조사로 해결되지 않으므로 한계로 기록하고 종료합니다.
+    retryable_missing = bool(retry_targets or unknown_ids or not state.get("references"))
+    if missing and retryable_missing and retry_count < MAX_RETRIES:
         status = "retry"
         retry_count += 1
     elif missing:
@@ -188,7 +99,6 @@ def validation_judge(state: AgentState) -> dict:
     print(f"[Judge] 결과={status}, 누락={len(missing)}, retry={retry_count}")
     for reason in missing:
         print(f"  - {reason}")
-
     return {
         "validation_result": status,
         "missing_evidence": missing,
@@ -197,54 +107,56 @@ def validation_judge(state: AgentState) -> dict:
     }
 
 
-def _report_payload(state: AgentState) -> dict:
+def report_generation_agent(state: AgentState) -> dict:
+    print("[6/6] 보고서 생성 Agent 시작")
     payload = {
-        "selection_reason": state.get("selection_reason", "공개 정보 부족"),
-        **_analysis_payload(state),
-        "synthesis": _state_analysis(state, "synthesis"),
+        "selection_reason": state["selection_reason"],
+        "technical": state.get("technical_analysis", {}),
+        "trl": state.get("trl_analysis", {}),
+        "market": state.get("market_analysis", {}),
+        "stakeholder": state.get("stakeholder_analysis", {}),
+        "domain": state.get("domain_analysis", {}),
+        "synthesis": state.get("synthesis", {}),
         "validation": {
             "result": state.get("validation_result"),
             "limitations": state.get("missing_evidence", []),
         },
     }
-    return payload
-
-
-def _report_prompt(payload: dict) -> str:
     payload_limit = 12000 if FAST_MODE else 36000
-    return f"""
+    prompt = f"""
 당신은 연구자와 데이터센터 의사결정자를 위한 중립적 기술평가 보고서를 작성합니다.
-아래의 검증된 Agent 분석 결과만 사용해 배경과 근거에서 판단과 시사점으로 이어지는 보고서 본문을 작성하세요.
+아래의 검증된 Agent 분석 결과만 사용해, 배경과 근거에서 판단과 시사점으로 이어지는 보고서 본문을 작성하세요.
 작성 과정이나 생각은 출력하지 말고 지정된 JSON 객체만 반환하세요.
 
 [공통 작성 원칙]
 - JSON 키를 제외한 모든 문자열 값은 반드시 한국어로 작성하세요.
-- 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
-- 사실, 해석, 판단을 구분해 서술하세요.
-- 모든 수치·성능·채택·비용·TRL 주장 뒤에 evidence_id를 붙이세요.
-- 시장성·이해관계자 절에는 수집된 웹 근거의 [web-...] ID를 포함하세요.
-- 입력에 없는 수치, 도입 사례, 시장 반응, 운영 결과를 만들지 마세요.
-- 직접 근거가 없으면 '공개 정보 부족'과 판단에 미치는 영향을 설명하세요.
-- 실험 환경이 다르면 수치를 직접 우열 비교하지 마세요.
-- 특정 기술을 추천하지 말고 적용 조건별 장점·제약·보완 가능성을 균형 있게 작성하세요.
+- 영어 근거도 한국어로 해석하되, 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
+- 하나의 문단에서 사실, 해석, 판단을 섞지 말고 각각 구분해 서술하세요.
+- 모든 수치·성능·채택·비용·TRL 주장은 문장 끝에 해당 evidence_id를 [rag-...] 또는 [web-...] 형식으로 붙이세요.
+- 시장성 절과 이해관계자 절은 반드시 수집된 웹 근거의 [web-...] ID를 포함하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
+- 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
+- 직접 근거가 없으면 '공개 정보 부족'이라고 쓰고, 무엇이 부족한지와 판단에 미치는 영향을 설명하세요.
+- 두 기술의 실험 환경이 다르면 수치를 직접 우열 비교하지 말고 비교 조건의 차이를 먼저 설명하세요.
+- 특정 기술을 추천하거나 승자를 정하지 말고, 적용 조건에 따른 장점·제약·보완 가능성을 균형 있게 작성하세요.
 
-[분량]
-- SUMMARY는 핵심 결론, 차이, 공통 한계, 추가 검증 과제를 포함한 8~10문장으로 작성하세요.
-- 나머지 항목은 제목 없이 최소 2개 문단, 8~12문장, 700자 이상을 목표로 작성하세요.
-- 문장 반복으로 분량을 채우지 마세요.
+[보고서 구성과 분량]
+- SUMMARY는 핵심 결론, 중요한 차이, 공통 한계, 추가 검증 과제를 포함한 8~10문장으로 작성하세요.
+- SUMMARY를 제외한 모든 항목은 제목 없이 자연스러운 보고서 본문으로 작성하세요.
+- 각 항목은 최소 2개 문단, 8~12문장, 700자 이상을 목표로 하세요. 단순한 문장 반복으로 분량을 채우지 마세요.
+- 각 문단은 '주장 또는 관찰 → 근거 → 해석 → 판단의 한계' 순서로 전개하세요.
 
 [절별 작성 지시]
-- background: KV cache 병목과 메모리·긴 컨텍스트·동시 사용자의 관계, 비교 범위를 설명하세요.
-- selection: MLA와 ITME의 선정 이유, 접근 계층 차이, 비교 가능·불가능 항목을 설명하세요.
-- deepseek_overview: latent compression, decoupled RoPE, 저장량 변화, 성능 근거와 제약을 설명하세요.
-- itme_overview: HBM-CXL hybrid memory, 데이터 배치·이동, 지연·대역폭, 인프라 제약을 설명하세요.
-- trl: 실험 환경, 프로토타입·코드·시스템 통합·실제 운영 근거를 구분해 TRL을 추정하세요.
-- market: 수요, 채택, 생태계, 투자 요인과 도입 장벽을 기술별로 구분하세요.
-- stakeholder: 이해관계자별 기대효과, 우려와 도입 요구사항을 비교하세요.
-- domain: HBM, 긴 컨텍스트, 동시 사용자, TTFT, 처리량, 정확도, 지연, 호환성, 비용을 비교하세요.
-- comparison_conflicts: 경쟁·보완 지점을 분리하고 직접 우열 판단이 위험한 이유를 설명하세요.
-- implications: 조건별 검증 질문과 PoC·벤치마크 후속 과제를 제시하세요.
-- limitations: 자료 범위, 검색 품질, 조건 불일치, 비공개 정보와 LLM 해석 한계를 정리하세요.
+- background: 데이터센터 LLM 서빙에서 KV cache가 문제가 되는 이유, 메모리·긴 컨텍스트·동시 사용자와의 관계, 본 보고서의 비교 범위와 평가 관점을 설명하세요.
+- selection: 소프트웨어 계층의 MLA와 하드웨어·메모리 계층의 ITME를 선택한 이유, 동일 병목에 대한 접근 차이, 비교 가능한 항목과 직접 비교가 어려운 항목을 설명하세요.
+- deepseek_overview: MLA의 latent compression, decoupled RoPE 구성, KV cache 저장량 변화, 모델 적용 범위, 성능 근거, 구현·서빙 요구사항과 제약을 설명하세요.
+- itme_overview: ITME의 HBM-CXL hybrid memory 구조, KV cache와 모델 데이터의 배치 또는 이동 방식, 지연·대역폭 고려사항, 적용 범위, 인프라 요구사항과 제약을 설명하세요.
+- trl: 각 기술에 대해 확인된 실험 환경, 프로토타입·코드·시스템 통합·실제 운영 근거를 나누어 TRL을 추정하세요. 추정할 수 없는 단계는 이유를 명시하세요.
+- market: 잠재 수요가 발생하는 비용·메모리 문제, 공개된 채택·생태계 자료, 구매·인프라 투자 요인, 도입 장벽을 기술별로 구분하세요.
+- stakeholder: 클라우드 사업자, LLM 개발자, 서비스 개발자, 하드웨어 업체, 운영자의 기대효과·우려·도입 요구사항을 각각 비교하세요.
+- domain: HBM 사용량, 긴 컨텍스트, 동시 사용자, TTFT, 처리량, 정확도 영향, 데이터 이동 지연, 호환성, 운영 복잡도·비용을 기준별로 비교하고 조건 차이를 기록하세요.
+- comparison_conflicts: 두 기술이 경쟁하는 지점과 함께 사용할 수 있는 지점을 분리하세요. 직접 우열 판단이 왜 위험한지 실험 단위와 시스템 계층 차이로 설명하세요.
+- implications: 기술 선택을 대신하지 말고, 어떤 서빙 조건에서 어떤 검증 질문을 우선해야 하는지와 PoC·벤치마크 후속 과제를 제시하세요.
+- limitations: 논문·웹 자료의 범위, 검색 품질, 실험 조건 불일치, 공개되지 않은 비용·운영·상용화 정보, LLM 생성 해석의 한계를 구체적으로 정리하세요.
 
 {TERM_GLOSSARY}
 
@@ -265,72 +177,71 @@ def _report_prompt(payload: dict) -> str:
 }}
 
 분석 결과:
-{_json(payload, limit=payload_limit)}
+{json.dumps(payload, ensure_ascii=False)[:payload_limit]}
 """
+    report_data = ask_json(
+        "당신은 근거 기반의 중립적인 기술 평가 보고서 작성자입니다.",
+        prompt,
+        num_predict=REPORT_NUM_PREDICT,
+    )
 
+    if report_data.get("parse_error"):
+        report_data = {
+            "summary": "보고서 구조화 생성에 실패했습니다.",
+            "background": "공개 정보 부족",
+            "selection": state["selection_reason"],
+            "deepseek_overview": "공개 정보 부족",
+            "itme_overview": "공개 정보 부족",
+            "trl": "공개 정보 부족",
+            "market": "공개 정보 부족",
+            "stakeholder": "공개 정보 부족",
+            "domain": "공개 정보 부족",
+            "comparison_conflicts": "공개 정보 부족",
+            "implications": "공개 정보 부족",
+            "limitations": "LLM의 JSON 출력 형식을 해석하지 못했습니다.",
+        }
 
-def _fallback_report_data(state: AgentState) -> dict[str, str]:
-    fallback = {name: "공개 정보 부족" for name in REPORT_SECTION_NAMES}
-    fallback.update({
-        "summary": "보고서 구조화 생성에 실패했습니다.",
-        "selection": state.get("selection_reason", "공개 정보 부족"),
-        "limitations": "LLM의 JSON 출력 형식을 해석하지 못했습니다.",
-    })
-    return fallback
-
-
-def _short_sections(report_data: dict) -> dict[str, str]:
-    return {
-        name: str(report_data.get(name, ""))
-        for name in REPORT_SECTION_NAMES
-        if len(str(report_data.get(name, ""))) < MIN_REPORT_SECTION_LENGTH
+    report_sections = [
+        "background", "selection", "deepseek_overview", "itme_overview",
+        "trl", "market", "stakeholder", "domain", "comparison_conflicts",
+        "implications", "limitations",
+    ]
+    short_sections = {
+        name: report_data.get(name, "")
+        for name in report_sections
+        if len(str(report_data.get(name, ""))) < 650
     }
-
-
-def _expand_short_sections(
-    report_data: dict,
-    payload: dict,
-) -> dict:
-    short_sections = _short_sections(report_data)
-    if not short_sections:
-        return report_data
-
-    expansion_prompt = f"""
-다음 보고서 절 초안을 입력된 분석 결과와 기존 evidence_id만 사용해 보완하세요.
-모든 문자열은 한국어로 작성하고 JSON 키는 그대로 유지하세요.
-각 절은 최소 700자, 2개 이상의 문단으로 작성하세요.
-새로운 수치·사례·기업 반응을 만들지 말고 기존 evidence_id를 유지하세요.
-근거가 부족하면 확인되지 않은 정보와 그것이 판단에 미치는 영향을 설명하세요.
+    if short_sections:
+        expansion_prompt = f"""
+    다음 보고서 절 초안은 기술평가 보고서로서 설명과 근거가 부족합니다.
+    입력된 분석 결과와 기존 evidence_id만 사용해 각 절을 연구자·데이터센터 의사결정자가 읽을 수 있는 본문으로 확장하세요.
+    모든 문자열은 한국어로 작성하고, JSON 키는 입력 키를 그대로 유지하세요.
+    각 절은 최소 700자, 2개 이상의 문단으로 작성하세요.
+    각 문단은 관찰 또는 주장, 근거, 해석, 판단의 한계 순서로 전개하세요.
+    새로운 수치·사례·기업 반응을 만들지 말고, 주장 뒤에는 기존 evidence_id를 유지하세요.
+    근거가 부족하면 단순히 문장을 반복하지 말고, 확인되지 않은 정보와 그로 인한 비교·판단의 한계를 설명하세요.
 
 확장할 절 초안:
-{_json(short_sections)}
+{json.dumps(short_sections, ensure_ascii=False)}
 
 참고할 분석 결과:
-{_json(payload, limit=30000)}
+{json.dumps(payload, ensure_ascii=False)[:30000]}
 """
-    expanded = ask_json(
-        "당신은 한국어 기술 평가 보고서의 부족한 절을 보완하는 편집자입니다.",
-        expansion_prompt,
-        num_predict=EXPANSION_NUM_PREDICT,
-    )
-    if expanded.get("parse_error"):
-        return report_data
+        expanded = ask_json(
+            "당신은 한국어 기술 평가 보고서의 부족한 절을 보완하는 편집자입니다.",
+            expansion_prompt,
+            num_predict=5000,
+        )
+        for name in short_sections:
+            value = expanded.get(name)
+            if isinstance(value, str) and len(value) > len(str(report_data.get(name, ""))):
+                report_data[name] = value
 
-    for name, original in short_sections.items():
-        candidate = expanded.get(name)
-        if isinstance(candidate, str) and len(candidate) > len(original):
-            report_data[name] = candidate
-    return report_data
+    def section(name: str) -> str:
+        value = report_data.get(name) or "공개 정보 부족"
+        return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False, indent=2)
 
-
-def _section(report_data: dict, name: str) -> str:
-    value = report_data.get(name) or "공개 정보 부족"
-    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False, indent=2)
-
-
-def _render_report_body(report_data: dict) -> str:
-    section = lambda name: _section(report_data, name)
-    return f"""# SUMMARY
+    body = f"""# SUMMARY
 
 {section('summary')}
 
@@ -381,36 +292,12 @@ def _render_report_body(report_data: dict) -> str:
 # 7. 분석의 한계
 
 {section('limitations')}"""
-
-
-def _reference_ids(body: str, state: AgentState) -> set[str]:
-    used_ids = set(REPORT_EVIDENCE_ID.findall(body))
-
-    # 시장·이해관계자 분석에 실제 연결된 웹 근거가 본문 생성 과정에서
-    # 누락되더라도 참고문헌에서 사라지지 않도록 포함합니다.
-    for state_key in ("market_analysis", "stakeholder_analysis"):
-        used_ids.update(collect_evidence_ids(_state_analysis(state, state_key)))
-    return used_ids
-
-
-def report_generation_agent(state: AgentState) -> dict:
-    print("[6/6] 보고서 생성 Agent 시작")
-    payload = _report_payload(state)
-    report_data = ask_json(
-        "당신은 근거 기반의 중립적인 기술 평가 보고서 작성자입니다.",
-        _report_prompt(payload),
-        num_predict=REPORT_NUM_PREDICT,
-    )
-
-    if report_data.get("parse_error"):
-        report_data = _fallback_report_data(state)
-    report_data = _expand_short_sections(report_data, payload)
-
-    body = _render_report_body(report_data)
-    references = format_references(
-        state.get("references", []),
-        used_ids=_reference_ids(body, state),
-    )
-    report = f"{body}\n\n# REFERENCE\n\n{references}"
+    used_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", body))
+    # 시장성·이해관계자 Agent가 사용한 웹 근거는 본문에서 ID가 누락되어도
+    # 최종 참고문헌에서 빠지지 않도록 분석 결과의 evidence_ids를 함께 반영합니다.
+    used_ids.update(collect_evidence_ids(state.get("market_analysis", {})))
+    used_ids.update(collect_evidence_ids(state.get("stakeholder_analysis", {})))
+    references = format_references(state.get("references", []), used_ids=used_ids)
+    report = body + "\n\n# REFERENCE\n\n" + references
     print("[6/6] 보고서 생성 완료")
     return {"report": report}
