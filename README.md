@@ -18,7 +18,7 @@
 - HW : ITME(Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories) —
   CXL-Hybrid 메모리로 저장 계층을 확장하는 인프라 기반 접근. 저장 위치·계층 확장을 통한
   해결 방식을 분석하기 위해 선정
-- 선정 방식 : Human-based (Agent 자동 선정이 아닌 팀 직접 선정)
+- 선정 방식 : Human-in-the-loop (Agent 자동 선정이 아닌 팀 직접 선정)
 
 ## Features
 
