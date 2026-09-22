@@ -8,7 +8,7 @@ import urllib.request
 import chromadb
 import pymupdf as fitz  # PyMuPDF: fitz는 구버전 별칭이라 경고가 발생해 새 alias로 import
 
-from config import CHROMA_DIR, COLLECTION_NAME, EMBEDDING_MODEL, PAPERS, TOP_K, ollama_client
+from config import CHROMA_DIR, COLLECTION_NAME, EMBEDDING_MODEL, PAPERS, TOP_K, openai_client
 
 _collection = None
 
@@ -94,8 +94,8 @@ def embed_texts(texts: list[str], batch_size: int = 16) -> list[list[float]]:
     embeddings = []
     for start in range(0, len(texts), batch_size):
         batch = texts[start:start + batch_size]
-        response = ollama_client.embed(model=EMBEDDING_MODEL, input=batch)
-        embeddings.extend(response["embeddings"])
+        response = openai_client.embeddings.create(model=EMBEDDING_MODEL, input=batch)
+        embeddings.extend(item.embedding for item in response.data)
     return embeddings
 
 
@@ -144,10 +144,10 @@ def retrieve(query: str, technology: str | None = None, top_k: int = TOP_K) -> l
     if collection.count() == 0:
         return []
 
-    query_embedding = ollama_client.embed(
+    query_embedding = openai_client.embeddings.create(
         model=EMBEDDING_MODEL,
         input=[query],
-    )["embeddings"][0]
+    ).data[0].embedding
 
     where = {"technology": technology} if technology else None
     result = collection.query(

@@ -1,6 +1,6 @@
 langgraph
 chromadb
-ollama
+openai
 pymupdf
 tavily-python
 ddgs
@@ -11,5 +11,4 @@ python-dotenv
 markdown
 json-repair
 typing_extensions
-# 선택: PDF 자동 생성
 weasyprint

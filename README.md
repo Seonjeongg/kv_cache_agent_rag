@@ -9,7 +9,7 @@
 - Objective : 데이터센터·클라우드 LLM 서빙에서 KV cache 병목을 해결하는 두 접근(SW/HW)을
   기술 성숙도(TRL), 시장성, 이해관계자, 도메인 적용성 네 관점에서 비교 평가
 - Method : LangGraph 기반 Multi-Agent(Fan-out/Fan-in) + Agentic RAG
-- Tools : LangGraph, ChromaDB, Ollama, PyMuPDF, Tavily/DDGS
+- Tools : LangGraph, ChromaDB, OpenAI API, PyMuPDF, Tavily/DDGS
 
 ## Selected Technologies
 
@@ -34,12 +34,12 @@
 ## Tech Stack
 
 - Framework : LangGraph
-- LLM/Generator : Ollama `qwen3:4b`
+- LLM/Generator : OpenAI API `gpt-4o-mini`
 - Judge : Python 규칙 기반 검증 함수 (`validation_judge`, LLM 미사용 — 필수 분석 결과 존재 여부,
   evidence_id 등록 여부, 근거 목록 존재 여부를 코드로 검사)
 - Retrieval : ChromaDB (Dense Retrieval, 코사인 거리) — Hit@K/MRR은 `evaluate.py`의 `EVAL_SET`에
   팀원이 원문을 읽고 직접 지정한 정답 청크 ID를 입력해야 측정됨 (현재 미입력 상태)
-- Embedding : Qwen3-Embedding-0.6B (오픈소스, Apache 2.0) — 선정 사유는 설계서 2.6절 참고
+- Embedding : OpenAI `text-embedding-3-small` — 선정 사유는 설계서 2.6절 참고
 
 ## Agents
 
@@ -72,7 +72,7 @@ validation --report--> report_generation -> __end__
 ├── config.py                # 환경변수, 경로, 모델·FAST_MODE 상수
 ├── state.py                 # Evidence, AgentState
 ├── rag.py                   # 논문 다운로드·파싱·청킹·임베딩·검색
-├── llm.py                   # Ollama 호출 Helper
+├── llm.py                   # OpenAI API 호출 Helper
 ├── search.py                # 외부 웹 검색
 ├── evidence.py               # Evidence 생성·요약·참고문헌 포맷
 ├── graph.py                  # LangGraph 구성
@@ -82,15 +82,18 @@ validation --report--> report_generation -> __end__
 └── tests/                     # 최소 self-check
 ```
 
+실행이 끝나면 `outputs/`에 Markdown, HTML, PDF, 상태 JSON 보고서가 자동으로 저장됩니다.
+
 프롬프트는 별도 `prompts/` 디렉토리 대신 각 `agents/*.py` 파일 내부에 함께 관리함
 (Agent 로직과 프롬프트를 한 파일에서 같이 보는 편이 유지보수에 더 낫다고 판단).
 
 ## Usage
 
 ```bash
+brew install pango
 pip install -r requirements.txt
-cp .env.example .env   # TAVILY_API_KEY 입력 (없으면 DuckDuckGo로 자동 대체)
-# Ollama가 로컬에서 실행 중이고 qwen3:4b / qwen3-embedding:0.6b가 설치되어 있어야 함
+cp .env.example .env   # OPENAI_API_KEY 입력
+# 선택: TAVILY_API_KEY를 입력하지 않으면 DuckDuckGo로 자동 대체
 python app.py
 ```
 

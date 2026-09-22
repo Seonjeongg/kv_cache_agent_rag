@@ -1,4 +1,4 @@
-"""Ollama LLM 호출 Helper: JSON/텍스트 응답, 추론 흔적 제거, JSON 복구."""
+"""OpenAI API 호출 Helper: JSON/텍스트 응답과 JSON 복구."""
 from __future__ import annotations
 
 import json
@@ -6,7 +6,7 @@ import re
 
 from json_repair import repair_json
 
-from config import JSON_NUM_PREDICT, LLM_MODEL, LLM_NUM_CTX, REPORT_NUM_PREDICT, ollama_client
+from config import JSON_NUM_PREDICT, LLM_MODEL, REPORT_NUM_PREDICT, openai_client
 
 
 def strip_model_reasoning(content: str) -> str:
@@ -18,17 +18,26 @@ def strip_model_reasoning(content: str) -> str:
 
 
 def ask_json(system_prompt: str, user_prompt: str, num_predict: int | None = None) -> dict:
-    response = ollama_client.chat(
+    response = openai_client.chat.completions.create(
         model=LLM_MODEL,
         messages=[
-            {"role": "system", "content": system_prompt + "\n/no_think\n결과 JSON만 출력하세요."},
-            {"role": "user", "content": user_prompt + "\n/no_think"},
+            {
+                "role": "system",
+                "content": (
+                    system_prompt
+                    + "\n모든 자연어 문자열 값은 반드시 한국어로 작성하세요. "
+                    + "JSON 키는 요청된 형식을 유지하고 결과 JSON만 출력하세요. "
+                    + "evidence_id는 입력 근거 목록에 실제로 존재하는 값을 그대로 복사하고, "
+                    + "새로운 ID나 '공개 정보 부족' 같은 문구를 evidence_ids에 넣지 마세요."
+                ),
+            },
+            {"role": "user", "content": user_prompt},
         ],
-        format="json",
-        think=False,
-        options={"temperature": 0.1, "num_ctx": LLM_NUM_CTX, "num_predict": num_predict or JSON_NUM_PREDICT},
+        response_format={"type": "json_object"},
+        temperature=0.1,
+        max_tokens=num_predict or JSON_NUM_PREDICT,
     )
-    content = strip_model_reasoning(response["message"]["content"])
+    content = strip_model_reasoning(response.choices[0].message.content or "")
     json_start = content.find("{")
     json_end = content.rfind("}")
     candidate = content[json_start:json_end + 1] if json_start >= 0 and json_end > json_start else content
@@ -50,13 +59,16 @@ def ask_json(system_prompt: str, user_prompt: str, num_predict: int | None = Non
 
 
 def ask_text(system_prompt: str, user_prompt: str, num_predict: int | None = None) -> str:
-    response = ollama_client.chat(
+    response = openai_client.chat.completions.create(
         model=LLM_MODEL,
         messages=[
-            {"role": "system", "content": system_prompt},
+            {
+                "role": "system",
+                "content": system_prompt + "\n모든 답변은 반드시 한국어로 작성하세요.",
+            },
             {"role": "user", "content": user_prompt},
         ],
-        think=False,
-        options={"temperature": 0.1, "num_ctx": LLM_NUM_CTX, "num_predict": num_predict or REPORT_NUM_PREDICT},
+        temperature=0.1,
+        max_tokens=num_predict or REPORT_NUM_PREDICT,
     )
-    return strip_model_reasoning(response["message"]["content"])
+    return strip_model_reasoning(response.choices[0].message.content or "")

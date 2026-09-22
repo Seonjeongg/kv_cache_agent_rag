@@ -4,13 +4,16 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import ollama
+from openai import OpenAI
 from dotenv import load_dotenv
 from tavily import TavilyClient
 
 load_dotenv(override=True)
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "").strip()
 tavily_client = TavilyClient(api_key=TAVILY_API_KEY) if TAVILY_API_KEY else None
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+if not OPENAI_API_KEY:
+    raise RuntimeError("OPENAI_API_KEY를 .env에 설정하세요.")
 
 PROJECT_DIR = Path.cwd()
 DATA_DIR = PROJECT_DIR / "data"
@@ -21,9 +24,8 @@ OUTPUT_DIR = PROJECT_DIR / "outputs"
 for directory in [RAW_DIR, CHROMA_DIR, OUTPUT_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
-LLM_MODEL = "qwen3:4b"
-EMBEDDING_MODEL = "qwen3-embedding:0.6b"
-OLLAMA_HOST = "http://localhost:11434"
+LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 COLLECTION_NAME = "kv_cache_papers"
 TOP_K = 5
 
@@ -36,9 +38,9 @@ WEB_MAX_RESULTS = 1 if FAST_MODE else 4
 FETCH_WEB_FULL_TEXT = not FAST_MODE
 LLM_NUM_CTX = 8192 if FAST_MODE else 16384
 JSON_NUM_PREDICT = 1400 if FAST_MODE else 2200
-REPORT_NUM_PREDICT = 2400 if FAST_MODE else 3600
+REPORT_NUM_PREDICT = 2400 if FAST_MODE else 7000
 
-ollama_client = ollama.Client(host=OLLAMA_HOST)
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 PAPERS = {
     "DeepSeek-V2 MLA": {

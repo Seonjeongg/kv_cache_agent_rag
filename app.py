@@ -54,13 +54,9 @@ def save_outputs(result: dict) -> dict:
 
     json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    try:
-        from weasyprint import HTML
-        HTML(string=html_document, base_url=str(PROJECT_DIR)).write_pdf(pdf_path)
-        print("PDF:", pdf_path)
-    except Exception as error:
-        print("PDF 자동 생성 생략:", error)
-        print("HTML을 브라우저에서 열어 PDF로 인쇄하세요:", html_path)
+    from weasyprint import HTML
+    HTML(string=html_document, base_url=str(PROJECT_DIR)).write_pdf(pdf_path)
+    print("PDF:", pdf_path)
 
     print("Markdown:", markdown_path)
     print("HTML:", html_path)

@@ -16,7 +16,8 @@ def make_evidence_id(prefix: str, value: str) -> str:
 def rag_evidence(query: str, technology: str, agent: str, top_k: int = TOP_K) -> list[dict]:
     evidence = []
     for item in retrieve(query, technology=technology, top_k=top_k):
-        evidence_id = make_evidence_id("rag", f"{agent}|{item['chunk_id']}|{query}")
+        # 동일 청크가 여러 질의에 검색되어도 하나의 논문 근거로 취급합니다.
+        evidence_id = make_evidence_id("rag", f"{technology}|{item['chunk_id']}")
         evidence.append(Evidence(
             evidence_id=evidence_id,
             agent=agent,
@@ -85,8 +86,9 @@ def _format_citation(item: dict) -> str:
     # 웹 자료: 사이트명은 URL 도메인에서 도출(작성자/기관명은 원자료에서 직접 확인 필요)
     url = item.get("url") or ""
     site_name = urlparse(url).netloc or "출처 미상"
-    date = item.get("published_at") or "날짜 미상"
-    return f"{site_name}({date}). {item['title']}, {url}"
+    published_date = item.get("published_at")
+    date_label = f"({published_date})" if published_date else ""
+    return f"{site_name}{date_label}. {item['title']}, {url}"
 
 
 def format_references(references: list[dict], used_ids: set[str] | None = None) -> str:
