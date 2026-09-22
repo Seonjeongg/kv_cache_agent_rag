@@ -61,6 +61,9 @@ def technical_research_agent(_state: AgentState) -> dict:
 TRL은 아래 9단계 기준에 따라 공개 근거 기반으로만 추정하며, 확정이 아님을 명시하세요.
 논문 발표만으로 특정 단계를 자동 부여하지 말고, 코드 공개·프로토타입·실험 환경·시스템 통합·실제 운용 근거를 함께 확인하세요.
 관련 기업이나 주변 기술의 성숙도를 해당 기술의 TRL로 대신하지 마세요. 근거가 부족하면 추정을 유보하거나 범위와 한계를 표시하세요.
+DeepSeek-V2 MLA처럼 공개 출시된 모델이 실제 서비스나 운영 환경에서 사용된다는 근거가 있으면, 논문 실험 단계인 TRL 6으로 고정하지 마세요. 공개 배포·운영 실적은 TRL 8 또는 TRL 9 판단의 근거가 될 수 있습니다.
+단, 모델 전체의 배포 사실과 MLA 구성요소 자체의 검증을 구분하고, 어느 근거가 모델 전체인지 MLA 자체인지 reason에 명시하세요.
+ITME처럼 FPGA 프로토타입 또는 관련 환경의 시스템 시연만 확인되는 기술은 실제 운영 근거가 없으면 TRL 6으로 추정하세요.
 
 {TRL_LEVELS}
 
@@ -69,7 +72,7 @@ TRL은 아래 9단계 기준에 따라 공개 근거 기반으로만 추정하�
 반환 JSON 구조:
 {{
     "technical": {{"principle": "", "scope": "", "performance_claims": [], "limitations": [], "evidence_ids": []}},
-    "trl": {{"estimated_trl": null, "reason": "", "evidence_ids": [], "disclaimer": "공개 정보 기반 추정"}}
+    "trl": {{"estimated_trl": null, "reason": "실험 환경, 프로토타입·시스템 통합·공개 배포·실제 운용 근거를 단계별로 설명", "evidence_ids": [], "disclaimer": "공개 정보 기반 추정"}}
 }}
 
 근거:

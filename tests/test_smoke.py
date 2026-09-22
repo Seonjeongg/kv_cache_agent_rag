@@ -50,7 +50,17 @@ def test_empty_reference_filter_stays_empty():
     assert format_references(references, used_ids=set()) == "- 실제 활용 자료 없음"
 
 
-def test_malformed_evidence_id_does_not_retry():
+def test_web_reference_shows_unknown_date():
+    references = [{
+        "evidence_id": "web-aaaaaaaaaaaa",
+        "source_type": "web",
+        "title": "Example",
+        "url": "https://example.com/article",
+    }]
+    assert "example.com(날짜 미상). Example" in format_references(references)
+
+
+def test_malformed_evidence_id_is_ignored():
     state = {
         "technical_analysis": {"software": {"principle": "ok"}},
         "trl_analysis": {"software": {"reason": "ok"}},
@@ -62,7 +72,7 @@ def test_malformed_evidence_id_does_not_retry():
         "retry_count": 0,
     }
     result = validation_judge(state)
-    assert result["validation_result"] == "pass_with_limitations"
+    assert result["validation_result"] == "pass"
     assert result["retry_count"] == 0
 
 

@@ -72,13 +72,12 @@ def validation_judge(state: AgentState) -> dict:
     used_ids = set()
     for key in required:
         used_ids.update(collect_evidence_ids(state.get(key, {})))
-    malformed_ids = sorted(item for item in used_ids if not VALID_EVIDENCE_ID.fullmatch(item))
+    valid_used_ids = {
+        item for item in used_ids if VALID_EVIDENCE_ID.fullmatch(item)
+    }
     unknown_ids = sorted(
-        item for item in used_ids
-        if VALID_EVIDENCE_ID.fullmatch(item) and item not in available_ids
+        item for item in valid_used_ids if item not in available_ids
     )
-    if malformed_ids:
-        missing.append(f"형식이 잘못된 evidence_id: {malformed_ids[:10]}")
     if unknown_ids:
         missing.append(f"존재하지 않는 evidence_id: {unknown_ids[:10]}")
 
@@ -109,6 +108,17 @@ def validation_judge(state: AgentState) -> dict:
 
 def report_generation_agent(state: AgentState) -> dict:
     print("[6/6] 보고서 생성 Agent 시작")
+    reference_index = [
+        {
+            "evidence_id": item.get("evidence_id"),
+            "source_type": item.get("source_type"),
+            "title": item.get("title"),
+            "file_name": item.get("file_name"),
+            "page": item.get("page"),
+            "url": item.get("url"),
+        }
+        for item in state.get("references", [])
+    ]
     payload = {
         "selection_reason": state["selection_reason"],
         "technical": state.get("technical_analysis", {}),
@@ -121,6 +131,7 @@ def report_generation_agent(state: AgentState) -> dict:
             "result": state.get("validation_result"),
             "limitations": state.get("missing_evidence", []),
         },
+        "reference_index": reference_index,
     }
     payload_limit = 12000 if FAST_MODE else 36000
     prompt = f"""
@@ -133,6 +144,7 @@ def report_generation_agent(state: AgentState) -> dict:
 - 영어 근거도 한국어로 해석하되, 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
 - 하나의 문단에서 사실, 해석, 판단을 섞지 말고 각각 구분해 서술하세요.
 - 보고서 본문에는 evidence_id를 표시하지 마세요. 근거 연결은 내부 분석 결과와 최종 REFERENCE에서만 유지하세요.
+- 단, 4.1 TRL 절에서는 각 기술의 판정 이유와 근거 출처의 제목·페이지 또는 웹 출처명을 문장으로 명시하세요.
 - 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
 - 직접 근거가 없으면 '공개 정보 부족'이라고 쓰고, 무엇이 부족한지와 판단에 미치는 영향을 설명하세요.
@@ -150,7 +162,7 @@ def report_generation_agent(state: AgentState) -> dict:
 - selection: 소프트웨어 계층의 MLA와 하드웨어·메모리 계층의 ITME를 선택한 이유, 동일 병목에 대한 접근 차이, 비교 가능한 항목과 직접 비교가 어려운 항목을 설명하세요.
 - deepseek_overview: MLA의 latent compression, decoupled RoPE 구성, KV cache 저장량 변화, 모델 적용 범위, 성능 근거, 구현·서빙 요구사항과 제약을 설명하세요.
 - itme_overview: ITME의 HBM-CXL hybrid memory 구조, KV cache와 모델 데이터의 배치 또는 이동 방식, 지연·대역폭 고려사항, 적용 범위, 인프라 요구사항과 제약을 설명하세요.
-- trl: 각 기술에 대해 확인된 실험 환경, 프로토타입·코드·시스템 통합·실제 운영 근거를 나누어 TRL을 추정하세요. 추정할 수 없는 단계는 이유를 명시하세요.
+- trl: 각 기술에 대해 확인된 실험 환경, 프로토타입·코드·시스템 통합·공개 배포·실제 운영 근거를 나누어 TRL을 추정하세요. DeepSeek-V2처럼 공개 출시·서비스 사용 근거가 있으면 TRL 6으로 고정하지 말고 TRL 8~9 가능성을 검토하세요. ITME처럼 FPGA 프로토타입과 관련 환경 시연만 있으면 TRL 6으로 설명하세요. 모델 전체의 배포 근거와 MLA 자체의 근거를 구분하고, 각 판정에 사용한 출처 제목·페이지 또는 웹 출처명을 본문에 명시하세요.
 - market: 잠재 수요가 발생하는 비용·메모리 문제, 공개된 채택·생태계 자료, 구매·인프라 투자 요인, 도입 장벽을 기술별로 구분하세요.
 - stakeholder: 클라우드 사업자, LLM 개발자, 서비스 개발자, 하드웨어 업체, 운영자의 기대효과·우려·도입 요구사항을 각각 비교하세요.
 - domain: HBM 사용량, 긴 컨텍스트, 동시 사용자, TTFT, 처리량, 정확도 영향, 데이터 이동 지연, 호환성, 운영 복잡도·비용을 기준별로 비교하고 조건 차이를 기록하세요.

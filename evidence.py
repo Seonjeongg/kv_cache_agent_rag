@@ -93,7 +93,7 @@ def collect_evidence_ids(value) -> set[str]:
 def _format_citation(item: dict) -> str:
     """노션 가이드의 REFERENCE 표기 형식에 맞춰 논문/웹 항목을 각각 포맷합니다.
     논문: 저자(YYYY). 논문제목. arXiv:ID. (p.페이지)
-    웹  : 사이트명(YYYY-MM-DD). 제목, URL (발행일이 없으면 날짜 생략)
+    웹  : 사이트명(YYYY-MM-DD). 제목, URL (발행일이 없으면 날짜 미상)
     """
     if item.get("source_type") == "paper":
         paper = PAPERS.get(item.get("technology"), {})
@@ -111,7 +111,7 @@ def _format_citation(item: dict) -> str:
     url = item.get("url") or ""
     site_name = urlparse(url).netloc or "출처 미상"
     published_date = item.get("published_at")
-    date_label = f"({published_date})" if published_date else ""
+    date_label = f"({published_date or '날짜 미상'})"
     return f"{site_name}{date_label}. {item['title']}, {url}"
 
 
