@@ -7,6 +7,12 @@ from llm import ask_json
 from search import web_search
 from state import AgentState
 
+STAKEHOLDER_QUERY_TEMPLATES = [
+    "{technology} developer implementation limitations",
+    "{technology} cloud provider deployment cost",
+    "{technology} hardware vendor ecosystem response",
+]
+
 
 def stakeholder_evaluation_agent(state: AgentState) -> dict:
     agent_name = "stakeholder_evaluation"
@@ -14,16 +20,13 @@ def stakeholder_evaluation_agent(state: AgentState) -> dict:
     try:
         evidence = []
         for technology in ["DeepSeek-V2 MLA", "ITME"]:
-            queries = [
-                f"{technology} developer implementation limitations",
-                f"{technology} cloud provider deployment cost",
-                f"{technology} hardware vendor ecosystem response",
-            ]
+            queries = [template.format(technology=technology) for template in STAKEHOLDER_QUERY_TEMPLATES]
             if FAST_MODE:
                 queries = queries[:1]
             for query in queries:
                 evidence.extend(web_search(query, agent_name, technology, max_results=WEB_MAX_RESULTS))
 
+        # 근거 없이 그럴듯한 이해관계자 반응을 지어내지 않도록, 없으면 고정 문구를 쓰게 강제함
         prompt = f"""
 다음 근거를 기술별·이해관계자별로 구분하세요. software는 클라우드 사업자, LLM 개발자, 서비스 개발자를,
 hardware는 클라우드 사업자, 하드웨어 업체, 도입 기업·운영자를 평가하세요.
