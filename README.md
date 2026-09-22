@@ -54,6 +54,8 @@
 
 ## Architecture
 
+![LangGraph Agentic RAG Architecture](docs/architecture.png)
+
 ```
 __start__ -> technology_selection -> technical_research
 technical_research -> market_evaluation, stakeholder_evaluation, domain_evaluation (Fan-out)
