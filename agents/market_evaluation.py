@@ -20,36 +20,55 @@ def market_evaluation_agent(state: AgentState) -> dict:
         # 기술별 검색 결과를 한 목록에 모아 LLM 분석과 최종 참고 자료에 함께 사용한다.
         evidence = []
         queries_by_technology = {
-            "DeepSeek-V2 MLA": [
-                "DeepSeek-V2 MLA deployment framework adoption official",
-                "MLA inference serving ecosystem official",
-                "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
-            ],
-            "ITME": [
-                "ITME CXL hybrid memory LLM inference adoption",
-                "CXL memory expansion LLM serving ecosystem official",
-                "ITME CXL memory cost infrastructure investment",
-            ],
+            "DeepSeek-V2 MLA": {
+                "official": [
+                    "DeepSeek-V2 MLA official deployment documentation",
+                    "site:github.com DeepSeek-V2 MLA serving",
+                ],
+                "independent": [
+                    "DeepSeek-V2 MLA independent benchmark deployment",
+                    "DeepSeek-V2 MLA inference evaluation research",
+                ],
+            },
+            "ITME": {
+                "official": [
+                    "SK hynix ITME CXL official",
+                    "CXL Consortium LLM memory expansion",
+                ],
+                "independent": [
+                    "ITME CXL memory independent evaluation",
+                    "CXL KV cache deployment independent analysis",
+                ],
+            },
         }
 
-        for technology, technology_queries in queries_by_technology.items():
-            # 빠른 실행 모드에서는 기술별 대표 검색어 하나만 사용한다.
-            if FAST_MODE:
-                technology_queries = technology_queries[:1]
-            for query in technology_queries:
-                search_results = web_search(
-                    query,
-                    agent_name,
-                    technology,
-                    max_results=WEB_MAX_RESULTS,
-                )
-                evidence.extend(search_results)
+        for technology, query_groups in queries_by_technology.items():
+            # FAST_MODE에서도 공식/독립 유형을 각각 한 번은 검색한다.
+            for technology_queries in query_groups.values():
+                if FAST_MODE:
+                    technology_queries = technology_queries[:1]
+                for query in technology_queries:
+                    search_results = web_search(
+                        query,
+                        agent_name,
+                        technology,
+                        max_results=WEB_MAX_RESULTS,
+                    )
+                    evidence.extend(search_results)
 
         # 분석 범위와 금지 사항을 명시해 과장되거나 근거 없는 시장 추정을 방지한다.
         prompt = f"""
 검색 근거를 바탕으로 두 기술의 시장 수요, 상용화·채택, 생태계 지원, 도입 장벽, 경제성(공개된 비용 근거와 추가 투자 요구)을 분석하세요.
 기업 홍보 주장과 독립적인 검증 결과를 구분하고 근거가 없는 내용은 공개 정보 부족이라고 표시하세요.
 전체 AI 시장 규모를 개별 기술의 시장 규모처럼 사용하지 마세요. 공개된 비용 자료가 없으면 임의의 절감률을 만들지 마세요.
+출처 등급을 구분하여 분석하세요.
+- 핵심 성능 수치와 기술 구조는 1등급 원 논문을 우선하세요.
+- 제품 지원과 공식 공개 사실은 2등급 공식 자료를 사용하세요.
+- 시장 채택과 운영 효과는 3등급 독립 출처로 교차 확인하세요.
+- 4~5등급 자료는 보조 설명으로만 사용하세요.
+- 기업 공식 자료만 있는 주장은 '기업 공식 발표 기준'이라고 표시하세요.
+- 독립 출처로 교차 확인되지 않은 시장 전망과 비용 절감 효과를 확정하지 마세요.
+- 서로 다른 도메인의 출처가 2개 미만이면 '교차 검증 부족'으로 표시하세요.
 모든 항목에 evidence_id 목록을 포함하세요. JSON으로 반환하세요.
 
 반환 JSON 구조:

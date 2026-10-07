@@ -23,6 +23,10 @@ class Evidence(BaseModel):
     chunk_id: str | None = None
     retrieval_score: float | None = None
     published_at: str | None = None
+    source_tier: int | None = None
+    source_category: str | None = None
+    publisher: str | None = None
+    is_independent: bool | None = None
 
 
 def merge_references(left: list[dict], right: list[dict]) -> list[dict]:
@@ -83,5 +87,7 @@ class AgentState(TypedDict, total=False):
 
     report: str
     references: Annotated[list[dict], merge_references]
+    # 최종 숫자 인용 -> 검증에 사용한 원본 Evidence ID 목록
+    citation_map: dict[str, list[str]]
     errors: Annotated[list[str], add]
     runtime_metadata: dict
