@@ -6,12 +6,26 @@ import re
 
 from agents.technical_research import TERM_GLOSSARY
 from config import FAST_MODE, MAX_RETRIES, REPORT_NUM_PREDICT
-from evidence import build_numbered_references, collect_evidence_ids
+from evidence import build_numbered_references, collect_evidence_ids, compact_evidence
 from llm import ask_json
 from state import AgentState
 
 VALID_EVIDENCE_ID = re.compile(r"^(?:rag|web)-[0-9a-f]{12}$")
-EVIDENCE_TOKEN = re.compile(r"(?:rag|web)-[0-9a-f]{12}")
+EVIDENCE_TOKEN = re.compile(r"\b(?:rag|web)-[0-9a-f]{6,}\b")
+SECTION_ANALYSIS = {
+    "deepseek_overview": "technical_analysis", "trl": "trl_analysis",
+    "itme_overview": "technical_analysis",
+    "market": "market_analysis", "stakeholder": "stakeholder_analysis",
+    "domain": "domain_analysis",
+}
+SECTION_EDITOR_GOALS = {
+    "deepseek_overview": "1문단은 저차원 KV 공동 압축, 2문단은 decoupled RoPE가 행렬 흡수 문제를 어떻게 다루는지 설명한다. 원문 저자의 설명과 별도 운영 검증 필요를 구분한다.",
+    "itme_overview": "1문단은 CXL-hybrid 메모리와 DMA 이동 원리, 2문단은 프로토타입 검증 범위와 호환성·대역폭의 확인 과제를 설명한다. '완벽하게', '보장', 무조건적 비용 절감은 쓰지 않는다.",
+    "trl": "기술 원리를 반복하지 말고 성숙도 판단을 쓴다. 1문단은 DeepSeek-V2의 논문 실험·공개 배포와 MLA 구성요소의 실제 운영 검증을 구분하고, 입력에 운영 근거가 없으면 TRL 8~9 확정은 유보한다. 2문단은 ITME FPGA 프로토타입과 실제 운영 증거 부족을 근거로 TRL 6을 잠정 추정한다. 두 판정 모두 출처 제목과 페이지, 한계를 명시한다.",
+    "market": "1문단은 DeepSeek-V2 공개 모델·구현 접근성과 실제 채택률 자료 부족, 2문단은 CXL 공급자의 공개 제품·생태계 자료와 ITME 자체 채택 증거 부족을 설명한다. 매개변수·벤치마크·훈련 비용 수치는 쓰지 않는다. DeepSeek-V2가 CXL을 필수로 요구한다거나 시장 수요가 증가한다고 단정하지 않는다.",
+    "stakeholder": "1문단은 LLM·서비스 개발자의 모델 접근성·언어·환각 검증 요구, 2문단은 클라우드 운영자·메모리 공급자의 호환성·투자·지연 검증 요구를 쓴다. 각 요구는 공개 자료를 바탕으로 한 분석자의 잠정 해석이며 실제 인터뷰 결과가 아님을 표시한다. DeepSeek 조직 전체 비용·다른 모델 비용 수치는 쓰지 않는다.",
+    "domain": "1문단은 MLA의 KV 메모리 절감 계층과 긴 입력·동시성·정확도 검증, 2문단은 ITME의 GPU-확장 메모리 이동·I/O 지연·호환성 검증을 쓴다. 모델 학습 비용은 서빙 비용 증거가 아니므로 생략한다. ITME 35.7%는 원문 실험의 CPU-offload 대비 수치이지 일반 운영 효과가 아님을 명시한다.",
+}
 
 
 def number_report_citations(text: str, evidence_to_number: dict[str, int]) -> str:
@@ -131,6 +145,77 @@ def has_usable_analysis(value) -> bool:
         elif item not in ({}, [], "", None):
             meaningful = True
     return meaningful
+
+
+def section_sources(state: AgentState, name: str) -> list[dict]:
+    """절별 원문 발췌를 선별한다. 관련 없는 출처를 인용 수만 채우려고 넣지 않는다."""
+    ids = collect_evidence_ids(state.get(SECTION_ANALYSIS[name], {}))
+    if name == "trl":
+        ids.update(collect_evidence_ids(state.get("technical_analysis", {})))
+    candidates = [item for item in state.get("references", [])
+                  if item.get("evidence_text") and item.get("evidence_id") in ids]
+    if name in {"deepseek_overview", "itme_overview"}:
+        # 분석에서 빠진 실제 검색 발췌도 읽는다. 목차는 원리의 근거로 쓰지 않는다.
+        candidates = [item for item in state.get("references", [])
+                      if item.get("evidence_text") and item.get("source_type") == "paper"
+                      and not item["evidence_text"].lstrip().startswith("Contents")]
+    if name == "trl":
+        candidates = [item for item in state.get("references", [])
+                      if item.get("source_type") == "paper" and item.get("evidence_text")
+                      and any(term in item["evidence_text"].lower()
+                              for term in ("prototype", "code", "released", "available"))
+                      and not item["evidence_text"].lstrip().startswith("Contents")]
+    if name in {"market", "stakeholder"}:
+        candidates = [item for item in candidates if item.get("source_type") != "paper"]
+    if name in {"deepseek_overview", "itme_overview"}:
+        technology = "DeepSeek-V2 MLA" if name == "deepseek_overview" else "ITME"
+        candidates = [item for item in candidates if item.get("technology") == technology]
+    if name == "deepseek_overview":
+        candidates.sort(key=lambda item: not any(
+            term in item["evidence_text"].lower() for term in ("low-rank", "decoupled", "latent attention")
+        ))
+    if name in {"deepseek_overview", "itme_overview"}:
+        return candidates[:4]
+    # 먼저 서로 다른 출처를 하나씩, 이후 같은 출처의 추가 문단을 선택한다.
+    grouped = {}
+    for item in candidates:
+        key = item.get("url") or item.get("file_name") or item.get("title")
+        grouped.setdefault(key, []).append(item)
+    selected = []
+    for offset in range(2):
+        selected.extend(items[offset] for items in grouped.values() if len(items) > offset)
+    return selected[:8]
+
+
+def grounded_paragraph_schema(ids: list[str]) -> dict:
+    # Groundedness: 읽어 준 원문 ID만 선택하게 하고, 의미의 정확성은 별도 검토한다.
+    return {
+        "type": "object", "additionalProperties": False, "required": ["paragraphs"],
+        "properties": {"paragraphs": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False,
+            "required": ["text", "evidence_ids"],
+            "properties": {
+                "text": {"type": "string"},
+                "evidence_ids": {"type": "array", "items": {"type": "string", "enum": ids}},
+            },
+        }}},
+    }
+
+
+def grounded_paragraph_text(result: dict, allowed_ids: set[str]) -> str:
+    # 인용 수를 맞추려고 임의 출처를 붙이지 않고 모델이 고른 ID를 다시 검사한다.
+    if not result.get("paragraphs"):
+        raise ValueError("원문 대조 문단이 비어 있습니다.")
+    paragraphs = []
+    for paragraph in result.get("paragraphs", []):
+        text = paragraph.get("text", "").strip()
+        ids = list(dict.fromkeys(paragraph.get("evidence_ids", [])))
+        if not text or not ids or set(ids) - allowed_ids:
+            raise ValueError("원문 대조 문단의 본문 또는 근거 ID가 유효하지 않습니다.")
+        # 본문/ID 필드가 중복돼도 출처 표시는 한 번만 조립한다.
+        text = re.sub(r"\[[^\]\n]*(?:rag|web)-[0-9a-f]+[^\]\n]*\]", "", text).strip()
+        paragraphs.append(f"{text} {' '.join(f'[{item}]' for item in ids)}")
+    return "\n\n".join(paragraphs)
 
 
 def synthesis_agent(state: AgentState) -> dict:
@@ -268,6 +353,7 @@ def report_generation_agent(state: AgentState) -> dict:
 - 보고서 본문에서는 `우승`, `최고`, `압도적`, `최적의 선택`, `최적의 조합`, `최적의 솔루션`, `추천`, `상용화가 가속화`, `비용 효율적인`처럼 우열·추천·시장 전망을 단정하는 표현을 사용하지 마세요. 이를 부정하는 설명에서도 해당 표현을 반복하지 말고 '직접 비교에는 한계가 있다', '추가 검증이 필요하다'처럼 쓰세요.
 - 단, 4.1 TRL 절에서는 각 기술의 판정 이유와 근거 출처의 제목·페이지 또는 웹 출처명을 문장으로 명시하세요.
 - 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
+- 각 조사 관점은 실제 참고한 서로 다른 두 출처의 근거를 유지하세요. 시장성과 이해관계자는 두 웹 도메인을 구분해 출처별 주장 범위와 부족한 검증을 설명하세요. 도메인 적용성에는 두 기술의 원 논문 근거를 각각 연결하세요. 관련 없는 출처를 분량이나 평가 통과를 위해 붙이지 마세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
 - DeepSeek-V2 모델 전체의 학습 비용·벤치마크 결과를 MLA 단독의 효과로 귀속하지 마세요. CXL 일반 자료를 ITME 제품의 채택·상용화 증거로 사용하지 마세요.
 - 장치 균형 손실·전문가 라우팅·로드 밸런싱은 DeepSeekMoE의 설명이며 MLA의 동작이나 제약으로 쓰지 마세요. MLA의 핵심은 저차원 KV 공동 압축과 분리된 RoPE입니다.
@@ -317,10 +403,16 @@ def report_generation_agent(state: AgentState) -> dict:
 분석 결과:
 {json.dumps(payload, ensure_ascii=False)}
 """
+    report_sections = [
+        "summary", "background", "selection", "deepseek_overview", "itme_overview",
+        "trl", "market", "stakeholder", "domain", "comparison_conflicts",
+        "implications", "limitations",
+    ]
     report_data = ask_json(
         "당신은 근거 기반의 중립적인 기술 평가 보고서 작성자입니다.",
         prompt,
         num_predict=REPORT_NUM_PREDICT,
+        string_fields=report_sections,
     )
 
     if report_data.get("parse_error"):
@@ -386,12 +478,43 @@ def report_generation_agent(state: AgentState) -> dict:
             "당신은 한국어 기술 평가 보고서 편집자입니다. 초안의 오류는 수정하고, MLA와 MoE를 구분하며 기술 성숙도와 운영 효과는 공개 근거 기반 잠정 해석으로 표시하세요.",
             expansion_prompt,
             num_predict=5000,
+            string_fields=list(batch_sections),
         )
         for name in batch_sections:
             value = expanded.get(name)
             # 짧아졌더라도 잘못된 인과·기술 귀속을 고친 편집 결과를 버리지 않는다.
             if isinstance(value, str) and value.strip():
                 report_data[name] = value
+
+    # 분석 요약만 읽으면 기술 귀속이나 인용이 유실될 수 있어 핵심 절은 원문 발췌와 대조한다.
+    for name in ("deepseek_overview", "itme_overview", "trl", "market", "stakeholder", "domain"):
+        sources = section_sources(state, name)
+        if not sources:
+            continue
+        source_ids = [item["evidence_id"] for item in sources]
+        edited = ask_json(
+            "당신은 원문 대조 편집자입니다. 입력 발췌가 뒷받침하는 사실만 쓰고 원문과 해석을 구분하세요.",
+            f"""보고서의 {name} 절을 아래 원문 발췌로 다시 작성하세요. 2개 문단을 paragraphs 배열로 반환하세요.
+이 절의 작업: {SECTION_EDITOR_GOALS[name]}
+각 문단은 text(한국어 본문)와 evidence_ids(실제로 뒷받침하는 원문 ID 목록)로 구분하세요. text에는 ID를 직접 쓰지 마세요.
+초안보다 원문이 우선입니다. 발췌에 없는 수치·운영 실적·기업 반응을 사실로 쓰지 마세요.
+각 출처가 말하는 범위와 한계를 구분하고 ID는 evidence_ids 필드에만 쓰세요.
+시장·관계자 절에서는 서로 다른 출처의 관찰을 구분하되 단순히 인용 개수를 채우려고 출처를 붙이지 마세요.
+도메인은 두 원 논문의 적용 계층·실험 조건을 각각 설명하세요.
+deepseek_overview는 DeepSeek-V2 MLA만, itme_overview는 ITME만 설명하세요. market/stakeholder/domain은 두 기술을 구분하세요.
+웹 문서가 여러 DeepSeek 모델을 다루더라도 V3의 FP8·DualPipe를 V2의 기술로 쓰지 마세요. 시장·관계자 절에는 벤치마크·매개변수·학습 비용 수치를 반복하지 말고 공급자 공개 자료와 외부 관찰의 차이, 도입 시 검증할 요구사항을 설명하세요.
+관계자 절의 두 문단은 LLM·클라우드 운영자와 메모리·인프라 공급자 관점으로 나누고, 실제 인터뷰가 아니라 공개 자료에서 도출한 잠정 요구임을 명시하세요.
+원문 B 단위는 billion이며 236B는 2,360억, 21B는 210억입니다. 수치의 단위와 비교 기준을 원문 그대로 유지하고 불확실하면 수치를 생략하세요.
+MLA는 low-rank KV 압축과 decoupled RoPE입니다. 원래 RoPE의 행렬 흡수 문제를 해결하려는 설계를 여전히 해결되지 않은 MLA의 결함으로 서술하지 마세요. MoE 부하 분산은 별도입니다.
+TRL은 실험/공개 배포/운영 검증을 구분한 잠정 추정이며, 원문에서 실제 운영이 확인되지 않으면 유보하세요.
+승자·최적 선택·추천을 정하지 마세요. 일반 CXL 생태계를 ITME 채택 증거로 쓰지 마세요.
+원문 발췌:
+{compact_evidence(sources, max_chars=12000)}
+반환 형식: {{"paragraphs": [{{"text": "본문", "evidence_ids": ["원문 ID"]}}]}}""",
+            num_predict=2200, json_schema=grounded_paragraph_schema(source_ids),
+        )
+        corrected = grounded_paragraph_text(edited, set(source_ids))
+        report_data[name] = corrected
 
     # 본문과 요약 모두 같은 인용 검사를 적용한다.
     available_ids = {

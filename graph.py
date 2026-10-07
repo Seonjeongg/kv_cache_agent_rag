@@ -282,6 +282,7 @@ def worker_node(state: AgentState) -> dict[str, Any]:
             "task_id": task_id,
             "agent": task_id,
             "status": status,
+            # 계획의 시도 번호를 그대로 기록해 trace에서 재작업 횟수를 확인한다.
             "attempt": int(task.get("attempt", 1)),
             "output_keys": list(TASK_OUTPUT_KEYS[task_id]),
         }]
@@ -438,6 +439,7 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
         (body_numbers <= reference_numbers and body_numbers <= set(citation_map))
         if body_numbers else used_ids <= displayed_ids
     )
+    # 노션 1안: 형식·출처 연결을 판정한다. 원문 의미의 정확성까지 보장하지 않는다.
     criteria = {
         "groundedness": bool(references) and bool(used_ids) and used_ids <= available_ids and numeric_connection_ok,
         "required_structure": all(heading in report for heading in REQUIRED_REPORT_HEADINGS),

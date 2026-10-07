@@ -49,7 +49,13 @@ def technical_research_agent(_state: AgentState) -> dict:
         for side, spec in TECHNOLOGY_SPECS.items(): # 기술 조사 수행
             technology = spec["name"]
             technology_evidence = []
-            for question in questions: # 기술 조사 질문에 대한 근거 수집
+            technology_questions = list(questions)
+            if side == "software":
+                # 모델 전체의 MoE 문단 대신 평가 대상인 MLA 원리를 먼저 검색한다.
+                technology_questions[0] = "Multi-head Latent Attention MLA low-rank joint compression key value cached latent vector"
+                if not FAST_MODE:
+                    technology_questions[1] = "MLA decoupled rotary position embedding RoPE inference KV cache memory per token"
+            for question in technology_questions: # 기술 조사 질문에 대한 근거 수집
                 technology_evidence.extend(rag_evidence(question, technology, agent_name, top_k=AGENT_RAG_TOP_K))
             evidence.extend(technology_evidence)
 

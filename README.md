@@ -4,7 +4,7 @@ KV cache 최적화 기술을 SW·HW 진영에서 하나씩 선정하고, 기술 
 
 ## Overview
 
-- Objective: DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 관점에서 평가
+- Objective: SW·HW에서 선정한 KV cache 최적화 기술 각각을 기술 성숙도·시장성·이해관계자·도메인의 복수 관점에서 평가
 - Pattern: Orchestrator-Workers. 서로 독립적인 관점 조사를 병렬 수행하고 Synthesizer가 취합하는 목적에 맞습니다.
 - 동적 처리: 요청의 관점 키워드로 구조화된 `plan`을 만들고 그 길이만큼 `Send`를 생성합니다. 품질 미달 시에는 실패 관점만 다시 계획합니다. 고정된 네 갈래 연결이 아닙니다.
 - Trade-off: 병렬 조사 시간을 줄일 수 있지만 동시 쓰기의 병합, 근거 중복과 출처 간 조건 차이를 관리해야 합니다. Worker 결과는 reducer로 합칩니다.
@@ -22,9 +22,12 @@ KV cache 최적화 기술을 SW·HW 진영에서 하나씩 선정하고, 기술 
 - 시장성·이해관계자는 Tavily 웹 검색을 사용하며 실패 시 DDGS/DuckDuckGo 경로로 대체합니다.
 - 근거는 내부 `rag-...`·`web-...` ID로 검사합니다. 최종 보고서에만 같은 논문·URL을 `[1]`, `[2]`로 묶고, `citation_map`에 원본 ID를 보존합니다.
 - 미등록 ID에 기대는 주장은 본문에서 제외합니다. ID가 존재한다고 주장 내용의 진실성까지 자동 입증되는 것은 아닙니다.
+- `[ID1, ID2]` 묶음 인용도 숫자로 변환하며, 최종 본문에 내부 ID가 남으면 PDF 저장을 중단합니다.
+- 보고서 생성·절 보완은 문자열 필드를 강제하는 Structured Outputs를 사용합니다. 중첩 분석 객체가 그대로 본문이 되는 문제를 막습니다. 기본 `gpt-4o-mini`를 유지하며 모델을 바꾸면 이 형식 지원 여부를 확인해야 합니다.
 - 확증 편향 방지: 관점별 복수 출처, 단일 출처 집중도, 원 논문·공식·독립 출처 구분, 기업 발표와 외부 검증의 구별을 검사하거나 프롬프트에 명시합니다.
 - 보고서 생성 뒤 별도 Quality Evaluator에서 Groundedness·중립성·편향 통제·관점 커버리지 및 출처 신뢰성을 판정하고 재작업합니다.
 - 모델 전체의 성능을 MLA 단독 효과로, CXL 일반 자료를 ITME의 실제 채택 증거로 일반화하지 않도록 프롬프트에서 제한합니다.
+- MLA의 압축·RoPE 문단을 먼저 검색하고, MoE 부하 분산과 혼동하지 않도록 조사·보고서·절 보완 단계에 같은 경계를 명시합니다.
 - A4 PDF 생성 시 10장 이하와 필수 목차·숫자 인용 연결을 검사합니다.
 
 ## Tech Stack
@@ -63,11 +66,11 @@ Ollama는 **문서·질의 임베딩**에 사용합니다. 보고서 생성은 O
 
 | 설계 항목 | 반영 내용 |
 | --- | --- |
-| 제어 vs 페이로드 | 제어: `plan`, `required_task_ids`, `retry_targets`, 횟수·상태. 페이로드: 관점 분석, `references`, `report`, `citation_map` |
+| 제어 vs 페이로드 분리 | 제어: `plan`, `required_task_ids`, `retry_targets`, 횟수·상태. 페이로드: 관점 분석, `references`, `report`, `citation_map` |
 | 관측성 위치 | 최소 결정·사유는 `decision_log`, 자세한 실행 경로는 LangSmith와 JSONL. 원문 프롬프트는 로컬 callback에 저장하지 않음 |
 | 지속성 비용 | PDF·벡터 DB는 파일/Chroma에 저장. State에는 근거 발췌가 포함되므로 검색 수·중복 제거·반복 상한으로 누적량 제한 |
 | 상관 | 동일 UUID `trace_id`를 State·root run_id·metadata·로컬 로그에 사용 |
-| 재개/복구 | 실패 결과·대상·시도 수를 보존하여 한 실행 안에서 재시도. 프로세스 종료 후 복구하는 checkpointer는 미구현 |
+| 재개/복구 | 한 실행 안에서 실패 대상·횟수로 재시도. 저장 State로 보고서 단계만 다시 실행 가능. 중단 프로세스의 자동 재개/checkpointer는 미구현 |
 | 동시 처리 | `merge_task_results`는 작업별 최신 결과, `merge_references`는 청크/근거 ID, 로그·오류는 누적 reducer 사용 |
 | 종료 보장 | 계획 step 상한 4, 조사 재시도 2회, 보고서 재생성 2회, recursion limit 40. 상한 초과는 warning 종료 |
 
@@ -125,6 +128,8 @@ python tests/test_smoke.py
 python app.py              # 제출용: 네 관점 전체 실행
 python evaluate.py --reuse-index
 python demo_fanout.py       # 별도 동적 fan-out 실험
+# 이미 저장된 State가 있을 때 보고서 단계만 재실행
+python app.py --report-from-state outputs/kv_cache_state_YYYYMMDD_HHMMSS.json
 ```
 
 `.env` 설정: `OPENAI_API_KEY`, 선택 `TAVILY_API_KEY`, `FAST_MODE=false`, `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT=skala`. 키와 원문 실행 프롬프트는 공개 저장소에 넣지 않습니다.
@@ -139,7 +144,8 @@ python demo_fanout.py       # 별도 동적 fan-out 실험
 - 긴 실행은 `tracing-1.png`, `tracing-2.png` 순서로 구분합니다.
 - `demo_fanout.py`는 같은 그래프에서 두 Worker를 실행한 뒤 합성 전에 의도적으로 멈춥니다. 완료 보고서 실행과 구분합니다.
 - 아키텍처 그림·로컬 로그 이미지는 실제 LangSmith 캡처를 대체하지 않습니다.
-- 최신 통합 실행 결과와 가이드 검증은 `docs/submission_check_20261007.md`에 기록합니다.
+- 보고서만 재생성하면 새 run을 만들고 `source_trace_id`로 조사 실행을 연결합니다. 이를 전체 fan-out 실행 증거로 대신 제출하지 않습니다. 추가 조사가 필요한 판정은 warning으로 종료합니다.
+- 실제 캡처는 [submission_traces](docs/submission_traces/), 실행 ID와 가이드 검증은 [제출 점검](docs/submission_check_20261007.md)에 기록합니다.
 
 ## 평가 기준 대응
 
@@ -168,6 +174,10 @@ python demo_fanout.py       # 별도 동적 fan-out 실험
 | 현용찬 | 도메인·검색 평가, Graph·State·실행 진입점, 통합 검증·LangSmith Trace |
 
 ## 제출
+
+이번 작업의 [최종 교정 PDF](outputs/kv_cache_report_20261007_172626.pdf), [본문](outputs/kv_cache_report_20261007_172626.md), [State](outputs/kv_cache_state_20261007_172626.json)를 사용합니다. PDF 4장, 회귀 검사 53개 통과입니다.
+
+자동 생성본은 `20261007_172434` 파일로 보존했습니다. 최종본은 요약·본문의 TRL 일치와 관계자 해석 범위를 수동 교정한 뒤 동일 품질 규칙과 PDF 페이지 검사를 다시 통과한 결과입니다. LangSmith 캡처는 원래 자동 실행을 보여 주며 수동 교정을 자동 생성으로 표시하지 않습니다. 이전 타임스탬프의 보고서는 실험 기록입니다.
 
 GitHub 브랜치 링크 + 실제 LangSmith PNG + 최대 10장 평가 보고서 PDF를 함께 제출합니다.
 압축 파일명: `Agent_판교캠퍼스_7반_곽민규+김선정+이지원+임유리+현용찬.zip`.

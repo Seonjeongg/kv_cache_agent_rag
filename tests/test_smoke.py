@@ -522,6 +522,114 @@ def test_report_rejects_grouped_internal_citations():
     raise AssertionError("묶음 내부 ID가 최종 보고서에서 통과했습니다.")
 
 
+def test_corrected_section_is_kept_even_when_shorter():
+    from unittest.mock import patch
+    initial = {"deepseek_overview": "잘못된 기술 귀속 " * 30}
+    def generate(_system, prompt, **_kwargs):
+        if "확장할 절 초안:" not in prompt:
+            return initial
+        return {"deepseek_overview": "MLA는 저차원 KV 공동 압축과 분리된 RoPE를 사용한다."}
+    with patch("agents.synthesis.ask_json", side_effect=generate):
+        result = synthesis_module.report_generation_agent({
+            "selection_reason": "서로 다른 계층 비교", "references": [],
+        })
+    assert "잘못된 기술 귀속" not in result["report"]
+    assert "저차원 KV 공동 압축" in result["report"]
+
+
+def test_technical_search_starts_with_mla_not_generic_moe():
+    from unittest.mock import patch
+    from agents.technical_research import technical_research_agent
+    queries = []
+    def retrieve(query, technology, _agent, **_kwargs):
+        queries.append((technology, query))
+        return []
+    with patch("agents.technical_research.rag_evidence", side_effect=retrieve), patch(
+        "agents.technical_research.ask_json", return_value={"technical": {}, "trl": {}}
+    ):
+        technical_research_agent({})
+    mla_queries = [query for tech, query in queries if tech == "DeepSeek-V2 MLA"]
+    assert "low-rank joint compression" in mla_queries[0]
+
+
+def test_report_schema_requires_narrative_strings():
+    from llm import report_string_format
+    schema = report_string_format(["market", "domain"])["json_schema"]
+    assert schema["strict"] is True
+    assert schema["schema"]["additionalProperties"] is False
+    assert schema["schema"]["required"] == ["market", "domain"]
+    assert all(item == {"type": "string"} for item in schema["schema"]["properties"].values())
+
+
+def test_short_hallucinated_evidence_id_is_not_kept():
+    result = exclude_unregistered_evidence("확인하지 못한 수치다. [rag-b1197c5e1d]", set())
+    assert "rag-b1197c5e1d" not in result
+    assert "확인하지 못한 수치" not in result
+
+
+def test_section_sources_keep_relevant_distinct_sources():
+    from agents.synthesis import section_sources
+    state = {
+        "market_analysis": {"evidence_ids": ["web-aaaaaaaaaaaa", "web-bbbbbbbbbbbb", "web-cccccccccccc"]},
+        "references": [
+            {"evidence_id": "web-aaaaaaaaaaaa", "url": "https://a.org/one", "evidence_text": "a", "source_type": "web"},
+            {"evidence_id": "web-bbbbbbbbbbbb", "url": "https://a.org/one", "evidence_text": "a second", "source_type": "web"},
+            {"evidence_id": "web-cccccccccccc", "url": "https://b.org/two", "evidence_text": "b", "source_type": "web"},
+            {"evidence_id": "web-dddddddddddd", "url": "https://unrelated.org", "evidence_text": "unrelated", "source_type": "web"},
+        ],
+    }
+    sources = section_sources(state, "market")
+    assert [item["url"] for item in sources[:2]] == ["https://a.org/one", "https://b.org/two"]
+    assert all(item["evidence_text"] != "unrelated" for item in sources)
+
+
+def test_grounded_paragraph_schema_limits_source_ids():
+    from agents.synthesis import grounded_paragraph_schema
+    schema = grounded_paragraph_schema(["rag-aaaaaaaaaaaa", "web-bbbbbbbbbbbb"])
+    item = schema["properties"]["paragraphs"]["items"]
+    assert item["required"] == ["text", "evidence_ids"]
+    assert item["additionalProperties"] is False
+    assert item["properties"]["evidence_ids"]["items"]["enum"] == ["rag-aaaaaaaaaaaa", "web-bbbbbbbbbbbb"]
+
+
+def test_grounded_paragraph_text_rejects_missing_or_unknown_sources():
+    from agents.synthesis import grounded_paragraph_text
+    allowed = {"rag-aaaaaaaaaaaa"}
+    try:
+        grounded_paragraph_text({"paragraphs": []}, allowed)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("비어 있는 편집 결과가 통과했습니다.")
+    assert grounded_paragraph_text({"paragraphs": [{"text": "원문 요약", "evidence_ids": ["rag-aaaaaaaaaaaa"]}]}, allowed) == "원문 요약 [rag-aaaaaaaaaaaa]"
+    for ids in ([], ["web-bbbbbbbbbbbb"]):
+        try:
+            grounded_paragraph_text({"paragraphs": [{"text": "원문 요약", "evidence_ids": ids}]}, allowed)
+        except ValueError:
+            continue
+        raise AssertionError("근거가 없거나 미등록인 문단이 통과했습니다.")
+
+
+def test_grounded_paragraph_inline_source_is_not_duplicated():
+    from agents.synthesis import grounded_paragraph_text
+    result = grounded_paragraph_text({"paragraphs": [{
+        "text": "원문 요약 [rag-aaaaaaaaaaaa]", "evidence_ids": ["rag-aaaaaaaaaaaa"],
+    }]}, {"rag-aaaaaaaaaaaa"})
+    assert result.count("[rag-aaaaaaaaaaaa]") == 1
+
+
+def test_technical_editor_uses_original_excerpt_not_contents_page():
+    from agents.synthesis import section_sources
+    sources = section_sources({
+        "technical_analysis": {"evidence_ids": ["rag-aaaaaaaaaaaa"]},
+        "references": [
+            {"evidence_id": "rag-aaaaaaaaaaaa", "source_type": "paper", "technology": "DeepSeek-V2 MLA", "evidence_text": "Contents\nLow-Rank Joint Compression"},
+            {"evidence_id": "rag-bbbbbbbbbbbb", "source_type": "paper", "technology": "DeepSeek-V2 MLA", "evidence_text": "The low-rank joint compression stores the latent vector."},
+        ],
+    }, "deepseek_overview")
+    assert [item["evidence_id"] for item in sources] == ["rag-bbbbbbbbbbbb"]
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in list(globals().items()) if name.startswith("test_")]
     for test in tests:

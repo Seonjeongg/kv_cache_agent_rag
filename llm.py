@@ -17,7 +17,26 @@ def strip_model_reasoning(content: str) -> str:
     return content.strip()
 
 
-def ask_json(system_prompt: str, user_prompt: str, num_predict: int | None = None) -> dict:
+def report_string_format(fields: list[str]) -> dict:
+    """보고서 본문은 중첩 분석 객체가 아닌 절별 문자열로 제한한다."""
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "report_sections", "strict": True,
+            "schema": {
+                "type": "object", "additionalProperties": False,
+                "properties": {field: {"type": "string"} for field in fields},
+                "required": fields,
+            },
+        },
+    }
+
+
+def ask_json(
+    system_prompt: str, user_prompt: str, num_predict: int | None = None,
+    string_fields: list[str] | None = None,
+    json_schema: dict | None = None,
+) -> dict:
     if openai_client is None:
         raise RuntimeError("OPENAI_API_KEY를 설정한 뒤 LLM 노드를 실행하세요.")
     response = openai_client.chat.completions.create(
@@ -35,7 +54,13 @@ def ask_json(system_prompt: str, user_prompt: str, num_predict: int | None = Non
             },
             {"role": "user", "content": user_prompt},
         ],
-        response_format={"type": "json_object"},
+        # 보고서 형식만 엄격히 제한한다. 기존 조사 Agent의 JSON 계약은 유지한다.
+        response_format=(
+            {"type": "json_schema", "json_schema": {
+                "name": "grounded_paragraphs", "strict": True, "schema": json_schema,
+            }} if json_schema else
+            report_string_format(string_fields) if string_fields else {"type": "json_object"}
+        ),
         temperature=0.1,
         max_tokens=num_predict or JSON_NUM_PREDICT,
     )

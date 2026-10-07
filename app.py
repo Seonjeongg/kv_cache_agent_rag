@@ -67,7 +67,7 @@ def validate_report(
         raise ValueError("REFERENCE 항목이 비어 있습니다.")
     body = report[:reference_index]
     reference_section = report[reference_index:]
-    if re.search(r"(?:rag|web)-[0-9a-f]{12}", body):
+    if re.search(r"\b(?:rag|web)-[0-9a-f]{6,}\b", body):
         raise ValueError("최종 보고서 본문에 내부 Evidence ID가 남아 있습니다.")
     body_numbers = set(re.findall(r"\[(\d+)\]", body))
     reference_numbers = set(re.findall(r"^- \[(\d+)\]", reference_section, flags=re.MULTILINE))
@@ -192,6 +192,7 @@ def regenerate_report(state_path: str) -> dict:
     """저장된 조사 결과로 보고서 단계만 재실행한다. 새 조사 실행과 구분한다."""
     state = json.loads(Path(state_path).read_text(encoding="utf-8"))
     source_trace_id = state.get("trace_id")
+    # 재현성: 원래 조사 trace를 보존하고 보고서 재생성은 별도 run으로 기록한다.
     state.update(
         trace_id=str(uuid.uuid4()), report="", citation_map={},
         report_retry_count=0, status="running",

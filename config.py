@@ -40,7 +40,8 @@ WEB_MAX_RESULTS = 1 if FAST_MODE else 4
 FETCH_WEB_FULL_TEXT = not FAST_MODE
 LLM_NUM_CTX = 8192 if FAST_MODE else 16384
 JSON_NUM_PREDICT = 1400 if FAST_MODE else 2200
-REPORT_NUM_PREDICT = 2400 if FAST_MODE else 7000
+# 전체 보고서 12개 필드가 출력 한도에서 잘리지 않도록 제출 모드 여유를 둔다.
+REPORT_NUM_PREDICT = 2400 if FAST_MODE else 12000
 
 openai_client = wrap_openai(OpenAI(api_key=OPENAI_API_KEY, timeout=120, max_retries=2)) if OPENAI_API_KEY else None
 # URL 기반 출처 분류 기준. 목록에 없는 도메인은 품질을 추정하지 않고
