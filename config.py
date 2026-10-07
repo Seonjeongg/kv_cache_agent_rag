@@ -41,6 +41,23 @@ LLM_NUM_CTX = 8192 if FAST_MODE else 16384
 JSON_NUM_PREDICT = 1400 if FAST_MODE else 2200
 REPORT_NUM_PREDICT = 2400 if FAST_MODE else 7000
 
+# URL 기반 출처 분류 기준. 목록에 없는 도메인은 품질을 추정하지 않고
+# unclassified로 보존한다.
+OFFICIAL_DOMAINS = {
+    "github.com",
+    "huggingface.co",
+    "deepseek.com",
+    "skhynix.com",
+    "cxlconsortium.org",
+}
+PRIMARY_RESEARCH_DOMAINS = {
+    "arxiv.org",
+    "acm.org",
+    "ieee.org",
+    "usenix.org",
+}
+INDEPENDENT_DOMAINS: set[str] = set()
+
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 ollama_client = ollama.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 

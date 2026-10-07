@@ -6,7 +6,7 @@ import re
 
 from agents.technical_research import TERM_GLOSSARY
 from config import FAST_MODE, MAX_RETRIES, REPORT_NUM_PREDICT
-from evidence import collect_evidence_ids, format_references
+from evidence import build_numbered_references, collect_evidence_ids
 from llm import ask_json
 from state import AgentState
 
@@ -193,6 +193,10 @@ def report_generation_agent(state: AgentState) -> dict:
             "file_name": item.get("file_name"),
             "page": item.get("page"),
             "url": item.get("url"),
+            "source_tier": item.get("source_tier"),
+            "source_category": item.get("source_category"),
+            "publisher": item.get("publisher"),
+            "is_independent": item.get("is_independent"),
         }
         for item in state.get("references", [])
     ]
@@ -341,7 +345,7 @@ def report_generation_agent(state: AgentState) -> dict:
         for item in state.get("references", [])
         if VALID_EVIDENCE_ID.fullmatch(str(item.get("evidence_id", "")))
     }
-    for name in report_sections:
+    for name in ["summary", *report_sections]:
         report_data[name] = exclude_unregistered_evidence(
             str(report_data.get(name, "")), available_ids
         )
@@ -407,10 +411,16 @@ def report_generation_agent(state: AgentState) -> dict:
 {section('limitations')}"""
     # 최종 보고서 본문에 실제 표시된 ID만 REFERENCE로 연결합니다.
     used_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", body))
-    # evidence는 청크 단위로 누적되지만, 최종 REFERENCE는 출처 단위로만 표시합니다.
-    references = format_references(state.get("references", []), used_ids=used_ids)
+    # 검증까지는 내부 ID를 유지하고 최종 출력 직전에만 출처 단위 숫자로 바꿉니다.
+    evidence_to_number, references, citation_map = build_numbered_references(
+        state.get("references", []), used_ids
+    )
+    for evidence_id, number in evidence_to_number.items():
+        body = body.replace(f"[{evidence_id}]", f"[{number}]")
+    # 같은 출처의 여러 청크를 연속으로 인용한 경우 중복 숫자를 정리합니다.
+    body = re.sub(r"\[(\d+)\](?:\s+\[\1\])+", r"[\1]", body)
     report = body + "\n\n# REFERENCE\n\n" + references
     reference_count = sum(1 for line in references.splitlines() if line.startswith("- ["))
     print(f"[REFERENCE] 고유 출처 {reference_count}개 (누적 evidence {len(state.get('references', []))}건)")
     print("[6/6] 보고서 생성 완료")
-    return {"report": report}
+    return {"report": report, "citation_map": citation_map}

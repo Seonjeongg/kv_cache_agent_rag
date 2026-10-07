@@ -153,29 +153,29 @@ python app.py
 
 ## 과제 필수 항목 대응
 
-| 항목 | 구현 위치 | 확인 내용 |
-| --- | --- | --- |
-| 구조화 계획 | `graph.py:orchestrator_plan_node` | 실행 State에 `plan=[task_id, agent, objective, status, attempt]` 저장 |
-| Dynamic Fan-out | `graph.py:_task_plan`, `fan_out_or_warn` | `input_request`의 관점 키워드 또는 `retry_targets`에 따라 1·2·3·4개 계획을 만들고 그 길이만큼 `Send("worker", ...)` 생성 |
-| Fan-in | `state.py:merge_task_results`, `synthesis` | worker 결과를 task_id 기준으로 병합 후 synthesizer 실행 |
-| worker fallback | `graph.py:worker_node` | 예외·빈 결과를 failed로 기록하고 계속 진행·한계 표시 |
-| 품질 Loop | `validation_judge`, `quality_evaluator_node`, `route_after_quality` | 보고서 생성 전후 Groundedness·중립성·편향 통제·관점 커버리지를 평가하고, 본문에 실제 표시된 evidence만 추적하며, 오류가 발생한 관점만 Worker 재계획, 인용 누락은 보고서만 재생성 |
-| 종료 보장 | `max_steps`, `MAX_RETRIES`, `warning_node` | 반복 상한과 제한사항 종료 경로 명시 |
-| 관측성 | `decision_log`, `trace_id`, State JSON | 계획·fallback·품질 판정 사유와 상관 키 저장 |
+| 항목            | 구현 위치                                                                 | 확인 내용                                                                                                                                                                           |
+| --------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 구조화 계획     | `graph.py:orchestrator_plan_node`                                       | 실행 State에`plan=[task_id, agent, objective, status, attempt]` 저장                                                                                                              |
+| Dynamic Fan-out | `graph.py:_task_plan`, `fan_out_or_warn`                              | `input_request`의 관점 키워드 또는 `retry_targets`에 따라 1·2·3·4개 계획을 만들고 그 길이만큼 `Send("worker", ...)` 생성                                                   |
+| Fan-in          | `state.py:merge_task_results`, `synthesis`                            | worker 결과를 task_id 기준으로 병합 후 synthesizer 실행                                                                                                                             |
+| worker fallback | `graph.py:worker_node`                                                  | 예외·빈 결과를 failed로 기록하고 계속 진행·한계 표시                                                                                                                              |
+| 품질 Loop       | `validation_judge`, `quality_evaluator_node`, `route_after_quality` | 보고서 생성 전후 Groundedness·중립성·편향 통제·관점 커버리지를 평가하고, 본문에 실제 표시된 evidence만 추적하며, 오류가 발생한 관점만 Worker 재계획, 인용 누락은 보고서만 재생성 |
+| 종료 보장       | `max_steps`, `MAX_RETRIES`, `warning_node`                          | 반복 상한과 제한사항 종료 경로 명시                                                                                                                                                 |
+| 관측성          | `decision_log`, `trace_id`, State JSON                                | 계획·fallback·품질 판정 사유와 상관 키 저장                                                                                                                                       |
 
 품질 평가는 보고서 생성 이후에 실행한다. 판정 결과를 라우팅 함수에 직접 섞지 않고, 구조화 결과를 결정론적 gate로 연결해 재현 가능한 후속 경로를 보장한다.
 
 ## C. State Schema 설계
 
-| 판정 항목 | README 기준 한 줄 정리 | 코드 필드·구현 |
-| --- | --- | --- |
-| 제어 vs 페이로드 분리 | 라우팅·계획·복구 메타데이터와 조사 결과·근거·보고서를 분리한다. | 제어: `plan`, `required_task_ids`, `current_task`, `plan_reason`, `status`, `step_count`, `retry_targets`; 페이로드: 분석 결과, `references`, `report` |
-| 관측성 위치 | 결정 자체와 결정 사유는 실행 State의 로그에 남기고, 상세 모델 trace는 외부 tracing으로 연결한다. | `decision_log=[ts,node,type,message,...]`, `trace_id`, LangSmith 환경변수 |
-| 지속성 비용 | 원문·벡터 DB를 State에 넣지 않고 식별자·요약·참조만 저장한다. | `references`의 `evidence_id`, `chunk_id`, `page`, URL; 원문은 로컬 Chroma |
-| 상관 | State와 실행 로그를 하나의 실행 키로 연결한다. | `trace_id`를 State JSON·local trace·LangSmith run의 연결 키로 사용 |
-| 재개·복구 | 중단 지점, 오류, 재시도 대상과 횟수를 저장해 같은 계획을 재구성할 수 있어야 한다. | `status`, `step_count`, `errors`, `retry_targets`, `retry_count`, `task_results` |
-| 동시 처리 | 동적 fan-out Worker가 같은 누적 필드에 쓰므로 reducer로 병합한다. | `merge_task_results`는 `task_id` 기준 병합, `merge_references`는 논문 청크·웹 URL 중복 제거 |
-| 종료 보장 | 정상 통과, 제한사항 종료, 반복 상한 종료를 분리해 무한 Loop를 막는다. | `MAX_RETRIES`, `max_steps`, `quality_evaluator`, `warning_node`, `END` |
+| 판정 항목             | README 기준 한 줄 정리                                                                           | 코드 필드·구현                                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 제어 vs 페이로드 분리 | 라우팅·계획·복구 메타데이터와 조사 결과·근거·보고서를 분리한다.                              | 제어:`plan`, `required_task_ids`, `current_task`, `plan_reason`, `status`, `step_count`, `retry_targets`; 페이로드: 분석 결과, `references`, `report` |
+| 관측성 위치           | 결정 자체와 결정 사유는 실행 State의 로그에 남기고, 상세 모델 trace는 외부 tracing으로 연결한다. | `decision_log=[ts,node,type,message,...]`, `trace_id`, LangSmith 환경변수                                                                                           |
+| 지속성 비용           | 원문·벡터 DB를 State에 넣지 않고 식별자·요약·참조만 저장한다.                                 | `references`의 `evidence_id`, `chunk_id`, `page`, URL; 원문은 로컬 Chroma                                                                                       |
+| 상관                  | State와 실행 로그를 하나의 실행 키로 연결한다.                                                   | `trace_id`를 State JSON·local trace·LangSmith run의 연결 키로 사용                                                                                                  |
+| 재개·복구            | 중단 지점, 오류, 재시도 대상과 횟수를 저장해 같은 계획을 재구성할 수 있어야 한다.                | `status`, `step_count`, `errors`, `retry_targets`, `retry_count`, `task_results`                                                                            |
+| 동시 처리             | 동적 fan-out Worker가 같은 누적 필드에 쓰므로 reducer로 병합한다.                                | `merge_task_results`는 `task_id` 기준 병합, `merge_references`는 논문 청크·웹 URL 중복 제거                                                                      |
+| 종료 보장             | 정상 통과, 제한사항 종료, 반복 상한 종료를 분리해 무한 Loop를 막는다.                            | `MAX_RETRIES`, `max_steps`, `quality_evaluator`, `warning_node`, `END`                                                                                        |
 
 ### State 작성 원칙
 
@@ -196,13 +196,13 @@ python app.py
 아래 역할은 포크 `hyc`의 현용찬 커밋과 원본 `main`에 반영된 팀원별 기능 커밋을
 변경 파일과 커밋 내용을 기준으로 정리했습니다.
 
-| 팀원 | 주요 역할 | 주요 변경 영역 | 근거 커밋 |
-| --- | --- | --- | --- |
-| P209 곽민규 | 이해관계자 평가 Agent 담당 | `agents/stakeholder_evaluation.py`의 질의 템플릿 분리 및 보완 | `499e608` |
-| P213 김선정 | Agentic RAG 통합 및 종합·검증·보고서 담당 | OpenAI API 연동, 임베딩·재현성 개선, `agents/synthesis.py`의 종합 평가·Judge·보고서 생성 | `665a43a`, `ac9403a`, `777a720`, `8a26658` |
-| P229 이지원 | 시장성 평가 Agent 담당 | `agents/market_evaluation.py` 리팩토링 및 시장성 조사 흐름 보완 | `fefa828` |
-| P231 임유리 | 기술 선정 및 기술 조사 Agent 담당 | `agents/technology_selection.py`, `agents/technical_research.py`의 기술·TRL 분석 명세 보완 | `52a9e01` |
-| P240 현용찬 | Retriever 평가 및 도메인 평가 담당, 발표·통합 | `evaluate.py`의 정답 청크·재정렬 평가 , `agents/domain_evaluation.py`의 기술별 도메인 질의 구조 정리 | `cbfb7da` |
+| 팀원        | 주요 역할                                      | 주요 변경 영역                                                                                            | 근거 커밋                                          |
+| ----------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| P209 곽민규 | 이해관계자 평가 Agent 담당                     | `agents/stakeholder_evaluation.py`의 질의 템플릿 분리 및 보완                                           | `499e608`                                        |
+| P213 김선정 | Agentic RAG 통합 및 종합·검증·보고서 담당    | OpenAI API 연동, 임베딩·재현성 개선,`agents/synthesis.py`의 종합 평가·Judge·보고서 생성              | `665a43a`, `ac9403a`, `777a720`, `8a26658` |
+| P229 이지원 | 시장성 평가 Agent 담당                         | `agents/market_evaluation.py` 리팩토링 및 시장성 조사 흐름 보완                                         | `fefa828`                                        |
+| P231 임유리 | 기술 선정 및 기술 조사 Agent 담당              | `agents/technology_selection.py`, `agents/technical_research.py`의 기술·TRL 분석 명세 보완           | `52a9e01`                                        |
+| P240 현용찬 | Retriever 평가 및 도메인 평가 담당, 발표·통합 | `evaluate.py`의 정답 청크·재정렬 평가 , `agents/domain_evaluation.py`의 기술별 도메인 질의 구조 정리 | `cbfb7da`                                        |
 
 각 Agent는 독립된 역할을 수행하지만, 최종 결과는 LangGraph의 State와
 Fan-out/Fan-in 흐름을 통해 하나의 평가 보고서로 통합됩니다.

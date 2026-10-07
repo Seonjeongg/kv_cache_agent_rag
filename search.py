@@ -3,16 +3,44 @@ from __future__ import annotations
 
 import json
 import re
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 from ddgs import DDGS
 
-from config import FETCH_WEB_FULL_TEXT, tavily_client
+from config import (
+    FETCH_WEB_FULL_TEXT,
+    INDEPENDENT_DOMAINS,
+    OFFICIAL_DOMAINS,
+    PRIMARY_RESEARCH_DOMAINS,
+    tavily_client,
+)
 from evidence import make_evidence_id
 from rag import normalize_text
 from state import Evidence
+
+
+def _matches_domain(domain: str, candidates: set[str]) -> bool:
+    """www 및 하위 도메인을 허용하되 유사 문자열 도메인은 허용하지 않는다."""
+    return any(domain == candidate or domain.endswith(f".{candidate}") for candidate in candidates)
+
+
+def classify_source(url: str) -> dict:
+    """URL만으로 확인 가능한 출처 성격을 분류한다.
+
+    알 수 없는 도메인은 낮은 품질이라고 단정하지 않고 unclassified로 남긴다.
+    """
+    domain = urlparse(url or "").netloc.lower().split("@")[-1].split(":")[0]
+    domain = domain.removeprefix("www.")
+    base = {"publisher": domain or None}
+    if _matches_domain(domain, PRIMARY_RESEARCH_DOMAINS):
+        return {**base, "source_tier": 1, "source_category": "primary_research", "is_independent": True}
+    if _matches_domain(domain, OFFICIAL_DOMAINS):
+        return {**base, "source_tier": 2, "source_category": "official", "is_independent": False}
+    if _matches_domain(domain, INDEPENDENT_DOMAINS):
+        return {**base, "source_tier": 3, "source_category": "independent", "is_independent": True}
+    return {**base, "source_tier": None, "source_category": "unclassified", "is_independent": None}
 
 
 def is_relevant_result(title: str, body: str, url: str, technology: str) -> bool:
@@ -171,6 +199,7 @@ def web_search(query: str, agent: str, technology: str, max_results: int = 4) ->
         # 동일 URL이 여러 Agent·질의에서 발견되어도 하나의 웹 근거로 취급합니다.
         source_key = url or f"{agent}|{query}"
         evidence_id = make_evidence_id("web", source_key)
+        source_info = classify_source(url)
 
         evidence.append(Evidence(
             evidence_id=evidence_id,
@@ -183,6 +212,7 @@ def web_search(query: str, agent: str, technology: str, max_results: int = 4) ->
             url=url,
             retrieval_score=item.get("score"),
             published_at=published_date,
+            **source_info,
         ).model_dump())
 
     return evidence
