@@ -90,7 +90,7 @@ def collect_evidence_ids(value) -> set[str]:
     return ids
 
 
-def _format_citation(item: dict) -> str:
+def _format_citation(item: dict, pages: list[int] | None = None) -> str:
     """노션 가이드의 REFERENCE 표기 형식에 맞춰 논문/웹 항목을 각각 포맷합니다.
     논문: 저자(YYYY). 논문제목. arXiv:ID. (p.페이지)
     웹  : 사이트명(YYYY-MM-DD). 제목, URL (발행일이 없으면 날짜 미상)
@@ -100,7 +100,13 @@ def _format_citation(item: dict) -> str:
         authors, year, arxiv_id, title = (
             paper.get("authors"), paper.get("year"), paper.get("arxiv_id"), paper.get("title"),
         )
-        page = f" (p.{item['page']})" if item.get("page") else ""
+        page_numbers = sorted(set(pages or ([item["page"]] if item.get("page") else [])))
+        if len(page_numbers) == 1:
+            page = f" (p.{page_numbers[0]})"
+        elif page_numbers:
+            page = f" (pp.{', '.join(str(value) for value in page_numbers)})"
+        else:
+            page = ""
         if authors and year and arxiv_id and title:
             return f"{authors}({year}). {title}. arXiv:{arxiv_id}.{page}"
         # 서지정보를 확인하지 못한 논문은 임의로 지어내지 않고 최소 정보만 표기
@@ -116,8 +122,8 @@ def _format_citation(item: dict) -> str:
 
 
 def format_references(references: list[dict], used_ids: set[str] | None = None) -> str:
-    lines = []
-    seen = set()
+    grouped: dict[tuple, dict] = {}
+    pages_by_key: dict[tuple, list[int]] = {}
     for item in references:
         evidence_id = item.get("evidence_id")
         if used_ids is not None and evidence_id not in used_ids:
@@ -128,8 +134,11 @@ def format_references(references: list[dict], used_ids: set[str] | None = None) 
             key = ("web", item.get("url"))
         else:
             key = evidence_id or f"{item.get('url')}:{item.get('page')}"
-        if key in seen:
-            continue
-        seen.add(key)
-        lines.append(f"- [{item['evidence_id']}] {_format_citation(item)}")
+        grouped.setdefault(key, item)
+        if item.get("page") is not None:
+            pages_by_key.setdefault(key, []).append(int(item["page"]))
+    lines = [
+        f"- [{item['evidence_id']}] {_format_citation(item, pages_by_key.get(key))}"
+        for key, item in grouped.items()
+    ]
     return "\n".join(lines) or "- 실제 활용 자료 없음"
