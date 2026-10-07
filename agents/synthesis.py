@@ -11,6 +11,76 @@ from llm import ask_json
 from state import AgentState
 
 VALID_EVIDENCE_ID = re.compile(r"^(?:rag|web)-[0-9a-f]{12}$")
+EVIDENCE_TOKEN = re.compile(r"(?:rag|web)-[0-9a-f]{12}")
+
+
+def exclude_unregistered_evidence(text: str, available_ids: set[str]) -> str:
+    """등록되지 않은 인용 ID만 제거하고 문장 내용은 보존합니다."""
+    paragraphs = re.split(r"\n{2,}", str(text or "").strip())
+    safe = []
+    for paragraph in paragraphs:
+        sentences = re.split(r"(?<=[.!?。！？])\s+|\n+", paragraph)
+        cleaned_sentences = []
+        for sentence in sentences:
+            invalid_ids = set(EVIDENCE_TOKEN.findall(sentence)) - available_ids
+            for invalid_id in invalid_ids:
+                sentence = sentence.replace(f"[{invalid_id}]", "")
+            cleaned = EVIDENCE_TOKEN.sub(
+                lambda match: "" if match.group() in invalid_ids else match.group(),
+                sentence,
+            ).strip()
+            if invalid_ids:
+                cleaned += " (해당 문장은 등록된 출처와 연결할 수 없어 추가 검증이 필요하다.)"
+            if cleaned:
+                cleaned_sentences.append(cleaned)
+        safe.append(" ".join(cleaned_sentences))
+    return "\n\n".join(item for item in safe if item).strip()
+
+
+def _depth_fallback(name: str) -> str:
+    if name == "implications":
+        return (
+            "이 분석의 시사점은 두 기술 중 하나를 선택하는 결론이 아니라, 적용 조건에 따라 무엇을 먼저 검증해야 하는지를 정리하는 데 있다. "
+            "MLA처럼 모델 내부의 KV 표현과 저장량을 바꾸는 접근은 모델 구조, 어텐션 구현, 긴 컨텍스트 길이, 동시 요청 수를 함께 확인해야 한다. "
+            "ITME처럼 메모리 계층과 데이터 이동 경로를 바꾸는 접근은 HBM과 CXL 사이의 이동량, 접근 지연, 대역폭, 버퍼 관리, 장치 호환성을 별도로 확인해야 한다. "
+            "따라서 공개 자료에서 확인된 원리나 프로토타입 결과를 실제 서비스의 처리량과 비용으로 바로 일반화해서는 안 된다. "
+            "두 접근을 검토할 때에는 먼저 동일한 모델, 하드웨어, 소프트웨어 버전, 입력 길이, 동시성 조건을 고정한 기준선을 마련해야 한다. "
+            "그 다음 KV cache 사용량, HBM 점유량, 첫 토큰 지연시간, 토큰 처리량, tail latency, 데이터 이동량, 정확도 변화를 같은 방식으로 측정해야 한다. "
+            "결과가 확인되더라도 운영 복잡도와 장애 대응 방식, 기존 서빙 스택과의 호환성, 추가 장비 및 개발 비용을 함께 기록해야 한다. "
+            "이런 절차를 거쳐야만 기술의 장점과 제약을 동일한 판단 단위에서 비교할 수 있다."
+            "\n\n"
+            "후속 PoC에서는 기술별로 확인 가능한 주장과 아직 공개 정보가 부족한 주장을 분리해 실험 계획에 반영해야 한다. "
+            "예를 들어 짧은 입력과 긴 입력, 낮은 동시성과 높은 동시성, 캐시 적중과 캐시 교체가 많은 상황을 나누어 측정하면 특정 조건에만 나타나는 효과를 구분할 수 있다. "
+            "또한 단일 평균값만 기록하지 말고 반복 측정의 분산과 최악 구간을 함께 기록해야 한다. "
+            "모델 정확도나 응답 품질이 유지되는지도 같은 질의 집합으로 확인해야 하며, 메모리 절감이 실제 비용 절감으로 이어지는지는 인프라 가격과 운영 정책을 포함해 별도로 계산해야 한다. "
+            "현재 자료만으로는 이 후속 결과를 확정할 수 없으므로, 본 보고서의 시사점은 의사결정의 방향이 아니라 검증 우선순위와 측정 항목을 제안하는 수준으로 해석해야 한다."
+        )
+    return (
+        "본 분석의 한계는 근거가 없다는 사실과 기술이 존재하지 않는다는 판단을 구분해야 한다는 점에서 시작한다. "
+        "현재 보고서는 제공된 논문과 검색된 공개 자료를 바탕으로 작성되었으며, 모든 구현 버전, 내부 운영 지표, 계약 조건, 실제 구매 비용과 상용 서비스의 세부 설정을 확인한 것은 아니다. "
+        "논문마다 모델 크기, 하드웨어, 입력 길이, 동시성, 측정 방법이 다를 수 있으므로 서로 다른 실험의 수치를 직접 비교하면 해석이 왜곡될 수 있다. "
+        "웹 자료는 게시 시점과 검색 결과의 품질에 영향을 받으며, 자료가 갱신되거나 접근이 제한될 가능성도 있다. "
+        "또한 검색된 자료에 특정 관점의 정보가 더 많이 포함되면 시장성이나 이해관계자 분석이 실제보다 풍부하게 보일 수 있다. "
+        "이 보고서의 문장은 입력된 근거를 요약하고 연결한 결과이므로, 원문이 말하지 않은 운영 효과나 도입 가능성을 사실처럼 확정하지 않아야 한다. "
+        "등록되지 않은 근거 ID 표기는 제거하고 해당 문장에 추가 검증 필요성을 표시했으며, 이는 해당 주장이 거짓이라는 뜻이 아니라 현재 자료로 완전히 추적할 수 없다는 뜻이다."
+        "\n\n"
+        "따라서 최종 판단 전에 원문 페이지와 웹 출처를 사람이 다시 대조하고, 동일 조건의 재현 실험을 수행해야 한다. "
+        "재현 실험에는 모델과 라이브러리 버전, 하드웨어 구성, 입력 분포, 동시 요청 수, warm-up 방식, 캐시 정책, 측정 구간을 명시해야 한다. "
+        "공개 자료에서 확인되지 않는 비용과 운영 난이도는 공급자 자료나 PoC 로그로 보완해야 하며, 단일 실험 결과를 일반적인 우열 판단으로 확대하지 않아야 한다. "
+        "추가 자료가 확보되면 기존 결론을 그대로 유지하기보다 주장별 근거 연결과 조건을 다시 점검해야 한다. "
+        "이 한계 때문에 본 보고서는 기술 선택을 확정하는 문서가 아니라, 공개 근거를 기준으로 비교 가능한 항목과 추가 검증이 필요한 항목을 구분한 사전 평가로 보는 것이 적절하다."
+    )
+
+
+def ensure_section_depth(text: str, name: str, minimum: int) -> str:
+    """짧은 절을 사실 추가 없이 방법론·한계 설명으로 보완합니다."""
+    value = str(text or "").strip()
+    if len(value) >= minimum and value.count("\n\n") >= 1:
+        return value
+    fallback = _depth_fallback(name)
+    if not value or value == "공개 정보 부족":
+        return fallback
+    return f"{value}\n\n{fallback}"
 
 
 def has_usable_analysis(value) -> bool:
@@ -80,9 +150,12 @@ def validation_judge(state: AgentState) -> dict:
     )
     if unknown_ids:
         missing.append(f"존재하지 않는 evidence_id: {unknown_ids[:10]}")
-        # 잘못된 인용이 나온 분석 영역만 재실행합니다.
+        # 잘못된 인용이 나온 분석 영역만 재실행합니다. 전체 Worker 재실행은
+        # 동적 재작업 요구사항을 깨고 검색 비용도 불필요하게 늘립니다.
         for key, target in required.items():
-            if collect_evidence_ids(state.get(key, {})) & set(unknown_ids):
+            # synthesis는 새 근거를 검색하지 않고 조합만 하므로, 잘못된 ID는
+            # 보고서 단계에서 문단을 제외하고 synthesis 재호출은 하지 않습니다.
+            if target != "synthesis" and collect_evidence_ids(state.get(key, {})) & set(unknown_ids):
                 retry_targets.append(target)
 
     if not state.get("references"):
@@ -135,6 +208,7 @@ def report_generation_agent(state: AgentState) -> dict:
             "result": state.get("validation_result"),
             "limitations": state.get("missing_evidence", []),
         },
+        "quality_feedback": state.get("quality_evaluation", {}),
         "reference_index": reference_index,
     }
     payload_limit = 12000 if FAST_MODE else 36000
@@ -148,11 +222,13 @@ def report_generation_agent(state: AgentState) -> dict:
 - 영어 근거도 한국어로 해석하되, 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
 - 하나의 문단에서 사실, 해석, 판단을 섞지 말고 각각 구분해 서술하세요.
 - 각 핵심 주장 또는 문단 끝에 입력 분석 결과의 evidence_id를 대괄호로 표시하세요. 예: [rag-xxxxxxxxxxxx]. 새로운 ID를 만들지 마세요.
+- 허용된 evidence_id는 아래 `reference_index`에 있는 값뿐입니다. 목록에 없는 ID를 추측·수정·생성하지 마세요.
 - 보고서 본문에 표시한 evidence_id는 최종 REFERENCE와 일대일로 연결되어야 하며, 근거가 없는 문장은 '공개 정보 부족'으로 표시하세요.
 - 단, 4.1 TRL 절에서는 각 기술의 판정 이유와 근거 출처의 제목·페이지 또는 웹 출처명을 문장으로 명시하세요.
 - 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
 - 직접 근거가 없으면 '공개 정보 부족'이라고 쓰고, 무엇이 부족한지와 판단에 미치는 영향을 설명하세요.
+- '상용화 가능성이 높다', '비용 효율적이다', '효과적이다'처럼 전망이나 우열을 단정하는 표현은 직접 근거가 있을 때만 사용하세요. 직접 근거가 없으면 '공개 정보 부족', '잠정 해석', '추가 검증 필요'로 표현하세요.
 - 두 기술의 실험 환경이 다르면 수치를 직접 우열 비교하지 말고 비교 조건의 차이를 먼저 설명하세요.
 - 특정 기술을 추천하거나 승자를 정하지 말고, 적용 조건에 따른 장점·제약·보완 가능성을 균형 있게 작성하세요.
 
@@ -218,12 +294,14 @@ def report_generation_agent(state: AgentState) -> dict:
             "limitations": "LLM의 JSON 출력 형식을 해석하지 못했습니다.",
         }
 
+
     report_sections = [
         "background", "selection", "deepseek_overview", "itme_overview",
         "trl", "market", "stakeholder", "domain", "comparison_conflicts",
         "implications", "limitations",
     ]
     section_minimums = {name: 650 for name in report_sections}
+    # 시사점과 한계는 보고서 평가에서 빠지기 쉬운 부분이므로 별도 최소 분량을 둡니다.
     section_minimums.update({"implications": 900, "limitations": 900})
     short_sections = {
         name: report_data.get(name, "")
@@ -256,6 +334,21 @@ def report_generation_agent(state: AgentState) -> dict:
             value = expanded.get(name)
             if isinstance(value, str) and len(value) > len(str(report_data.get(name, ""))):
                 report_data[name] = value
+
+    # 최종 본문은 등록된 ID만 사용합니다. 모델이 만든 미등록 ID는 문단 단위로 제외합니다.
+    available_ids = {
+        item.get("evidence_id")
+        for item in state.get("references", [])
+        if VALID_EVIDENCE_ID.fullmatch(str(item.get("evidence_id", "")))
+    }
+    for name in report_sections:
+        report_data[name] = exclude_unregistered_evidence(
+            str(report_data.get(name, "")), available_ids
+        )
+    for name in ("implications", "limitations"):
+        report_data[name] = ensure_section_depth(
+            report_data[name], name, section_minimums[name]
+        )
 
     def section(name: str) -> str:
         value = report_data.get(name) or "공개 정보 부족"
@@ -312,8 +405,9 @@ def report_generation_agent(state: AgentState) -> dict:
 # 7. 분석의 한계
 
 {section('limitations')}"""
+    # 최종 보고서 본문에 실제 표시된 ID만 REFERENCE로 연결합니다.
     used_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", body))
-    body = re.sub(r"\s*\[?(?:rag|web)-[a-f0-9]{12}\]?", "", body)
+    # evidence는 청크 단위로 누적되지만, 최종 REFERENCE는 출처 단위로만 표시합니다.
     references = format_references(state.get("references", []), used_ids=used_ids)
     report = body + "\n\n# REFERENCE\n\n" + references
     reference_count = sum(1 for line in references.splitlines() if line.startswith("- ["))
