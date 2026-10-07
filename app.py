@@ -1,6 +1,7 @@
 """전체 파이프라인 실행 진입점: 색인 -> Graph 실행 -> 보고서 저장."""
 from __future__ import annotations
 
+import argparse
 import json
 import platform
 import re
@@ -20,7 +21,7 @@ from config import (
     PROJECT_DIR,
     TOP_K,
 )
-from graph import build_graph
+from graph import build_graph, initial_state
 from rag import build_index, download_papers, load_and_chunk_papers
 from state import AgentState
 
@@ -35,6 +36,10 @@ REQUIRED_REPORT_HEADINGS = (
     "# 7. 분석의 한계",
     "# REFERENCE",
 )
+REPORT_DEPTH_REQUIREMENTS = {
+    "# 6. 시사점": 900,
+    "# 7. 분석의 한계": 900,
+}
 
 
 def validate_report(report: str, references: list[dict] | None = None) -> None:
@@ -49,6 +54,15 @@ def validate_report(report: str, references: list[dict] | None = None) -> None:
         raise ValueError("REFERENCE 뒤에 다른 보고서 제목이 있거나 REFERENCE가 중복됩니다.")
     if not re.search(r"^- \[[a-z]+-[0-9a-f]{12}\]", report[reference_index:], flags=re.MULTILINE):
         raise ValueError("REFERENCE 항목이 비어 있습니다.")
+    for heading, minimum in REPORT_DEPTH_REQUIREMENTS.items():
+        match = re.search(rf"^{re.escape(heading)}\s*$", report, flags=re.MULTILINE)
+        if not match:
+            raise ValueError(f"보고서 절 누락: {heading}")
+        section = report[match.end():]
+        next_heading = re.search(r"^#\s+", section, flags=re.MULTILINE)
+        section = section[:next_heading.start()] if next_heading else section
+        if len(section.strip()) < minimum or section.count("\n\n") < 1:
+            raise ValueError(f"보고서 절이 너무 짧습니다: {heading} (최소 {minimum}자, 2문단)")
     if references is not None:
         available_ids = {item.get("evidence_id") for item in references}
         used_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[:reference_index]))
@@ -57,7 +71,7 @@ def validate_report(report: str, references: list[dict] | None = None) -> None:
             raise ValueError(f"본문에 인용된 Evidence가 REFERENCES에 없습니다: {missing_ids[:10]}")
 
 
-def run_pipeline() -> dict:
+def run_pipeline(input_request: str | None = None) -> dict:
     download_papers()
     chunks = load_and_chunk_papers()
     collection = build_index(chunks)
@@ -67,15 +81,7 @@ def run_pipeline() -> dict:
     graph = build_graph()
     if FAST_MODE:
         print("[WARN] FAST_MODE=True: 제출용 보고서는 FAST_MODE=False로 실행하세요.")
-    initial_state: AgentState = {
-        "input_request": (
-            "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 "
-            "TRL, 시장성, 이해관계자, 도메인 관점으로 중립적으로 비교 평가하라."
-        ),
-        "references": [],
-        "errors": [],
-    }
-    result = graph.invoke(initial_state, config={"recursion_limit": 40})
+    result = graph.invoke(initial_state(input_request), config={"recursion_limit": 40})
     result["runtime_metadata"] = {
         "python": platform.python_version(),
         "platform": platform.platform(),
@@ -87,6 +93,10 @@ def run_pipeline() -> dict:
         "chunk_overlap": CHUNK_OVERLAP,
         "retrieval_top_k": TOP_K,
         "agent_rag_top_k": AGENT_RAG_TOP_K,
+        "trace_id": result.get("trace_id"),
+        "status": result.get("status"),
+        "step_count": result.get("step_count"),
+        "quality_evaluation": result.get("quality_evaluation", {}),
     }
 
     print("검증 결과:", result["validation_result"])
@@ -116,7 +126,11 @@ def save_outputs(result: dict) -> dict:
 
     from weasyprint import HTML
     HTML(string=html_document, base_url=str(PROJECT_DIR)).write_pdf(pdf_path)
-    print("PDF:", pdf_path)
+    import pymupdf
+    page_count = len(pymupdf.open(pdf_path))
+    if page_count > 10:
+        raise ValueError(f"제출 보고서가 10장을 초과했습니다: {page_count}장")
+    print(f"PDF ({page_count}장):", pdf_path)
 
     print("Markdown:", markdown_path)
     print("HTML:", html_path)
@@ -125,5 +139,12 @@ def save_outputs(result: dict) -> dict:
 
 
 if __name__ == "__main__":
-    pipeline_result = run_pipeline()
+    parser = argparse.ArgumentParser(description="KV-cache Agentic RAG 실행")
+    parser.add_argument(
+        "--request",
+        default=None,
+        help="조사 관점이 포함된 요청문. 생략하면 네 관점을 모두 조사합니다.",
+    )
+    args = parser.parse_args()
+    pipeline_result = run_pipeline(args.request)
     save_outputs(pipeline_result)
