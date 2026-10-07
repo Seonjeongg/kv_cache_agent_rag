@@ -24,7 +24,7 @@ Fan-in 이후 `synthesis`가 관점 결과를 종합한다. Worker 예외나 빈
 
 제어 정보와 페이로드를 구분했다. `plan`, `current_task`, `task_results`, `decision_log`, `trace_id`, `status`, `step_count`, `retry_targets`는 조정·복구를 위한 제어 메타데이터다. `selected_technologies`, 각 관점 분석, `synthesis`, `references`, `report`는 작업 결과와 근거 페이로드다. `merge_task_results`는 동적 fan-out에서 같은 결과 필드가 유실되지 않도록 task_id 기준으로 병합한다. 기존 `merge_references`는 논문 청크와 웹 URL 중복을 제거한다.
 
-각 계획·fallback·품질 판정은 `decision_log`에 시간, 노드, 이벤트 유형, 메시지, 사유를 기록한다. `trace_id`는 State JSON과 실행 trace를 연결하는 키다. 최종 보고서 본문에는 가독성을 위해 내부 Evidence ID를 숨기되, Agent 결과와 REFERENCE에는 연결을 보존한다.
+각 계획·fallback·품질 판정은 `decision_log`에 시간, 노드, 이벤트 유형, 메시지, 사유를 기록한다. `trace_id`는 State JSON과 실행 trace를 연결하는 키다. 최종 보고서 본문에는 실제 사용한 Evidence ID를 표시하고, 등록되지 않은 ID가 포함된 문단은 최종 결과에서 제외한 뒤 REFERENCE와 연결한다.
 
 # 5. 품질 평가와 재작업
 
@@ -34,7 +34,7 @@ Fan-in 이후 `synthesis`가 관점 결과를 종합한다. Worker 예외나 빈
 
 # 6. 검증 결과
 
-API 키와 Ollama 실행 상태에 의존하지 않는 구조 검증에서 Graph는 요청 관점에 따라 2·3·4개 subtask를 계획하고 Worker fan-out/fan-in을 수행했다. 첫 품질 평가를 실패시키는 mock 시나리오에서는 `technical_research`와 `domain_evaluation`만 재계획한 뒤 두 번째 평가에서 통과했다. 추가로 편향 통제, 빈 근거·추천 표현 검출, report-only retry, synthesis 재시도 경로, 런타임 요청 입력을 테스트했다. 현재 `tests/test_smoke.py`에는 총 17개 테스트가 있다.
+API 키와 Ollama 실행 상태에 의존하지 않는 구조 검증에서 Graph는 요청 관점에 따라 2·3·4개 subtask를 계획하고 Worker fan-out/fan-in을 수행했다. 첫 품질 평가를 실패시키는 mock 시나리오에서는 `technical_research`와 `domain_evaluation`만 재계획한 뒤 두 번째 평가에서 통과했다. 추가로 편향 통제, 빈 근거·추천 표현 검출, report-only retry, Worker와 분리된 보고서 재시도 예산, synthesis 재시도 경로, 런타임 요청 입력, Worker 경계의 미등록 evidence_id 제거, 최종 보고서의 미등록 인용 문단 제외와 시사점·한계 절 보완을 테스트했다. 현재 `tests/test_smoke.py`에는 총 26개 테스트가 있다.
 
 이 검증은 실제 논문 다운로드, Chroma 색인, Ollama 임베딩, Tavily/DDGS 검색, OpenAI 보고서 생성을 대신하지 않는다. 제출 전에는 기존 팀 보고서와 동일한 목차의 새 Agent 실행 보고서를 `FAST_MODE=false`로 생성하고, 한글 글꼴이 포함된 PDF·State JSON·LangSmith 화면 trace를 함께 확인해야 한다. 현재 `docs/local_trace.png`는 LangSmith 캡처가 아니므로 `docs/tracing-1.png`, `docs/tracing-2.png`를 별도로 추가해야 한다.
 
