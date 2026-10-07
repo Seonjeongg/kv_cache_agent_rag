@@ -128,6 +128,7 @@ def _format_citation(item: dict, pages: list[int] | None = None) -> str:
 def format_references(references: list[dict], used_ids: set[str] | None = None) -> str:
     grouped: dict[tuple, dict] = {}
     pages_by_key: dict[tuple, list[int]] = {}
+    ids_by_key: dict[tuple, list[str]] = {}
     for item in references:
         evidence_id = item.get("evidence_id")
         if used_ids is not None and evidence_id not in used_ids:
@@ -139,10 +140,13 @@ def format_references(references: list[dict], used_ids: set[str] | None = None) 
         else:
             key = evidence_id or f"{item.get('url')}:{item.get('page')}"
         grouped.setdefault(key, item)
+        if evidence_id and evidence_id not in ids_by_key.setdefault(key, []):
+            ids_by_key[key].append(evidence_id)
         if item.get("page") is not None:
             pages_by_key.setdefault(key, []).append(int(item["page"]))
     lines = [
-        f"- [{item['evidence_id']}] {_format_citation(item, pages_by_key.get(key))}"
+        f"- {' '.join(f'[{evidence_id}]' for evidence_id in ids_by_key.get(key, [item['evidence_id']]))} "
+        f"{_format_citation(item, pages_by_key.get(key))}"
         for key, item in grouped.items()
     ]
     return "\n".join(lines) or "- 실제 활용 자료 없음"
