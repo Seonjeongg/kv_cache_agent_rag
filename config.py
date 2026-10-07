@@ -13,8 +13,6 @@ load_dotenv(override=True)
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "").strip()
 tavily_client = TavilyClient(api_key=TAVILY_API_KEY) if TAVILY_API_KEY else None
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY를 .env에 설정하세요.")
 
 PROJECT_DIR = Path.cwd()
 DATA_DIR = PROJECT_DIR / "data"
@@ -43,7 +41,7 @@ LLM_NUM_CTX = 8192 if FAST_MODE else 16384
 JSON_NUM_PREDICT = 1400 if FAST_MODE else 2200
 REPORT_NUM_PREDICT = 2400 if FAST_MODE else 7000
 
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 ollama_client = ollama.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 PAPERS = {
