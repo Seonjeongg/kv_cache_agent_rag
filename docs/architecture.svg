@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9" fill="#455a64"/></marker></defs>
+<rect width="1200" height="900" fill="white"/>
+<g font-family="Arial,sans-serif" text-anchor="middle" fill="#19384a">
+<text text-anchor="middle" font-family="Arial" x="600" y="40" font-size="25">Orchestrator-Workers / Dynamic Fan-out</text>
+<g fill="#e6f3ff" stroke="#409bd2" stroke-width="2">
+<rect x="420" y="70" width="360" height="60" rx="12"/>
+<rect x="420" y="170" width="360" height="75" rx="12"/>
+<rect x="70" y="300" width="245" height="70" rx="12"/>
+<rect x="342" y="300" width="245" height="70" rx="12"/>
+<rect x="614" y="300" width="245" height="70" rx="12"/>
+<rect x="886" y="300" width="245" height="70" rx="12"/>
+<rect x="420" y="425" width="360" height="65" rx="12"/>
+<rect x="420" y="530" width="360" height="65" rx="12"/>
+<rect x="420" y="635" width="360" height="65" rx="12"/>
+<rect x="420" y="740" width="360" height="65" rx="12"/>
+</g>
+<g font-size="21">
+<text text-anchor="middle" font-family="Arial" x="600" y="108">technology_selection</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="200">orchestrator_plan</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="229" font-size="17">structured plan / retry_targets</text>
+<text text-anchor="middle" font-family="Arial" x="192" y="341">technical worker</text>
+<text text-anchor="middle" font-family="Arial" x="464" y="341">market worker</text>
+<text text-anchor="middle" font-family="Arial" x="736" y="341">stakeholder worker</text>
+<text text-anchor="middle" font-family="Arial" x="1008" y="341">domain worker</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="465">synthesis / reducer fan-in</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="570">validation</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="675">report_generation</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="780">quality_evaluator</text>
+<text text-anchor="middle" font-family="Arial" x="600" y="872">END: pass / bounded warning</text>
+</g>
+<text text-anchor="middle" font-family="Arial" x="985" y="455" font-size="17">Worker failure: record / continue</text>
+<text text-anchor="middle" font-family="Arial" x="190" y="785" font-size="17">retry selected workers</text>
+<text text-anchor="middle" font-family="Arial" x="982" y="695" font-size="17">report-only retry</text>
+<text text-anchor="middle" font-family="Arial" x="180" y="255" font-size="17">Send x N (1-4)</text>
+</g>
+<g fill="none" stroke="#455a64" stroke-width="2.5" marker-end="url(#arrow)">
+<path d="M600 130 V170"/>
+<path d="M600 245 V272 H192 V300"/><path d="M600 272 H464 V300"/><path d="M600 272 H736 V300"/><path d="M600 272 H1008 V300"/>
+<path d="M192 370 V400 H600 V425"/><path d="M464 370 V400"/><path d="M736 370 V400"/><path d="M1008 370 V400 H600"/>
+<path d="M600 490 V530"/><path d="M600 595 V635"/><path d="M600 700 V740"/><path d="M600 805 V840"/>
+<path d="M420 775 H300 V205 H420" stroke-dasharray="8 5"/>
+<path d="M780 775 H865 V670 H780" stroke-dasharray="8 5"/>
+<path d="M420 560 H330 V218 H420" stroke-dasharray="8 5"/>
+</g></svg>

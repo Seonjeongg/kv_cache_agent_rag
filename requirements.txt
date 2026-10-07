@@ -13,3 +13,4 @@ markdown==3.10.3
 json-repair==0.63.4
 typing_extensions==4.16.0
 weasyprint==70.0
+langsmith==0.14.4

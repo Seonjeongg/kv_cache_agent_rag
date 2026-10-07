@@ -1,0 +1,128 @@
+{
+  "Hit@5": 0.5,
+  "MRR": 0.38333333333333336,
+  "questions": 10,
+  "evaluated": true,
+  "details": [
+    {
+      "id": "mla-core-mechanism",
+      "rank": null,
+      "matched_chunk_id": null,
+      "retrieved_chunk_ids": [
+        "870bb3a8496b9e50a546",
+        "604e17db5f190668ba75",
+        "161ca29d0e727ef3618a",
+        "13f26578ef18820c8895",
+        "77a33cf725d73cd82248"
+      ]
+    },
+    {
+      "id": "mla-memory-reduction",
+      "rank": null,
+      "matched_chunk_id": null,
+      "retrieved_chunk_ids": [
+        "870bb3a8496b9e50a546",
+        "161ca29d0e727ef3618a",
+        "982427c9be304c6c5976",
+        "77a33cf725d73cd82248",
+        "604e17db5f190668ba75"
+      ]
+    },
+    {
+      "id": "mla-limitations",
+      "rank": null,
+      "matched_chunk_id": null,
+      "retrieved_chunk_ids": [
+        "4f6292a28e5c26becd2f",
+        "870bb3a8496b9e50a546",
+        "2d0e86ede1b482691601",
+        "982427c9be304c6c5976",
+        "77a33cf725d73cd82248"
+      ]
+    },
+    {
+      "id": "mla-long-context",
+      "rank": 2,
+      "matched_chunk_id": "a6d0dec26c6f3b97981a",
+      "retrieved_chunk_ids": [
+        "8ca8829261cd80970d61",
+        "a6d0dec26c6f3b97981a",
+        "2d0e86ede1b482691601",
+        "793419bcadda5a8e1753",
+        "77a33cf725d73cd82248"
+      ]
+    },
+    {
+      "id": "mla-readiness",
+      "rank": null,
+      "matched_chunk_id": null,
+      "retrieved_chunk_ids": [
+        "2d0e86ede1b482691601",
+        "ca91ca2685aaebb72796",
+        "94119a7c74cfa0541690",
+        "c9620a8910cb9d62e755",
+        "a06241ebb18d3f7c9e5f"
+      ]
+    },
+    {
+      "id": "itme-core-mechanism",
+      "rank": 1,
+      "matched_chunk_id": "c628372184a2fb491e5a",
+      "retrieved_chunk_ids": [
+        "c628372184a2fb491e5a",
+        "85ae3861e0e7c7f302bc",
+        "e14623ca259d0fe885b5",
+        "5ef0567d4fe06e292ab2",
+        "0045e7ad6da7b029a79e"
+      ]
+    },
+    {
+      "id": "itme-tiering",
+      "rank": 1,
+      "matched_chunk_id": "fc003c5cc1c3cb5fa6cf",
+      "retrieved_chunk_ids": [
+        "fc003c5cc1c3cb5fa6cf",
+        "82bdb76d1780ba76ce1f",
+        "3b309e7043b999f08b68",
+        "629461a39f68d526d8bf",
+        "894026d63eb2e88d3150"
+      ]
+    },
+    {
+      "id": "itme-latency",
+      "rank": null,
+      "matched_chunk_id": null,
+      "retrieved_chunk_ids": [
+        "70f14e2a229663480315",
+        "0fe9323d06082d167e83",
+        "894026d63eb2e88d3150",
+        "99b29e9cadbedef874cf",
+        "96cd29907d858d2c17c8"
+      ]
+    },
+    {
+      "id": "itme-throughput",
+      "rank": 1,
+      "matched_chunk_id": "70f14e2a229663480315",
+      "retrieved_chunk_ids": [
+        "70f14e2a229663480315",
+        "b989221ece0c9603d8be",
+        "99b29e9cadbedef874cf",
+        "71c3b191d8903f0bf857",
+        "0fe9323d06082d167e83"
+      ]
+    },
+    {
+      "id": "itme-readiness",
+      "rank": 3,
+      "matched_chunk_id": "b989221ece0c9603d8be",
+      "retrieved_chunk_ids": [
+        "c37e0e60545f4eb5c66d",
+        "70f14e2a229663480315",
+        "b989221ece0c9603d8be",
+        "a112e66b3d6ba9377d1a",
+        "71c3b191d8903f0bf857"
+      ]
+    }
+  ]
+}

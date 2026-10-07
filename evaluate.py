@@ -1,7 +1,10 @@
 """Retriever 평가: Hit@K, MRR 및 질문별 검색 결과 상세 정보."""
 from __future__ import annotations
 
-from rag import build_index, download_papers, load_and_chunk_papers, retrieve
+import argparse
+import json
+from config import OUTPUT_DIR
+from rag import build_index, download_papers, get_collection, load_and_chunk_papers, retrieve
 
 EVAL_SET = [
     # 수정사항: 페이지 단위 expected_pages 대신 원문과 대조한 정답 청크 ID를 사용해
@@ -131,8 +134,18 @@ def evaluate_retriever(eval_set: list[dict], k: int = 5) -> dict:
 
 
 if __name__ == "__main__":
-    download_papers()
-    chunks = load_and_chunk_papers()
-    collection = build_index(chunks)
+    parser = argparse.ArgumentParser(description="정답 청크 기준 검색 품질 평가")
+    parser.add_argument("--reuse-index", action="store_true", help="기존 색인으로 평가 (실행 중인 색인을 다시 만들지 않음)")
+    args = parser.parse_args()
+    if args.reuse_index:
+        collection = get_collection()
+    else:
+        download_papers()
+        chunks = load_and_chunk_papers()
+        collection = build_index(chunks)
     print(f"평가용 색인 완료: 청크 {collection.count():,}개")
-    print(evaluate_retriever(EVAL_SET, k=5))
+    result = evaluate_retriever(EVAL_SET, k=5)
+    path = OUTPUT_DIR / "retrieval_metrics.json"
+    path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print("평가 기록:", path)

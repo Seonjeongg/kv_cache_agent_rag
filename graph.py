@@ -62,6 +62,7 @@ REQUIRED_REPORT_HEADINGS = (
     "# 2. 기술 선정",
     "# 3. 기술 개요",
     "# 4. 관점별 평가",
+    "# 5. 관점별 비교 및 상충 지점",
     "# 6. 시사점",
     "# 7. 분석의 한계",
     "# REFERENCE",
@@ -83,9 +84,12 @@ REPORT_DEPTH_REQUIREMENTS = {
     "# 7. 분석의 한계": 900,
 }
 NEUTRALITY_PATTERNS = (
-    r"승자|우승|최고|압도적|명백히\s*우월|강력\s*추천|무조건\s*추천",
+    r"승자(?:다|이다|입니다|가|는)|우승|최고|압도적|명백히\s*우월|강력\s*추천|무조건\s*추천",
     r"가장\s*(?:우수|좋|적합)|최적(?:의|인)?\s*선택|추천(?:한다|함|하는 것이)",
     r"(?:MLA|ITME).{0,24}(?:더\s*우수|우월|최적(?:의|인)?\s*선택|추천)",
+    r"최적(?:의|인)?\s*(?:조합|솔루션)",
+    r"상용화가\s*가속",
+    r"비용\s*효율(?:적|성을)",
 )
 
 
@@ -290,6 +294,7 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
     report = state.get("report", "")
     references = state.get("references", [])
     available_ids = {item.get("evidence_id") for item in references}
+    displayed_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", report.split("# REFERENCE", 1)[-1])) if "# REFERENCE" in report else set()
     # 분석 State의 전체 evidence가 아니라 최종 보고서 본문에 실제 표시된 ID만 사용합니다.
     used_ids = _report_evidence_ids(report)
     active_task_ids = [
@@ -328,18 +333,24 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
         "active_perspectives": active_task_ids,
         "passed": bool(used_ids) and bool(active_task_ids) and not bias_failures and max_source_share <= 0.5,
     }
-    neutrality_failed = any(re.search(pattern, report, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+    report_body = report.split("# REFERENCE", 1)[0]
+    neutrality_matches = sorted({
+        match.group() for pattern in NEUTRALITY_PATTERNS
+        for match in re.finditer(pattern, report_body, flags=re.IGNORECASE)
+    })
+    neutrality_failed = bool(neutrality_matches)
     criteria = {
-        "groundedness": bool(references) and bool(used_ids) and used_ids <= available_ids,
+        "groundedness": bool(references) and bool(used_ids) and used_ids <= available_ids and used_ids <= displayed_ids,
         "required_structure": all(heading in report for heading in REQUIRED_REPORT_HEADINGS),
         "section_depth": _report_depth_ok(report),
         "neutrality": not neutrality_failed,
         "bias_control": bias_control["passed"],
         "perspective_coverage": all(
             all(_usable(state.get(key)) for key in PERSPECTIVE_TASKS[task_id])
+            and bool(perspective_used_ids[task_id])
             for task_id in active_task_ids
         ) and _usable(state.get("synthesis")),
-        "reference_connection": bool(references) and bool(used_ids),
+        "reference_connection": bool(used_ids) and used_ids <= displayed_ids,
     }
     issues = [name for name, passed in criteria.items() if not passed]
     retry_targets = []
@@ -382,6 +393,9 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
         "retry_targets": sorted(set(retry_targets)),
         "retry_phase": retry_phase,
         "method": "1안: 재현 가능한 deterministic rubric gate; 출처 다양성·인용 존재성 포함",
+        "bias_control": bias_control,
+        "scope": "full" if len(active_task_ids) == 4 else "partial",
+        "neutrality_matches": neutrality_matches,
     }
     return {
         "quality_evaluation": quality,

@@ -87,6 +87,7 @@ def test_reference_display_deduplicates_same_source():
     rendered = format_references(references)
     assert rendered.count("paper.pdf") == 1
     assert "pp.1, 2" in rendered
+    assert "[rag-aaaaaaaaaaaa] [rag-bbbbbbbbbbbb]" in rendered
     assert rendered.count("https://example.com/a") == 1
 
 
@@ -110,7 +111,7 @@ def test_report_requires_submission_headings():
     long_section = "가" * 450 + "\n\n" + "나" * 450
     report = "\n\n".join([
         "# SUMMARY", "# 1. 분석 배경", "# 2. 기술 선정", "# 3. 기술 개요",
-        "# 4. 관점별 평가", f"# 6. 시사점\n{long_section}", f"# 7. 분석의 한계\n{long_section}",
+        "# 4. 관점별 평가", "# 5. 관점별 비교 및 상충 지점", f"# 6. 시사점\n{long_section}", f"# 7. 분석의 한계\n{long_section}",
         "# REFERENCE", "- [rag-aaaaaaaaaaaa] Paper",
     ])
     validate_report(report)
@@ -120,7 +121,7 @@ def test_report_rejects_unregistered_evidence_id():
     long_section = "가" * 450 + "\n\n" + "나" * 450
     report = "\n\n".join([
         "# SUMMARY\n주장 [rag-bbbbbbbbbbbb]", "# 1. 분석 배경", "# 2. 기술 선정",
-        "# 3. 기술 개요", "# 4. 관점별 평가", f"# 6. 시사점\n{long_section}", f"# 7. 분석의 한계\n{long_section}",
+        "# 3. 기술 개요", "# 4. 관점별 평가", "# 5. 관점별 비교 및 상충 지점", f"# 6. 시사점\n{long_section}", f"# 7. 분석의 한계\n{long_section}",
         "# REFERENCE", "- [rag-aaaaaaaaaaaa] Paper",
     ])
     try:
@@ -225,6 +226,9 @@ def test_quality_evaluator_requires_grounded_and_diverse_evidence():
         "retry_count": 0,
     }
     result = quality_evaluator_node(state)
+    assert result["quality_evaluation"]["criteria"]["groundedness"] is False
+    state["report"] += "\n- [rag-aaaaaaaaaaaa] same.pdf"
+    result = quality_evaluator_node(state)
     assert result["quality_evaluation"]["criteria"]["groundedness"] is True
     assert result["quality_evaluation"]["criteria"]["bias_control"] is False
     assert "bias_control" in result["quality_evaluation"]["issues"]
@@ -253,6 +257,19 @@ def test_neutrality_does_not_flag_optimization_as_recommendation():
 
     report = "MLA 기반으로 긴 문맥 처리에 최적화되어 있다."
     assert not any(re.search(pattern, report, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+
+    neutral_comparison = "비교의 핵심은 승자를 정하는 것이 아니라 조건별 병목을 확인하는 것이다."
+    assert not any(re.search(pattern, neutral_comparison, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+
+    winner_claim = "MLA가 승자다."
+    assert any(re.search(pattern, winner_claim, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+
+
+def test_neutrality_flags_recommendation_like_market_language():
+    import re
+
+    report = "최적의 조합이며 상용화가 가속화될 수 있다."
+    assert any(re.search(pattern, report, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
 
 
 def test_validation_can_retry_synthesis_without_unknown_worker_task():
@@ -293,6 +310,35 @@ def test_unregistered_evidence_paragraph_is_excluded():
     safe = exclude_unregistered_evidence(report, {"rag-aaaaaaaaaaaa"})
     assert "rag-bbbbbbbbbbbb" not in safe
     assert "출처와 연결할 수 없어" in safe
+    assert "등록되지 않은 주장" not in safe
+
+
+def test_unregistered_claim_is_removed_without_losing_verified_sentence():
+    text = "확인한 원리 [rag-aaaaaaaaaaaa]. 비용이 99% 감소했다 [rag-bbbbbbbbbbbb]."
+    safe = exclude_unregistered_evidence(text, {"rag-aaaaaaaaaaaa"})
+    assert "확인한 원리" in safe
+    assert "99%" not in safe
+
+
+def test_validation_does_not_add_unrequested_workers():
+    result = validation_judge({
+        "required_task_ids": ["market_evaluation"],
+        "market_analysis": {"evidence_ids": ["web-aaaaaaaaaaaa"], "analysis": "시장 자료"},
+        "synthesis": {"summary": "정리"},
+        "references": [{"evidence_id": "web-aaaaaaaaaaaa"}],
+    })
+    assert result["validation_result"] == "pass"
+    assert result["retry_targets"] == []
+
+
+def test_reference_reducer_preserves_ids_for_same_url():
+    from state import merge_references
+    common = {"source_type": "web", "url": "https://example.com/a"}
+    references = merge_references(
+        [{**common, "evidence_id": "web-aaaaaaaaaaaa"}],
+        [{**common, "evidence_id": "web-bbbbbbbbbbbb"}],
+    )
+    assert {item["evidence_id"] for item in references} == {"web-aaaaaaaaaaaa", "web-bbbbbbbbbbbb"}
 
 
 def test_short_implications_and_limitations_get_safe_depth_fallback():
@@ -300,6 +346,12 @@ def test_short_implications_and_limitations_get_safe_depth_fallback():
         section = ensure_section_depth("짧은 초안", name, 900)
         assert len(section) >= 900
         assert section.count("\n\n") >= 1
+
+
+def test_short_comparison_gets_safe_depth_fallback():
+    section = ensure_section_depth("짧은 초안", "comparison_conflicts", 650)
+    assert len(section) >= 650
+    assert section.count("\n\n") >= 1
 
 
 def test_worker_filters_only_unregistered_evidence_ids():

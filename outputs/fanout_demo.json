@@ -1,0 +1,46 @@
+{
+  "trace_id": "d97064f9-0a55-4f78-aba1-43b536bb1aea",
+  "purpose": "두 Worker 실행 후 의도적으로 정지한 동적 fan-out 실증",
+  "plan": [
+    {
+      "subtask_id": "technical_research-attempt-1",
+      "task_id": "technical_research",
+      "agent": "technical_research",
+      "objective": "MLA와 ITME의 원리·성능·한계·TRL을 논문 근거로 조사 (대상: DeepSeek-V2 MLA, ITME)",
+      "request": "기술 성숙도와 도메인 적용성만 평가하라.",
+      "status": "pending",
+      "attempt": 1
+    },
+    {
+      "subtask_id": "domain_evaluation-attempt-1",
+      "task_id": "domain_evaluation",
+      "agent": "domain_evaluation",
+      "objective": "데이터센터·클라우드 LLM 서빙 적용성을 동일 기준으로 조사 (대상: DeepSeek-V2 MLA, ITME)",
+      "request": "기술 성숙도와 도메인 적용성만 평가하라.",
+      "status": "pending",
+      "attempt": 1
+    }
+  ],
+  "task_results": [
+    {
+      "task_id": "technical_research",
+      "agent": "technical_research",
+      "status": "success",
+      "attempt": 2,
+      "output_keys": [
+        "technical_analysis",
+        "trl_analysis"
+      ]
+    },
+    {
+      "task_id": "domain_evaluation",
+      "agent": "domain_evaluation",
+      "status": "success",
+      "attempt": 2,
+      "output_keys": [
+        "domain_analysis"
+      ]
+    }
+  ],
+  "errors": []
+}

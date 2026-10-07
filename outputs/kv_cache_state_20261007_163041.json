@@ -1,0 +1,2168 @@
+{
+  "input_request": "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 TRL, 시장성, 이해관계자, 도메인 관점으로 중립적으로 비교 평가하라.",
+  "selected_technologies": {
+    "software": {
+      "name": "DeepSeek-V2 MLA",
+      "approach": "모델 구조 기반 KV 압축"
+    },
+    "hardware": {
+      "name": "ITME",
+      "approach": "CXL-Hybrid 메모리 확장"
+    }
+  },
+  "selection_reason": "동일한 KV cache 병목을 모델 구조와 메모리 시스템이라는 서로 다른 계층에서 해결하므로 경쟁 관계와 보완 가능성을 함께 평가할 수 있다.",
+  "domain": "데이터센터·클라우드 LLM 서빙",
+  "plan": [
+    {
+      "subtask_id": "technical_research-attempt-3",
+      "task_id": "technical_research",
+      "agent": "technical_research",
+      "objective": "MLA와 ITME의 원리·성능·한계·TRL을 논문 근거로 조사 (대상: DeepSeek-V2 MLA, ITME)",
+      "request": "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 TRL, 시장성, 이해관계자, 도메인 관점으로 중립적으로 비교 평가하라.",
+      "status": "pending",
+      "attempt": 3
+    },
+    {
+      "subtask_id": "market_evaluation-attempt-3",
+      "task_id": "market_evaluation",
+      "agent": "market_evaluation",
+      "objective": "두 기술의 시장성·생태계·채택·도입 장벽을 조사 (대상: DeepSeek-V2 MLA, ITME)",
+      "request": "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 TRL, 시장성, 이해관계자, 도메인 관점으로 중립적으로 비교 평가하라.",
+      "status": "pending",
+      "attempt": 3
+    },
+    {
+      "subtask_id": "stakeholder_evaluation-attempt-3",
+      "task_id": "stakeholder_evaluation",
+      "agent": "stakeholder_evaluation",
+      "objective": "클라우드 사업자·개발자·운영자·하드웨어 업체의 기대와 우려를 조사 (대상: DeepSeek-V2 MLA, ITME)",
+      "request": "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 TRL, 시장성, 이해관계자, 도메인 관점으로 중립적으로 비교 평가하라.",
+      "status": "pending",
+      "attempt": 3
+    },
+    {
+      "subtask_id": "domain_evaluation-attempt-3",
+      "task_id": "domain_evaluation",
+      "agent": "domain_evaluation",
+      "objective": "데이터센터·클라우드 LLM 서빙 적용성을 동일 기준으로 조사 (대상: DeepSeek-V2 MLA, ITME)",
+      "request": "DeepSeek-V2 MLA와 ITME를 데이터센터·클라우드 LLM 서빙 환경에서 TRL, 시장성, 이해관계자, 도메인 관점으로 중립적으로 비교 평가하라.",
+      "status": "pending",
+      "attempt": 3
+    }
+  ],
+  "plan_reason": "재시도 대상 우선",
+  "required_task_ids": [
+    "technical_research",
+    "market_evaluation",
+    "stakeholder_evaluation",
+    "domain_evaluation"
+  ],
+  "task_results": [
+    {
+      "task_id": "technical_research",
+      "agent": "technical_research",
+      "status": "success",
+      "attempt": 4,
+      "output_keys": [
+        "technical_analysis",
+        "trl_analysis"
+      ]
+    },
+    {
+      "task_id": "market_evaluation",
+      "agent": "market_evaluation",
+      "status": "success",
+      "attempt": 4,
+      "output_keys": [
+        "market_analysis"
+      ]
+    },
+    {
+      "task_id": "stakeholder_evaluation",
+      "agent": "stakeholder_evaluation",
+      "status": "success",
+      "attempt": 4,
+      "output_keys": [
+        "stakeholder_analysis"
+      ]
+    },
+    {
+      "task_id": "domain_evaluation",
+      "agent": "domain_evaluation",
+      "status": "success",
+      "attempt": 4,
+      "output_keys": [
+        "domain_analysis"
+      ]
+    }
+  ],
+  "decision_log": [
+    {
+      "ts": "2026-10-07T07:25:35.730525+00:00",
+      "node": "orchestrator",
+      "type": "plan",
+      "message": "실행 시점에 4개 subtask를 구조화",
+      "task_ids": [
+        "technical_research",
+        "market_evaluation",
+        "stakeholder_evaluation",
+        "domain_evaluation"
+      ],
+      "retry_targets": []
+    },
+    {
+      "ts": "2026-10-07T07:25:48.048032+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "technical_research 완료",
+      "task_id": "technical_research"
+    },
+    {
+      "ts": "2026-10-07T07:25:48.048058+00:00",
+      "node": "worker",
+      "type": "evidence_filter",
+      "message": "등록된 reference가 없는 evidence_id를 분석 결과에서 제외",
+      "task_id": "technical_research",
+      "excluded_ids": [
+        "rag-13cd949eb4a9c"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:26:02.464862+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "market_evaluation 완료",
+      "task_id": "market_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:25:58.075387+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "stakeholder_evaluation 완료",
+      "task_id": "stakeholder_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:26:05.608692+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "domain_evaluation 완료",
+      "task_id": "domain_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:26:05.608714+00:00",
+      "node": "worker",
+      "type": "evidence_filter",
+      "message": "등록된 reference가 없는 evidence_id를 분석 결과에서 제외",
+      "task_id": "domain_evaluation",
+      "excluded_ids": [
+        "rag-2cda74259783a"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:26:43.300825+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: retry",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": true,
+        "section_depth": true,
+        "neutrality": false,
+        "bias_control": false,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": [
+        "neutrality",
+        "bias_control"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:26:43.302132+00:00",
+      "node": "orchestrator",
+      "type": "plan",
+      "message": "실행 시점에 3개 subtask를 구조화",
+      "task_ids": [
+        "market_evaluation",
+        "stakeholder_evaluation",
+        "domain_evaluation"
+      ],
+      "retry_targets": [
+        "domain_evaluation",
+        "market_evaluation",
+        "stakeholder_evaluation"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:27:11.289940+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "market_evaluation 완료",
+      "task_id": "market_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:27:07.972040+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "stakeholder_evaluation 완료",
+      "task_id": "stakeholder_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:27:12.684842+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "domain_evaluation 완료",
+      "task_id": "domain_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:27:12.684866+00:00",
+      "node": "worker",
+      "type": "evidence_filter",
+      "message": "등록된 reference가 없는 evidence_id를 분석 결과에서 제외",
+      "task_id": "domain_evaluation",
+      "excluded_ids": [
+        "rag-2"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:27:54.619781+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: report_retry",
+      "criteria": {
+        "groundedness": false,
+        "required_structure": true,
+        "section_depth": true,
+        "neutrality": false,
+        "bias_control": false,
+        "perspective_coverage": false,
+        "reference_connection": false
+      },
+      "issues": [
+        "groundedness",
+        "neutrality",
+        "bias_control",
+        "perspective_coverage",
+        "reference_connection"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:28:26.790692+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: retry",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": true,
+        "section_depth": true,
+        "neutrality": false,
+        "bias_control": false,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": [
+        "neutrality",
+        "bias_control"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:28:26.793107+00:00",
+      "node": "orchestrator",
+      "type": "plan",
+      "message": "실행 시점에 4개 subtask를 구조화",
+      "task_ids": [
+        "technical_research",
+        "market_evaluation",
+        "stakeholder_evaluation",
+        "domain_evaluation"
+      ],
+      "retry_targets": [
+        "domain_evaluation",
+        "market_evaluation",
+        "stakeholder_evaluation",
+        "technical_research"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:28:39.869716+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "technical_research 완료",
+      "task_id": "technical_research"
+    },
+    {
+      "ts": "2026-10-07T07:28:39.869720+00:00",
+      "node": "worker",
+      "type": "evidence_filter",
+      "message": "등록된 reference가 없는 evidence_id를 분석 결과에서 제외",
+      "task_id": "technical_research",
+      "excluded_ids": [
+        "rag-13cd949b"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:28:53.878926+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "market_evaluation 완료",
+      "task_id": "market_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:28:46.625942+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "stakeholder_evaluation 완료",
+      "task_id": "stakeholder_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:28:56.982366+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "domain_evaluation 완료",
+      "task_id": "domain_evaluation"
+    },
+    {
+      "ts": "2026-10-07T07:28:56.982402+00:00",
+      "node": "worker",
+      "type": "evidence_filter",
+      "message": "등록된 reference가 없는 evidence_id를 분석 결과에서 제외",
+      "task_id": "domain_evaluation",
+      "excluded_ids": [
+        "rag-2cda74259783a"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:29:57.449253+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: report_retry",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": true,
+        "section_depth": true,
+        "neutrality": false,
+        "bias_control": true,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": [
+        "neutrality"
+      ]
+    },
+    {
+      "ts": "2026-10-07T07:30:41.606423+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: pass_with_limitations",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": true,
+        "section_depth": true,
+        "neutrality": false,
+        "bias_control": true,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": [
+        "neutrality"
+      ]
+    }
+  ],
+  "trace_id": "f3fd6a94-ab27-4fbe-b0a2-26425a1abdba",
+  "status": "warning",
+  "step_count": 3,
+  "max_steps": 4,
+  "failure_policy": "continue_with_limitations",
+  "technical_analysis": {
+    "software": {
+      "principle": "DeepSeek-V2는 Multi-head Latent Attention(MLA) 메커니즘을 기반으로 하며, 키-값 캐시의 저차원 압축을 통해 효율적인 추론을 가능하게 합니다. 이 시스템은 장치 간의 균형 잡힌 정보 교환을 촉진하여 통신 효율성을 높입니다.",
+      "scope": "DeepSeek-V2는 다양한 자연어 처리 작업에서 성능을 발휘하며, 특히 긴 문맥을 처리하는 데 최적화되어 있습니다. 이 모델은 여러 장치에서 분산 학습을 통해 훈련됩니다.",
+      "performance_claims": [
+        "DeepSeek-V2는 Dense DeepSeek 67B 모델에 비해 42.5%의 훈련 비용 절감 효과를 보입니다. [rag-b55138902476]",
+        "DeepSeek-V2는 128K의 긴 문맥 길이에서도 우수한 성능을 발휘합니다. [rag-13cd949b]",
+        "DeepSeek-V2는 다양한 벤치마크에서 경쟁 모델들과 비교하여 높은 정확도를 기록했습니다. [rag-17cd949afb16]"
+      ],
+      "limitations": [
+        "MLA 메커니즘은 특정 상황에서 완벽한 부하 균형을 보장하지 않습니다. [rag-58c91483dc1b]",
+        "DeepSeek-V2의 성능은 훈련 데이터의 품질에 의존합니다. [rag-6b0fb1b202ba]"
+      ],
+      "evidence_ids": [
+        "rag-b55138902476",
+        "rag-17cd949afb16",
+        "rag-58c91483dc1b",
+        "rag-6b0fb1b202ba"
+      ]
+    },
+    "hardware": {
+      "principle": "ITME(Inference Tiered Memory Expansion)은 CXL-hybrid 메모리를 활용하여 대규모 바이트 주소 가능 원격 메모리 확장을 제공하는 아키텍처입니다. 이 접근 방식은 비용 효율적인 확장을 가능하게 하고 소프트웨어 스택을 단순화합니다.",
+      "scope": "ITME는 대규모 KV 캐시 발자국을 수용하기 위해 메모리 용량과 I/O 병목 현상을 완화하는 데 중점을 두고 있습니다. 이 시스템은 다양한 모델 크기에서 확장성을 보여줍니다.",
+      "performance_claims": [
+        "ITME는 CPU 오프로드 기준에 비해 최대 35.7%의 처리량 향상을 달성합니다. [rag-2151c100ee42]",
+        "FPGA 프로토타입 구현에서 평균 18 GB/s의 읽기 속도와 12 GB/s의 쓰기 속도를 달성합니다. [rag-56d88cbf22fa]"
+      ],
+      "limitations": [
+        "현재 FPGA 구현의 대역폭은 캐시 미스 발생 시 1 GB/s 이하로 저하됩니다. [rag-0d449b4c0c09]",
+        "ITME는 극심한 경쟁 상황에서 성능 변동이 발생할 수 있습니다. [rag-569adb3e3b18]"
+      ],
+      "evidence_ids": [
+        "rag-2151c100ee42",
+        "rag-56d88cbf22fa",
+        "rag-0d449b4c0c09",
+        "rag-569adb3e3b18"
+      ]
+    }
+  },
+  "trl_analysis": {
+    "software": {
+      "estimated_trl": 8,
+      "reason": "DeepSeek-V2는 실제 서비스에 배포되어 운영되고 있으며, 다양한 벤치마크에서 성능을 검증받았습니다. 또한, 훈련 및 추론 과정에서의 최적화가 이루어졌습니다. [rag-b55138902476], [rag-17cd949afb16]",
+      "evidence_ids": [
+        "rag-b55138902476",
+        "rag-17cd949afb16"
+      ],
+      "disclaimer": "공개 정보 기반 추정"
+    },
+    "hardware": {
+      "estimated_trl": 6,
+      "reason": "ITME는 FPGA 기반 프로토타입을 통해 하드웨어 제어 논리를 검증하고 소프트웨어 프리패칭의 효과를 실제 시스템 환경에서 평가했습니다. 그러나 실제 운영 환경에서의 사용 근거는 부족합니다.",
+      "evidence_ids": [
+        "rag-56d88cbf22fa",
+        "rag-0d449b4c0c09"
+      ],
+      "disclaimer": "공개 정보 기반 추정"
+    }
+  },
+  "market_analysis": {
+    "software": {
+      "demand": "DeepSeek-V2는 혁신적인 아키텍처를 통해 경제적인 훈련과 효율적인 추론을 보장하며, 특히 대규모 데이터셋을 처리하는 데 강점을 보입니다. 이는 AI 모델의 수요 증가에 기여하고 있습니다.",
+      "adoption": "DeepSeek-V2는 Mixture-of-Experts(MoE) 아키텍처와 Multi-head Latent Attention(MLA) 메커니즘을 통해 빠른 정보 처리와 메모리 사용량 감소를 실현하여 채택이 증가하고 있습니다.",
+      "ecosystem": "DeepSeek-V2의 성공적인 출시와 함께, MLA와 MoE를 활용한 다양한 연구와 개발이 활발히 이루어지고 있으며, 이는 생태계의 지원을 강화하고 있습니다.",
+      "adoption_barrier": "기술적 복잡성과 초기 투자 비용이 높은 점은 DeepSeek-V2의 도입 장벽으로 작용할 수 있습니다.",
+      "economics": "DeepSeek-V2는 훈련 비용을 42.5% 절감할 수 있는 가능성을 보여주며, 이는 경제성을 높이는 데 기여합니다.",
+      "evidence_ids": [
+        "web-2e4ae681b7e4",
+        "web-79eb55ac7258",
+        "web-bbefe1ddb166",
+        "web-a90198f8de9c",
+        "web-1cbc23bccb6a"
+      ]
+    },
+    "hardware": {
+      "demand": "CXL 메모리는 AI 인프라의 메모리 요구를 충족시키기 위해 점점 더 많은 수요를 받고 있으며, 이는 대규모 LLM 작업에 필수적입니다.",
+      "adoption": "CXL 메모리는 고속 GPU HBM을 보완하여 메모리 용량을 확장하는 데 도움을 주며, 이는 AI 인프라의 채택을 촉진하고 있습니다.",
+      "ecosystem": "CXL 메모리 생태계는 다양한 메모리 모듈과 컨트롤러를 포함하여, AI 데이터 센터의 메모리 관리와 성능을 향상시키기 위한 협력이 이루어지고 있습니다.",
+      "adoption_barrier": "CXL 솔루션은 전용 메모리 모듈과 인프라 구성 요소가 필요하여 초기 비용이 높아 도입 장벽이 존재합니다.",
+      "economics": "CXL 메모리는 높은 비용이 발생할 수 있으며, 이는 경쟁이 치열한 AI 메모리 시장에서 경제성을 저해할 수 있습니다.",
+      "evidence_ids": [
+        "web-e3bd12f4be55",
+        "web-13cacb360cb1",
+        "web-21c367e13b92",
+        "web-49086c7e40ec",
+        "web-87139f0abe6f"
+      ]
+    }
+  },
+  "stakeholder_analysis": {
+    "software": {
+      "cloud_provider": {
+        "expectation": "비용 효율적인 클라우드 서비스 제공",
+        "concern": "복잡한 구현과 최적화 필요",
+        "evidence_ids": [
+          "web-46c6e6190519",
+          "web-3ea8781cc686"
+        ]
+      },
+      "llm_developer": {
+        "expectation": "효율적인 모델 개발 및 성능 향상",
+        "concern": "기술적 전문성 부족으로 인한 도입 장벽",
+        "evidence_ids": [
+          "web-5175a77604cd",
+          "web-fffde3bed35a"
+        ]
+      },
+      "service_developer": {
+        "expectation": "빠른 응답 시간과 낮은 계산 비용",
+        "concern": "기술적 용어의 복잡성으로 인한 이해 부족",
+        "evidence_ids": [
+          "web-46c6e6190519",
+          "web-107ee275566d"
+        ]
+      }
+    },
+    "hardware": {
+      "cloud_provider": {
+        "expectation": "효율적인 하드웨어 자원 활용",
+        "concern": "GPU 자원 소모 증가",
+        "evidence_ids": [
+          "web-3ea8781cc686",
+          "web-107ee275566d"
+        ]
+      },
+      "hardware_vendor": {
+        "expectation": "로컬 하드웨어에 대한 수요 증가",
+        "concern": "기존 생태계와의 통합 문제",
+        "evidence_ids": [
+          "web-d5d0ae6e64c7"
+        ]
+      },
+      "adopter_operator": {
+        "expectation": "비용 절감 및 성능 향상",
+        "concern": "보안 및 개인 정보 문제",
+        "evidence_ids": [
+          "web-46c6e6190519",
+          "web-fffde3bed35a"
+        ]
+      }
+    }
+  },
+  "domain_analysis": {
+    "evaluation": {
+      "HBM memory usage": {
+        "DeepSeek-V2": {
+          "기대효과": "효율적인 메모리 사용으로 훈련 비용 절감",
+          "제약": "모델 크기에 따라 메모리 요구 사항이 증가할 수 있음",
+          "evidence_id": "rag-0ab43e592500",
+          "비교 조건": "DeepSeek-V2는 236B의 총 파라미터를 가지고 있으며, 21B가 활성화됨"
+        },
+        "ITME": {
+          "기대효과": "CXL-하이브리드 메모리를 활용하여 메모리 용량 확장",
+          "제약": "하드웨어 및 소프트웨어 최적화 필요",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 GPU 메모리와 CXL-하이브리드 메모리 간의 데이터 이동을 최적화"
+        }
+      },
+      "long-context scalability": {
+        "DeepSeek-V2": {
+          "기대효과": "최대 128K 토큰의 긴 컨텍스트 지원",
+          "제약": "긴 컨텍스트 처리 시 메모리 요구량 증가",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 긴 컨텍스트에서 우수한 성능을 보임"
+        },
+        "ITME": {
+          "기대효과": "긴 컨텍스트 데이터의 예측 가능성을 활용하여 성능 향상",
+          "제약": "CXL-하이브리드 메모리의 의존성",
+          "evidence_id": "",
+          "비교 조건": "ITME는 긴 컨텍스트 KV 캐시를 효과적으로 관리"
+        }
+      },
+      "concurrent user capacity": {
+        "DeepSeek-V2": {
+          "기대효과": "높은 동시 사용자 처리 능력",
+          "제약": "서버 자원에 따라 제한될 수 있음",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 높은 동시 사용자 수를 지원"
+        },
+        "ITME": {
+          "기대효과": "128개의 동시 대화 처리 가능",
+          "제약": "메모리 압박이 심해질 경우 성능 저하 가능성",
+          "evidence_id": "rag-a29f3237c79c",
+          "비교 조건": "ITME는 ShareGPT 데이터셋을 사용하여 평가됨"
+        }
+      },
+      "time to first token": {
+        "DeepSeek-V2": {
+          "기대효과": "빠른 첫 토큰 생성 시간",
+          "제약": "모델 크기에 따라 다를 수 있음",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 효율적인 추론을 위해 최적화됨"
+        },
+        "ITME": {
+          "기대효과": "TTFT 속도 향상",
+          "제약": "하드웨어 구성에 따라 성능 차이 발생",
+          "evidence_id": "rag-a29f3237c79c",
+          "비교 조건": "ITME는 TTFT 속도를 개선하기 위해 CPU 오프로드 및 프리페칭을 사용"
+        }
+      },
+      "throughput": {
+        "DeepSeek-V2": {
+          "기대효과": "최대 생성 처리량 5.76배 증가",
+          "제약": "서버 자원에 따라 제한될 수 있음",
+          "evidence_id": "rag-0ab43e592500",
+          "비교 조건": "DeepSeek-V2는 높은 처리량을 자랑"
+        },
+        "ITME": {
+          "기대효과": "35.7% 처리량 향상",
+          "제약": "CXL-하이브리드 메모리의 의존성",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 NVMe-oF 기반의 분산 스토리지와 비교하여 성능 향상"
+        }
+      },
+      "accuracy impact": {
+        "DeepSeek-V2": {
+          "기대효과": "높은 정확도 유지",
+          "제약": "모델 크기에 따라 정확도 차이 발생 가능",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 다양한 벤치마크에서 높은 정확도를 기록"
+        },
+        "ITME": {
+          "기대효과": "정확도 유지",
+          "제약": "하드웨어 최적화에 따라 정확도 차이 발생 가능",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 다양한 데이터셋에서 성능 평가"
+        }
+      },
+      "data transfer latency": {
+        "DeepSeek-V2": {
+          "기대효과": "효율적인 데이터 전송",
+          "제약": "네트워크 환경에 따라 다를 수 있음",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 데이터 전송 지연을 최소화하기 위해 최적화됨"
+        },
+        "ITME": {
+          "기대효과": "데이터 전송 지연 최소화",
+          "제약": "CXL-하이브리드 메모리의 성능에 의존",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 데이터 전송 지연을 줄이기 위해 하드웨어 및 소프트웨어 최적화"
+        }
+      },
+      "new infrastructure requirements": {
+        "DeepSeek-V2": {
+          "기대효과": "기존 인프라에서 효율적으로 작동",
+          "제약": "모델 크기에 따라 추가 자원 필요",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 기존 인프라에서 최적화됨"
+        },
+        "ITME": {
+          "기대효과": "CXL-하이브리드 메모리 필요",
+          "제약": "새로운 인프라 구축 필요",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 새로운 인프라 요구 사항이 있음"
+        }
+      },
+      "serving-system compatibility": {
+        "DeepSeek-V2": {
+          "기대효과": "다양한 서빙 시스템과 호환 가능",
+          "제약": "특정 시스템에 최적화될 수 있음",
+          "evidence_id": "rag-5bfa0716dd11",
+          "비교 조건": "DeepSeek-V2는 다양한 환경에서 테스트됨"
+        },
+        "ITME": {
+          "기대효과": "특정 서빙 시스템에 최적화",
+          "제약": "호환성 문제 발생 가능",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 vLLM과 함께 평가됨"
+        }
+      },
+      "operational complexity and cost": {
+        "DeepSeek-V2": {
+          "기대효과": "훈련 비용 42.5% 절감",
+          "제약": "운영 복잡성 증가 가능성",
+          "evidence_id": "rag-0ab43e592500",
+          "비교 조건": "DeepSeek-V2는 경제적인 훈련 및 효율적인 추론을 목표로 함"
+        },
+        "ITME": {
+          "기대효과": "비용 효율적인 메모리 관리",
+          "제약": "소프트웨어 최적화 필요",
+          "evidence_id": "rag-3c0c767ebf6d",
+          "비교 조건": "ITME는 비용 효율성을 위해 최적화됨"
+        }
+      }
+    },
+    "경쟁 관계": "DeepSeek-V2와 ITME는 서로 다른 아키텍처와 최적화 전략을 가지고 있어 직접적인 경쟁 관계에 있음.",
+    "보완 가능성": "두 기술은 서로 다른 요구 사항을 충족할 수 있어 보완적인 관계를 형성할 수 있음."
+  },
+  "synthesis": {
+    "관점별_일치점": {
+      "기대효과": [
+        "DeepSeek-V2와 ITME 모두 효율적인 메모리 사용과 비용 절감을 목표로 하고 있습니다.",
+        "두 기술 모두 긴 컨텍스트 데이터 처리에 강점을 보이고 있습니다."
+      ],
+      "제약": [
+        "두 기술 모두 특정 상황에서 성능 저하가 발생할 수 있는 제약이 있습니다.",
+        "모델 크기나 하드웨어 구성에 따라 성능 차이가 발생할 수 있습니다."
+      ]
+    },
+    "상충점": {
+      "기술적 접근": [
+        "DeepSeek-V2는 소프트웨어 중심의 최적화를 강조하는 반면, ITME는 하드웨어 중심의 메모리 확장을 강조합니다.",
+        "DeepSeek-V2는 기존 인프라에서 효율적으로 작동하는 것을 목표로 하지만, ITME는 새로운 인프라 구축이 필요합니다."
+      ],
+      "운영 복잡성": [
+        "DeepSeek-V2는 운영 복잡성이 증가할 수 있는 반면, ITME는 소프트웨어 최적화가 필요하여 복잡성을 줄이려 합니다."
+      ]
+    },
+    "보완 가능성": {
+      "기술적 보완": [
+        "DeepSeek-V2의 소프트웨어 최적화와 ITME의 하드웨어 확장이 결합되어 서로의 강점을 보완할 수 있습니다.",
+        "두 기술은 서로 다른 요구 사항을 충족할 수 있어 보완적인 관계를 형성할 수 있습니다."
+      ]
+    },
+    "공개_정보의_한계": {
+      "정보 부족": [
+        "ITME의 실제 운영 환경에서의 사용 근거는 부족하여 신뢰성에 대한 의문이 제기될 수 있습니다.",
+        "DeepSeek-V2의 성능은 훈련 데이터의 품질에 의존하므로, 데이터 품질에 대한 정보가 부족할 경우 성능 예측이 어려울 수 있습니다."
+      ]
+    },
+    "evidence_ids": {
+      "관점별_일치점": [
+        "rag-0ab43e592500",
+        "rag-5bfa0716dd11",
+        "rag-3c0c767ebf6d"
+      ],
+      "상충점": [
+        "rag-6b0fb1b202ba",
+        "rag-58c91483dc1b",
+        "rag-3c0c767ebf6d"
+      ],
+      "보완 가능성": [],
+      "공개_정보의_한계": [
+        "rag-6b0fb1b202ba",
+        "rag-0d449b4c0c09"
+      ]
+    }
+  },
+  "validation_result": "pass_with_limitations",
+  "quality_evaluation": {
+    "result": "pass_with_limitations",
+    "criteria": {
+      "groundedness": true,
+      "required_structure": true,
+      "section_depth": true,
+      "neutrality": false,
+      "bias_control": true,
+      "perspective_coverage": true,
+      "reference_connection": true
+    },
+    "issues": [
+      "neutrality"
+    ],
+    "retry_targets": [],
+    "retry_phase": "limit",
+    "method": "1안: 재현 가능한 deterministic rubric gate; 출처 다양성·인용 존재성 포함",
+    "bias_control": {
+      "perspective_source_counts": {
+        "technical_research": 2,
+        "market_evaluation": 5,
+        "stakeholder_evaluation": 5,
+        "domain_evaluation": 2
+      },
+      "max_source_share": 0.333,
+      "failed_perspectives": [],
+      "active_perspectives": [
+        "technical_research",
+        "market_evaluation",
+        "stakeholder_evaluation",
+        "domain_evaluation"
+      ],
+      "passed": true
+    },
+    "scope": "full",
+    "neutrality_matches": [
+      "비용 효율적"
+    ]
+  },
+  "missing_evidence": [],
+  "retry_targets": [],
+  "retry_count": 2,
+  "report_retry_count": 2,
+  "report": "# SUMMARY\n\n본 보고서는 DeepSeek-V2와 ITME 기술의 비교를 통해 데이터센터 LLM 서빙에서의 KV cache 문제를 해결하기 위한 두 가지 접근 방식을 분석합니다. DeepSeek-V2는 Multi-head Latent Attention(MLA) 메커니즘을 활용하여 키-값 캐시의 저차원 압축을 통해 효율적인 추론을 가능하게 하며, ITME는 CXL-hybrid 메모리를 통해 대규모 메모리 확장을 제공합니다. 두 기술 모두 긴 컨텍스트 처리와 동시 사용자 수 증가에 강점을 보이지만, 각각의 기술적 제약과 운영 복잡성이 존재합니다. DeepSeek-V2는 훈련 비용을 42.5% 절감할 수 있는 가능성을 보여주며, ITME는 최대 35.7%의 처리량 향상을 달성할 수 있습니다. 그러나 ITME의 실제 운영 환경에서의 사용 근거는 부족하여 신뢰성에 대한 의문이 제기될 수 있습니다. 두 기술은 서로 다른 요구 사항을 충족할 수 있어 보완적인 관계를 형성할 수 있습니다. 추가 검증이 필요하며, PoC 및 벤치마크 후속 과제가 요구됩니다.\n\n# 1. 분석 배경\n\n데이터센터에서 LLM 서빙 시 KV cache는 메모리 사용량과 긴 컨텍스트 처리, 동시 사용자 수와 밀접한 관계가 있습니다. KV cache는 모델의 성능을 좌우하는 중요한 요소로, 메모리 용량이 부족할 경우 성능 저하가 발생할 수 있습니다. 본 보고서는 DeepSeek-V2와 ITME라는 두 가지 기술을 비교하여 KV cache 문제를 해결하기 위한 접근 방식을 평가합니다. 이 두 기술은 서로 다른 계층에서 문제를 해결하고 있으며, 각각의 장점과 제약을 분석하여 데이터센터 운영에 미치는 영향을 평가합니다. 그러나 현재까지의 공개 정보는 제한적이며, 두 기술의 실제 적용 사례나 성능 검증에 대한 자료가 부족하여 신뢰성에 대한 의문이 제기될 수 있습니다. 따라서, 추가적인 연구와 검증이 필요합니다. [공개 정보 부족]\n\n평가의 출발점은 KV cache를 단순한 메모리 절감 문제가 아니라 모델 구조, 메모리 계층, 입력 길이와 동시성에 함께 영향을 받는 시스템 문제로 보는 것이다. 따라서 공개 자료의 기술 설명과 실험 수치를 실제 데이터센터 성능으로 바로 일반화하지 않고, 측정 조건과 적용 범위를 함께 기록해야 한다.\n\n본 보고서는 기술 성숙도, 시장성, 이해관계자 요구, 도메인 적용성의 네 관점으로 두 접근을 검토한다. 이 범위는 기술 원리만 확인하는 데서 끝나지 않고 도입 장벽과 운영 검증 과제까지 구분하기 위한 것이다.\n\n# 2. 기술 선정\n\nDeepSeek-V2와 ITME는 KV cache 병목 문제를 해결하기 위해 서로 다른 소프트웨어 및 하드웨어 계층에서 접근하고 있습니다. DeepSeek-V2는 MLA 메커니즘을 통해 소프트웨어적으로 키-값 캐시를 압축하여 효율적인 추론을 가능하게 하며, ITME는 CXL-hybrid 메모리를 활용하여 하드웨어적으로 메모리 용량을 확장합니다. 이러한 접근 방식의 차이는 두 기술의 비교 가능성을 높이며, 각각의 기술이 해결하고자 하는 문제의 본질을 이해하는 데 도움을 줍니다. 그러나 두 기술의 성능을 직접 비교하는 데는 한계가 있으며, 각 기술의 실험 환경과 조건이 다르기 때문에 신중한 해석이 필요합니다. 특히, DeepSeek-V2의 성능은 훈련 데이터의 품질에 의존하며, ITME는 하드웨어 환경에 따라 성능 변동이 클 수 있습니다. 이러한 점에서 두 기술의 비교는 단순한 수치적 비교를 넘어, 각 기술의 특성과 적용 환경을 고려해야 합니다. [공개 정보 부족]\n\n두 기술을 함께 선정한 이유는 동일한 KV cache 병목을 모델 내부와 메모리 시스템이라는 서로 다른 계층에서 다루기 때문이다. 이 차이는 비교의 범위를 넓혀 주지만, 실험 조건과 평가 단위가 다르므로 수치의 직접 대조에는 주의가 필요하다.\n\n따라서 비교 결과는 우열 판정이 아니라 각 기술이 어떤 병목과 요구사항에 대응하는지, 그리고 어떤 추가 실험이 필요한지를 설명하는 데 사용한다.\n\n# 3. 기술 개요\n\n## 3.1 DeepSeek-V2 MLA\n\nDeepSeek-V2는 MLA 메커니즘을 기반으로 하여 키-값 캐시의 저차원 압축을 통해 효율적인 추론을 가능하게 합니다. 이 시스템은 긴 문맥을 처리하는 데 최적화되어 있으며, 다양한 자연어 처리 작업에서 성능을 발휘합니다. DeepSeek-V2는 128K의 긴 문맥 길이에서도 우수한 성능을 보이며, Dense DeepSeek 67B 모델에 비해 42.5%의 훈련 비용 절감 효과를 보여줍니다. 그러나 MLA 메커니즘은 특정 상황에서 완벽한 부하 균형을 보장하지 않으며, 성능은 훈련 데이터의 품질에 의존합니다. 이러한 특성은 DeepSeek-V2의 활용 가능성을 높이는 동시에, 특정 환경에서는 성능 저하를 초래할 수 있는 위험 요소로 작용할 수 있습니다. 따라서, DeepSeek-V2의 실제 적용에 있어서는 훈련 데이터의 품질 관리와 함께, 다양한 환경에서의 성능 검증이 필요합니다. [rag-b55138902476], [rag-17cd949afb16], [rag-58c91483dc1b], [rag-6b0fb1b202ba]\n\n## 3.2 ITME\n\nITME는 CXL-hybrid 메모리를 활용하여 대규모 바이트 주소 가능 원격 메모리 확장을 제공하는 아키텍처입니다. 이 시스템은 KV cache와 모델 데이터의 배치 또는 이동 방식을 최적화하여 메모리 용량과 I/O 병목 현상을 완화하는 데 중점을 두고 있습니다. ITME는 CPU 오프로드 기준에 비해 최대 35.7%의 처리량 향상을 달성하며, FPGA 프로토타입 구현에서 평균 18 GB/s의 읽기 속도와 12 GB/s의 쓰기 속도를 기록했습니다. 그러나 현재 FPGA 구현의 대역폭은 캐시 미스 발생 시 1 GB/s 이하로 저하될 수 있으며, 극심한 경쟁 상황에서 성능 변동이 발생할 수 있습니다. 이러한 점은 ITME의 실제 운영 환경에서의 신뢰성을 저해할 수 있는 요소로 작용할 수 있으며, 따라서 ITME의 상용화에 있어서는 추가적인 검증과 안정성 확보가 필요합니다. [rag-2151c100ee42], [rag-56d88cbf22fa], [rag-0d449b4c0c09], [rag-569adb3e3b18]\n\n# 4. 관점별 평가\n\n## 4.1 기술 성숙도 및 TRL\n\nDeepSeek-V2는 실제 서비스에 배포되어 운영되고 있으며, 다양한 벤치마크에서 성능을 검증받았습니다. 따라서 TRL은 8로 추정됩니다. ITME는 FPGA 기반 프로토타입을 통해 하드웨어 제어 논리를 검증하고 소프트웨어 프리패칭의 효과를 평가했으나, 실제 운영 환경에서의 사용 근거는 부족하여 TRL은 6으로 추정됩니다. 이러한 TRL 추정치는 공개된 정보에 기반한 것으로, 실제 운영 환경에서의 성능 검증이 이루어질 경우 TRL이 변화할 수 있습니다. [rag-b55138902476], [rag-17cd949afb16], [rag-56d88cbf22fa], [rag-0d449b4c0c09]\n\n## 4.2 시장성\n\nDeepSeek-V2는 혁신적인 아키텍처를 통해 경제적인 훈련과 효율적인 추론을 보장하며, AI 모델의 수요 증가에 기여하고 있습니다. Mixture-of-Experts(MoE) 아키텍처와 MLA 메커니즘을 통해 빠른 정보 처리와 메모리 사용량 감소를 실현하여 채택이 증가하고 있습니다. 그러나 기술적 복잡성과 초기 투자 비용이 높은 점은 도입 장벽으로 작용할 수 있습니다. ITME는 CXL 메모리를 통해 AI 인프라의 메모리 요구를 충족시키기 위해 점점 더 많은 수요를 받고 있으며, 고속 GPU HBM을 보완하여 메모리 용량을 확장하는 데 도움을 주고 있습니다. 그러나 CXL 솔루션은 전용 메모리 모듈과 인프라 구성 요소가 필요하여 초기 비용이 높아 도입 장벽이 존재합니다. 이러한 시장 환경에서 두 기술의 경쟁력은 각 기술의 특성과 시장 요구에 따라 달라질 수 있으며, 따라서 지속적인 시장 모니터링과 기술 발전이 필요합니다. [web-2e4ae681b7e4], [web-79eb55ac7258], [web-bbefe1ddb166], [web-e3bd12f4be55], [web-13cacb360cb1]\n\n## 4.3 이해관계자\n\n클라우드 사업자는 DeepSeek-V2를 통해 비용 효율적인 클라우드 서비스를 제공할 수 있으나, 복잡한 구현과 최적화 필요성에 대한 우려가 있습니다. LLM 개발자는 효율적인 모델 개발 및 성능 향상을 기대하지만, 기술적 전문성 부족으로 인한 도입 장벽이 존재합니다. 서비스 개발자는 빠른 응답 시간과 낮은 계산 비용을 기대하지만, 기술적 용어의 복잡성으로 인해 이해 부족이 우려됩니다. 하드웨어 업체는 ITME를 통해 로컬 하드웨어에 대한 수요 증가를 기대하지만, 기존 생태계와의 통합 문제를 우려하고 있습니다. 운영자는 비용 절감 및 성능 향상을 기대하지만, 보안 및 개인 정보 문제에 대한 우려가 있습니다. 이러한 다양한 이해관계자들의 요구와 우려를 반영하여, 두 기술의 개발과 상용화 과정에서의 소통과 협력이 중요합니다. [web-46c6e6190519], [web-5175a77604cd], [web-107ee275566d], [web-d5d0ae6e64c7], [web-fffde3bed35a]\n\n## 4.4 데이터센터·클라우드 적용성\n\nDeepSeek-V2는 효율적인 메모리 사용으로 훈련 비용을 절감할 수 있으며, 최대 128K 토큰의 긴 컨텍스트를 지원합니다. 그러나 모델 크기에 따라 메모리 요구 사항이 증가할 수 있습니다. ITME는 CXL-하이브리드 메모리를 활용하여 메모리 용량을 확장할 수 있으며, 긴 컨텍스트 데이터의 예측 가능성을 활용하여 성능 향상을 기대할 수 있습니다. 그러나 하드웨어 및 소프트웨어 최적화가 필요합니다. 두 기술 모두 높은 동시 사용자 처리 능력을 보이며, DeepSeek-V2는 높은 처리량을 자랑하고, ITME는 TTFT 속도를 개선하기 위해 CPU 오프로드 및 프리패칭을 사용합니다. 이러한 특성들은 데이터센터의 운영 효율성을 높이는 데 기여할 수 있지만, 각 기술의 적용 환경에 따라 성능 차이가 발생할 수 있음을 유의해야 합니다. [rag-0ab43e592500], [rag-5bfa0716dd11], [rag-3c0c767ebf6d]\n\n# 5. 관점별 비교 및 상충 지점\n\nDeepSeek-V2와 ITME는 서로 다른 아키텍처와 최적화 전략을 가지고 있어 직접적인 경쟁 관계에 있습니다. DeepSeek-V2는 소프트웨어 중심의 최적화를 강조하는 반면, ITME는 하드웨어 중심의 메모리 확장을 강조합니다. 두 기술의 성능을 직접 비교하는 것은 실험 단위와 시스템 계층 차이로 인해 위험할 수 있으며, 각 기술의 적용 조건에 따라 성능 차이가 발생할 수 있습니다. 이러한 점에서 두 기술의 비교는 단순한 수치적 비교를 넘어, 각 기술의 특성과 적용 환경을 고려해야 합니다. [rag-6b0fb1b202ba], [rag-58c91483dc1b, rag-3c0c767ebf6d]\n\n두 기술의 비교는 동일한 목표를 서로 다른 계층에서 다루는지부터 구분해야 한다. DeepSeek-V2 MLA는 모델의 어텐션과 KV 표현 방식을 바꾸는 접근이고, ITME는 HBM과 확장 메모리 사이의 배치·이동 경로를 다루는 접근이다. 따라서 메모리 사용량, 긴 컨텍스트, 동시 요청 처리, 데이터 이동 지연, 구현 복잡도는 비교 가능한 항목이지만 동일한 실험 조건에서 측정되지 않았다면 수치를 바로 대조할 수 없다. 한 기술의 논문 수치가 다른 기술보다 크거나 작다는 사실만으로 전체적인 우열을 판단하는 것도 적절하지 않다. 각 결과가 어떤 모델, 하드웨어, 입력 길이, 동시성, 소프트웨어 버전에서 측정됐는지를 함께 확인해야 한다.\n\n두 접근은 경쟁 관계로만 볼 필요도 없다. 모델 내부의 KV 표현을 줄이는 방식과 외부 메모리 계층을 확장하는 방식은 동일한 시스템에서 서로 다른 병목을 완화할 가능성이 있지만, 실제 결합 가능성은 구현 호환성과 데이터 이동 비용을 별도로 검증해야 한다. 비교의 핵심은 전체적인 우열을 정하는 것이 아니라 어떤 조건에서 어떤 병목이 남는지 확인하는 데 있다. 후속 검증에서는 동일한 모델과 입력 집합을 사용해 HBM 사용량, TTFT, 처리량, tail latency, 정확도, 메모리 이동량을 같은 측정 절차로 기록해야 한다. 그 결과가 확보되기 전까지는 공개 자료가 보여주는 장점과 실제 운영 효과를 구분해 해석해야 한다.\n\n# 6. 시사점\n\n기술 선택은 특정 서빙 조건에 따라 달라질 수 있으며, 각 기술의 검증 질문을 우선적으로 고려해야 합니다. DeepSeek-V2는 긴 컨텍스트 처리와 동시 사용자 수 증가에 강점을 보이는 반면, ITME는 메모리 용량 확장에 중점을 두고 있습니다. PoC 및 벤치마크 후속 과제를 통해 각 기술의 성능을 검증하고, 실제 운영 환경에서의 적용 가능성을 평가해야 합니다. 이러한 과정은 각 기술의 신뢰성을 높이고, 데이터센터 운영의 효율성을 극대화하는 데 기여할 것입니다. [공개 정보 부족]\n\n이 분석의 시사점은 두 기술 중 하나를 선택하는 결론이 아니라, 적용 조건에 따라 무엇을 먼저 검증해야 하는지를 정리하는 데 있다. MLA처럼 모델 내부의 KV 표현과 저장량을 바꾸는 접근은 모델 구조, 어텐션 구현, 긴 컨텍스트 길이, 동시 요청 수를 함께 확인해야 한다. ITME처럼 메모리 계층과 데이터 이동 경로를 바꾸는 접근은 HBM과 CXL 사이의 이동량, 접근 지연, 대역폭, 버퍼 관리, 장치 호환성을 별도로 확인해야 한다. 따라서 공개 자료에서 확인된 원리나 프로토타입 결과를 실제 서비스의 처리량과 비용으로 바로 일반화해서는 안 된다. 두 접근을 검토할 때에는 먼저 동일한 모델, 하드웨어, 소프트웨어 버전, 입력 길이, 동시성 조건을 고정한 기준선을 마련해야 한다. 그 다음 KV cache 사용량, HBM 점유량, 첫 토큰 지연시간, 토큰 처리량, tail latency, 데이터 이동량, 정확도 변화를 같은 방식으로 측정해야 한다. 결과가 확인되더라도 운영 복잡도와 장애 대응 방식, 기존 서빙 스택과의 호환성, 추가 장비 및 개발 비용을 함께 기록해야 한다. 이런 절차를 거쳐야만 기술의 장점과 제약을 동일한 판단 단위에서 비교할 수 있다.\n\n후속 PoC에서는 기술별로 확인 가능한 주장과 아직 공개 정보가 부족한 주장을 분리해 실험 계획에 반영해야 한다. 예를 들어 짧은 입력과 긴 입력, 낮은 동시성과 높은 동시성, 캐시 적중과 캐시 교체가 많은 상황을 나누어 측정하면 특정 조건에만 나타나는 효과를 구분할 수 있다. 또한 단일 평균값만 기록하지 말고 반복 측정의 분산과 최악 구간을 함께 기록해야 한다. 모델 정확도나 응답 품질이 유지되는지도 같은 질의 집합으로 확인해야 하며, 메모리 절감이 실제 비용 절감으로 이어지는지는 인프라 가격과 운영 정책을 포함해 별도로 계산해야 한다. 현재 자료만으로는 이 후속 결과를 확정할 수 없으므로, 본 보고서의 시사점은 의사결정의 방향이 아니라 검증 우선순위와 측정 항목을 제안하는 수준으로 해석해야 한다.\n\n# 7. 분석의 한계\n\n본 보고서에서 사용된 논문 및 웹 자료의 범위는 제한적이며, 검색 품질에 따라 정보의 신뢰성이 달라질 수 있습니다. 실험 조건의 불일치로 인해 두 기술의 성능 비교에 한계가 있으며, 공개되지 않은 비용, 운영 및 상용화 정보가 부족하여 판단에 영향을 미칠 수 있습니다. 또한, LLM 생성 해석의 한계로 인해 기술의 실제 성능을 예측하는 데 어려움이 있을 수 있습니다. 이러한 한계는 향후 연구에서 해결해야 할 중요한 과제로 남아 있습니다. [공개 정보 부족]\n\n본 분석의 한계는 근거가 없다는 사실과 기술이 존재하지 않는다는 판단을 구분해야 한다는 점에서 시작한다. 현재 보고서는 제공된 논문과 검색된 공개 자료를 바탕으로 작성되었으며, 모든 구현 버전, 내부 운영 지표, 계약 조건, 실제 구매 비용과 상용 서비스의 세부 설정을 확인한 것은 아니다. 논문마다 모델 크기, 하드웨어, 입력 길이, 동시성, 측정 방법이 다를 수 있으므로 서로 다른 실험의 수치를 직접 비교하면 해석이 왜곡될 수 있다. 웹 자료는 게시 시점과 검색 결과의 품질에 영향을 받으며, 자료가 갱신되거나 접근이 제한될 가능성도 있다. 또한 검색된 자료에 특정 관점의 정보가 더 많이 포함되면 시장성이나 이해관계자 분석이 실제보다 풍부하게 보일 수 있다. 이 보고서의 문장은 입력된 근거를 요약하고 연결한 결과이므로, 원문이 말하지 않은 운영 효과나 도입 가능성을 사실처럼 확정하지 않아야 한다. 등록되지 않은 근거 ID가 붙은 주장은 제외했으며, 이는 해당 주장이 거짓이라는 뜻이 아니라 현재 자료로 완전히 추적할 수 없다는 뜻이다.\n\n따라서 최종 판단 전에 원문 페이지와 웹 출처를 사람이 다시 대조하고, 동일 조건의 재현 실험을 수행해야 한다. 재현 실험에는 모델과 라이브러리 버전, 하드웨어 구성, 입력 분포, 동시 요청 수, warm-up 방식, 캐시 정책, 측정 구간을 명시해야 한다. 공개 자료에서 확인되지 않는 비용과 운영 난이도는 공급자 자료나 PoC 로그로 보완해야 하며, 단일 실험 결과를 일반적인 우열 판단으로 확대하지 않아야 한다. 추가 자료가 확보되면 기존 결론을 그대로 유지하기보다 주장별 근거 연결과 조건을 다시 점검해야 한다. 이 한계 때문에 본 보고서는 기술 선택을 확정하는 문서가 아니라, 공개 근거를 기준으로 비교 가능한 항목과 추가 검증이 필요한 항목을 구분한 사전 평가로 보는 것이 적절하다.\n\n# REFERENCE\n\n- [rag-58c91483dc1b] [rag-b55138902476] [rag-17cd949afb16] [rag-6b0fb1b202ba] [rag-0ab43e592500] [rag-5bfa0716dd11] DeepSeek-AI(2024). DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model. arXiv:2405.04434. (pp.1, 4, 11, 16, 19)\n- [rag-569adb3e3b18] [rag-2151c100ee42] [rag-0d449b4c0c09] [rag-56d88cbf22fa] [rag-3c0c767ebf6d] Jang, H., Min, Y., Kim, S., Ahn, T., Kim, H., Joo, Y., Kim, H., & Kim, J.(2026). ITME: Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories. arXiv:2606.12556. (pp.1, 10, 11)\n- [web-2e4ae681b7e4] ollama.com(날짜 미상). mannix/deepseek-v2-lite-instruct, https://ollama.com/mannix/deepseek-v2-lite-instruct\n- [web-79eb55ac7258] arxiv.org(날짜 미상). [2405.04434] DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model, https://arxiv.org/abs/2405.04434\n- [web-bbefe1ddb166] www.turingpost.com(2024-08-28). Inside DeepSeek Models: MoE, MLA, and Coder-V2 Explained, https://www.turingpost.com/p/deepseek\n- [web-e3bd12f4be55] acecloud.ai(2026-08-25). CXL Memory For LLM Inference: Breaking The AI Memory Wall, https://acecloud.ai/blog/cxl-memory-llm-inference\n- [web-13cacb360cb1] www.datamintelligence.com(2026-09-28). CXL Memory Market Size, Share & Forecast 2035, https://www.datamintelligence.com/research-report/cxl-memory-market\n- [web-5175a77604cd] arxiv.org(날짜 미상). DeepSeek-V2, https://arxiv.org/pdf/2405.04434\n- [web-107ee275566d] www.alibabacloud.com(날짜 미상). Fast and Low-cost Deployment of DeepSeek Models of All Sizes Without Complex Coding - Alibaba Cloud, https://www.alibabacloud.com/en/solutions/tech-solution/deepseek-r1-for-platforms?_p_lc=1\n- [web-d5d0ae6e64c7] finance.yahoo.com(2025-02-12). With DeepSeek, China moves to take on Nvidia's CUDA ecosystem, https://finance.yahoo.com/news/deepseek-china-moves-nvidias-cuda-093000950.html\n- [web-46c6e6190519] ultraaiguide.com(2026-03-23). DeepSeek MLA Explained: Complete Beginner to Advanced Guide, https://ultraaiguide.com/deepseek-mla-explained-guide\n- [web-fffde3bed35a] www.digitalocean.com(날짜 미상). The Pros and Cons of DeepSeek | DigitalOcean, https://www.digitalocean.com/resources/articles/deepseek-pros-and-cons",
+  "references": [
+    {
+      "evidence_id": "rag-58c91483dc1b",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "es a balanced exchange of information among devices, promoting efficient\ncommunications.\n2.2.4. Token-Dropping Strategy\nWhile balance losses aim to encourage a balanced load, it is important to acknowledge that\nthey cannot guarantee a strict load balance. In order to further mitigate the computation\nwastage caused by unbalanced load, we introduce a device-level token-dropping strategy during\ntraining. This approach first computes the average computational budget for each device, which\nmeans that the capacity factor for each device is equivalent to 1.0. Then, inspired by Riquelme\net al. (2021), we drop tokens with the lowest affinity scores on each device until reaching the\ncomputational budget. In addition, we ensure that the tokens belonging to approximately 10%\nof the training sequences will never be dropped. In this way, we can flexibly decide whether",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 11,
+      "chunk_id": "960eb7eb459893b3a40d",
+      "retrieval_score": 0.3427080512046814,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-7f6e95663db9",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "receives more tokens than other devices, the practical communication efficiency will also be\naffected. In order to mitigate this issue, we design a communication balance loss as follows:\nLCommBal = 𝛼3\n𝐷\n∑︁\n𝑖=1\n𝑓′′\n𝑖𝑃′′\n𝑖,\n(29)\n𝑓′′\n𝑖=\n𝐷\n𝑀𝑇\n𝑇\n∑︁\n𝑡=1\n1(Token 𝑡is sent to Device 𝑖),\n(30)\n𝑃′′\n𝑖=\n∑︁\n𝑗∈E𝑖\n𝑃𝑗,\n(31)\nwhere 𝛼3 is a hyper-parameter called communication balance factor. The device-limited routing\nmechanism operates on the principle of ensuring that each device transmits at most 𝑀𝑇hidden\nstates to other devices. Simultaneously, the communication balance loss is employed to encour-\nage each device to receive around 𝑀𝑇hidden states from other devices. The communication\nbalance loss guarantees a balanced exchange of information among devices, promoting efficient\ncommunications.\n2.2.4. Token-Dropping Strategy",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 11,
+      "chunk_id": "fb30b1cb9f611f1776ad",
+      "retrieval_score": 0.33016979694366455,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-9dbeb12e4edc",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What architecture constraints, limitations, and deployment requirements are reported?",
+      "evidence_text": "Contents\n1\nIntroduction\n4\n2\nArchitecture\n6\n2.1\nMulti-Head Latent Attention: Boosting Inference Efficiency . . . . . . . . . . . . .\n6\n2.1.1\nPreliminaries: Standard Multi-Head Attention . . . . . . . . . . . . . . . .\n6\n2.1.2\nLow-Rank Key-Value Joint Compression\n. . . . . . . . . . . . . . . . . . .\n7\n2.1.3\nDecoupled Rotary Position Embedding . . . . . . . . . . . . . . . . . . . .\n8\n2.1.4\nComparison of Key-Value Cache . . . . . . . . . . . . . . . . . . . . . . . .\n8\n2.2\nDeepSeekMoE: Training Strong Models at Economical Costs . . . . . . . . . . . .\n9\n2.2.1\nBasic Architecture\n. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n9\n2.2.2\nDevice-Limited Routing . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n9\n2.2.3\nAuxiliary Loss for Load Balance\n. . . . . . . . . . . . . . . . . . . . . . . .\n10\n2.2.4\nToken-Dropping Strategy . . . . . . . . . . . . . . . . . . . . .",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 2,
+      "chunk_id": "3f512fb8854911abd4c2",
+      "retrieval_score": 0.380611777305603,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-d20934491f80",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "rent attention mechanisms\nin Table 1. MLA requires only a small amount of KV cache, equal to GQA with only 2.25 groups,\nbut can achieve stronger performance than MHA.\n8",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 8,
+      "chunk_id": "56805cd718d27b390163",
+      "retrieval_score": 0.2793388366699219,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-9d83f0b41f91",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "umber of tokens in a sequence.\nDevice-Level Balance Loss.\nIn addition to the expert-level balance loss, we additionally\ndesign a device-level balance loss to ensure balanced computation across different devices. In\nthe training process of DeepSeek-V2, we partition all routed experts into 𝐷groups {E1, E2, ..., E𝐷},\nand deploy each group on a single device. The device-level balance loss is computed as follows:\nLDevBal = 𝛼2\n𝐷\n∑︁\n𝑖=1\n𝑓′\n𝑖𝑃′\n𝑖,\n(26)\n𝑓′\n𝑖=\n1\n|E𝑖|\n∑︁\n𝑗∈E𝑖\n𝑓𝑗,\n(27)\n𝑃′\n𝑖=\n∑︁\n𝑗∈E𝑖\n𝑃𝑗,\n(28)\nwhere 𝛼2 is a hyper-parameter called device-level balance factor.\nCommunication Balance Loss.\nFinally, we introduce a communication balance loss to ensure\nthat the communication of each device is balanced. Although the device-limited routing mecha-\nnism guarantees that the sending communication of each device is bounded, if a certain device\n10",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 10,
+      "chunk_id": "f750378b1ad579241cdc",
+      "retrieval_score": 0.27846837043762207,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-573dc8ce420c",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": "5)\nq𝑡,𝑖= [q𝐶\n𝑡,𝑖; q𝑅\n𝑡,𝑖],\n(16)\nk𝑡,𝑖= [k𝐶\n𝑡,𝑖; k𝑅\n𝑡],\n(17)\no𝑡,𝑖=\n𝑡∑︁\n𝑗=1\nSoftmax𝑗(\nq𝑇\n𝑡,𝑖k𝑗,𝑖\n√︃\n𝑑ℎ+ 𝑑𝑅\nℎ\n)v𝐶\n𝑗,𝑖,\n(18)\nu𝑡= 𝑊𝑂[o𝑡,1; o𝑡,2; ...; o𝑡,𝑛ℎ],\n(19)\nwhere 𝑊𝑄𝑅∈R𝑑𝑅\nℎ𝑛ℎ×𝑑′\n𝑐and 𝑊𝐾𝑅∈R𝑑𝑅\nℎ×𝑑are matrices to produce the decouples queries and key,\nrespectively; RoPE(·) denotes the operation that applies RoPE matrices; and [·; ·] denotes the\nconcatenation operation. During inference, the decoupled key should also be cached. Therefore,\nDeepSeek-V2 requires a total KV cache containing (𝑑𝑐+ 𝑑𝑅\nℎ)𝑙elements.\nIn order to demonstrate the complete computation process of MLA, we also organize and\nprovide its full formulas in Appendix C.\n2.1.4. Comparison of Key-Value Cache\nWe demonstrate a comparison of the KV cache per token among different attention mechanisms\nin Table 1. MLA requires only a small amount of KV cache, equal to GQA with only 2.25 groups,",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 8,
+      "chunk_id": "604e17db5f190668ba75",
+      "retrieval_score": 0.5494961142539978,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-d4be618d7ab1",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": "Attention Mechanism\nKV Cache per Token (# Element)\nCapability\nMulti-Head Attention (MHA)\n2𝑛ℎ𝑑ℎ𝑙\nStrong\nGrouped-Query Attention (GQA)\n2𝑛𝑔𝑑ℎ𝑙\nModerate\nMulti-Query Attention (MQA)\n2𝑑ℎ𝑙\nWeak\nMLA (Ours)\n(𝑑𝑐+ 𝑑𝑅\nℎ)𝑙≈9\n2𝑑ℎ𝑙\nStronger\nTable 1 | Comparison of the KV cache per token among different attention mechanisms. 𝑛ℎ\ndenotes the number of attention heads, 𝑑ℎdenotes the dimension per attention head, 𝑙denotes\nthe number of layers, 𝑛𝑔denotes the number of groups in GQA, and 𝑑𝑐and 𝑑𝑅\nℎdenote the KV\ncompression dimension and the per-head dimension of the decoupled queries and key in MLA,\nrespectively. The amount of KV cache is measured by the number of elements, regardless of the\nstorage precision. For DeepSeek-V2, 𝑑𝑐is set to 4𝑑ℎand 𝑑𝑅\nℎis set to 𝑑ℎ\n2 . So, its KV cache is equal\nto GQA with only 2.25 groups, but its performance is stronger than MHA.\n2.2.",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 9,
+      "chunk_id": "aad3c64d3a137f685950",
+      "retrieval_score": 0.5465291142463684,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-bf68c244512b",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": "; ...; o𝑡,𝑛ℎ],\n(8)\nwhere q𝑡,𝑖, k𝑡,𝑖, v𝑡,𝑖∈R𝑑ℎdenote the query, key, and value of the 𝑖-th attention head, respectively;\n𝑊𝑂∈R𝑑×𝑑ℎ𝑛ℎdenotes the output projection matrix. During inference, all keys and values need\nto be cached to accelerate inference, so MHA needs to cache 2𝑛ℎ𝑑ℎ𝑙elements for each token. In\nmodel deployment, this heavy KV cache is a large bottleneck that limits the maximum batch\nsize and sequence length.\n2.1.2. Low-Rank Key-Value Joint Compression\nThe core of MLA is the low-rank joint compression for keys and values to reduce KV cache:\nc𝐾𝑉\n𝑡\n= 𝑊𝐷𝐾𝑉h𝑡,\n(9)\nk𝐶\n𝑡= 𝑊𝑈𝐾c𝐾𝑉\n𝑡,\n(10)\nv𝐶\n𝑡= 𝑊𝑈𝑉c𝐾𝑉\n𝑡,\n(11)\nwhere c𝐾𝑉\n𝑡\n∈R𝑑𝑐is the compressed latent vector for keys and values; 𝑑𝑐(≪𝑑ℎ𝑛ℎ) denotes the KV\ncompression dimension; 𝑊𝐷𝐾𝑉∈R𝑑𝑐×𝑑is the down-projection matrix; and 𝑊𝑈𝐾,𝑊𝑈𝑉∈R𝑑ℎ𝑛ℎ×𝑑𝑐\nare the up-projection matrices for keys and values, respectively. During inference, MLA only",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 7,
+      "chunk_id": "0f3bcc79fea662df66d5",
+      "retrieval_score": 0.5349546670913696,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-b55138902476",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": ". During our practical\ntraining on the H800 cluster, for training on each trillion tokens, DeepSeek 67B requires 300.6K\nGPU hours, while DeepSeek-V2 needs only 172.8K GPU hours, i.e., sparse DeepSeek-V2 can\nsave 42.5% training costs compared with dense DeepSeek 67B.\nInference Efficiency.\nIn order to efficiently deploy DeepSeek-V2 for service, we first convert\nits parameters into the precision of FP8. In addition, we also perform KV cache quantiza-\ntion (Hooper et al., 2024; Zhao et al., 2023) for DeepSeek-V2 to further compress each element\nin its KV cache into 6 bits on average. Benefiting from MLA and these optimizations, actually\ndeployed DeepSeek-V2 requires significantly less KV cache than DeepSeek 67B, and thus can\nserve a much larger batch size. We evaluate the generation throughput of DeepSeek-V2 based",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 16,
+      "chunk_id": "161ca29d0e727ef3618a",
+      "retrieval_score": 0.5337132811546326,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-17cd949afb16",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "Benchmark\n# Shots DeepSeek Qwen 1.5 LLaMA3\nMixtral\nDeepSeek-V2 DeepSeek-V2\n67B Chat\n72B Chat 70B Inst. 8x22B Inst.\nChat (SFT)\nChat (RL)\nContext Length\n-\n4K\n32K\n8K\n64K\n128K\n128K\nArchitecture\n-\nDense\nDense\nDense\nMoE\nMoE\nMoE\n# Activated Params -\n67B\n72B\n70B\n39B\n21B\n21B\n# Total Params\n-\n67B\n72B\n70B\n141B\n236B\n236B\nEnglish\nTriviaQA\n5-shot\n81.5\n79.6\n69.1\n80.0\n85.4\n86.7\nNaturalQuestions\n5-shot\n47.0\n46.9\n44.6\n54.9\n51.9\n53.4\nMMLU\n5-shot\n71.1\n76.2\n80.3\n77.8\n78.4\n77.8\nARC-Easy\n25-shot\n96.6\n96.8\n96.9\n97.1\n97.6\n98.1\nARC-Challenge\n25-shot\n88.9\n91.7\n92.6\n90.0\n92.5\n92.3\nBBH\n3-shot\n71.7\n65.9\n80.1\n78.4\n81.3\n79.7\nAGIEval\n0-shot\n46.4\n62.8\n56.6\n41.4\n63.2\n61.4\nIFEval\n0-shot\n55.5\n57.3\n79.7\n72.1\n64.1\n63.8\nCode\nHumanEval\n0-shot\n73.8\n68.9\n76.2\n75.0\n76.8\n81.1\nMBPP\n3-shot\n61.4\n52.2\n69.8\n64.4\n70.4\n72.0\nCRUXEval-I-COT\n2-shot\n49.1\n51.4\n61.1\n59.4\n59.5\n61.5\nCRUXEval-O-COT 2-shot\n50.9\n56.5\n63.6\n63.6\n60.7\n63.0",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 19,
+      "chunk_id": "2d0e86ede1b482691601",
+      "retrieval_score": 0.5886582732200623,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-41049866064b",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
+      "evidence_text": "Grande, RACE-Middle, RACE-High, MMLU,\nARC-Easy, ARC-Challenge, CHID, C-Eval, CMMLU, C3, and CCPM, and adopt generation-\nbased evaluation for TriviaQA, NaturalQuestions, DROP, MATH, GSM8K, HumanEval, MBPP,\nCRUXEval, BBH, AGIEval, CLUEWSC, CMRC, and CMath. In addition, we perform language-\nmodeling-based evaluation for Pile-test and use Bits-Per-Byte (BPB) as the metric to guarantee\nfair comparison among models with different tokenizers.\nFor an intuitive overview of these benchmarks, we additionally provide our evaluation\nformats for each benchmark in Appendix G.\n3.2.2. Evaluation Results\nIn Table 2, we compare DeepSeek-V2 with several representative open-source models, includ-\ning DeepSeek 67B (DeepSeek-AI, 2024) (our previous release), Qwen1.5 72B (Bai et al., 2023),\nLLaMA3 70B (AI@Meta, 2024), and Mixtral 8x22B (Mistral, 2024). We evaluate all these models",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 14,
+      "chunk_id": "c9620a8910cb9d62e755",
+      "retrieval_score": 0.4239550828933716,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-55a9da903fab",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
+      "evidence_text": "hmarks including MT-Bench (Zheng et al., 2023),\nAlpacaEval 2.0 (Dubois et al., 2024), and AlignBench (Liu et al., 2023). For comparison, we also\nevaluate Qwen1.5 72B Chat, LLaMA-3-70B Instruct, and Mistral-8x22B Instruct in our evaluation\nframework and settings. As for DeepSeek 67B Chat, we directly refer to the evaluation results\nreported in our previous release.\n16",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 16,
+      "chunk_id": "5ff49d0b757c8793d367",
+      "retrieval_score": 0.4109530448913574,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-f0434d88630c",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on serving-system compatibility in datacenter cloud LLM serving",
+      "evidence_text": "Benchmark (Metric)\n# Shots\nDeepSeek\nQwen1.5\nMixtral\nLLaMA 3\nDeepSeek-V2\n67B\n72B\n8x22B\n70B\nArchitecture\n-\nDense\nDense\nMoE\nDense\nMoE\n# Activated Params\n-\n67B\n72B\n39B\n70B\n21B\n# Total Params\n-\n67B\n72B\n141B\n70B\n236B\nEnglish\nPile-test (BPB)\n-\n0.642\n0.637\n0.623\n0.602\n0.606\nBBH (EM)\n3-shot\n68.7\n59.9\n78.9\n81.0\n78.9\nMMLU (Acc.)\n5-shot\n71.3\n77.2\n77.6\n78.9\n78.5\nDROP (F1)\n3-shot\n69.7\n71.5\n80.4\n82.5\n80.1\nARC-Easy (Acc.)\n25-shot\n95.3\n97.1\n97.3\n97.9\n97.6\nARC-Challenge (Acc.)\n25-shot\n86.4\n92.8\n91.2\n93.3\n92.4\nHellaSwag (Acc.)\n10-shot\n86.3\n85.8\n86.6\n87.9\n84.2\nPIQA (Acc.)\n0-shot\n83.6\n83.3\n83.6\n85.0\n83.7\nWinoGrande (Acc.)\n5-shot\n84.9\n82.4\n83.7\n85.7\n84.9\nRACE-Middle (Acc.)\n5-shot\n69.9\n63.4\n73.3\n73.3\n73.1\nRACE-High (Acc.)\n5-shot\n50.7\n47.0\n56.7\n57.9\n52.7\nTriviaQA (EM)\n5-shot\n78.9\n73.1\n82.1\n81.6\n79.9\nNaturalQuestions (EM)\n5-shot\n36.6\n35.6\n39.6\n40.2\n38.7\nAGIEval (Acc.)\n0-shot\n41.3\n64.4\n43.4\n49.8\n51.2\nCode",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 15,
+      "chunk_id": "b559a224532d89eea87a",
+      "retrieval_score": 0.5880786180496216,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-6b0fb1b202ba",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What evaluation environment, baselines, metrics, and performance results are reported?",
+      "evidence_text": "to the initial version, we improve the data quality to mitigate hallucinatory\nresponses and enhance writing proficiency. We fine-tune DeepSeek-V2 with 2 epochs, and\nthe learning rate is set to 5 × 10−6. For the evaluation of DeepSeek-V2 Chat (SFT), we mainly\ninclude generation-based benchmarks, except for several representative multiple-choice tasks\n(MMLU and ARC). We also conduct an instruction-following evaluation (IFEval) (Zhou et al.,\n2023) for DeepSeek-V2 Chat (SFT), using prompt-level loose accuracy as the metric. Moreover,\nwe employ LiveCodeBench (Jain et al., 2024) questions from September 1st, 2023 to April 1st,\n2024 to evaluate chat models. In addition to the standard benchmarks, we further evaluate\nour model on open-ended conversation benchmarks including MT-Bench (Zheng et al., 2023),\nAlpacaEval 2.0 (Dubois et al., 2024), and AlignBench (Liu et al., 2023).",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 16,
+      "chunk_id": "94119a7c74cfa0541690",
+      "retrieval_score": 0.5115588903427124,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-f4b010ed4a9c",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on data transfer latency in datacenter cloud LLM serving",
+      "evidence_text": "1K\n12K\n24K\n35K\n47K\n58K\n70K\n81K\n93K\n104K\n116K\n128K\nContext Length (#Tokens)\n0\n9\n18\n27\n36\n45\n55\n64\n73\n82\n91\n100\nDocument Depth Percent (%)\nPressure Testing DeepSeek-V2 Base 128K Context via \"Needle In A HayStack\"\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\nScore\nFigure 4 | Evaluation results on the “Needle In A Haystack” (NIAH) tests. DeepSeek-V2\nperforms well across all context window lengths up to 128K.\nlinear computations across different experts. In addition, MLA is also optimized based on an\nimproved version of FlashAttention-2 (Dao, 2023).\nWe conduct all experiments on a cluster equipped with NVIDIA H800 GPUs. Each node in\nthe H800 cluster contains 8 GPUs connected using NVLink and NVSwitch within nodes. Across\nnodes, InfiniBand interconnects are utilized to facilitate communications.\n3.1.4. Long Context Extension",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 13,
+      "chunk_id": "a6d0dec26c6f3b97981a",
+      "retrieval_score": 0.5723586082458496,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-cda74259783a",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on serving-system compatibility in datacenter cloud LLM serving",
+      "evidence_text": "Model\nOverall\nReasoning 中文推理\nLanguage 中文语言\nAvg.\nMath.\nLogi.\nAvg.\nFund.\nChi.\nOpen.\nWrit.\nRole.\nPro.\n模型\n总分\n推理\n总分\n数学\n计算\n逻辑\n推理\n语言\n总分\n基本\n任务\n中文\n理解\n综合\n问答\n文本\n写作\n角色\n扮演\n专业\n能力\nGPT-4-1106-Preview\n8.01\n7.73\n7.80\n7.66\n8.29\n7.99\n7.33\n8.61\n8.67\n8.47\n8.65\nDeepSeek-V2 Chat (RL)\n7.91\n7.45\n7.77\n7.14\n8.36\n8.10\n8.28\n8.37\n8.53\n8.33\n8.53\nERNIEBot-4.0-202404*（文心一言）\n7.89\n7.61\n7.81\n7.41\n8.17\n7.56\n8.53\n8.13\n8.45\n8.24\n8.09\nDeepSeek-V2 Chat (SFT)\n7.74\n7.30\n7.34\n7.26\n8.17\n8.04\n8.26\n8.13\n8.00\n8.10\n8.49\nGPT-4-0613\n7.53\n7.47\n7.56\n7.37\n7.59\n7.81\n6.93\n7.42\n7.93\n7.51\n7.94\nERNIEBot-4.0-202312*（文心一言）\n7.36\n6.84\n7.00\n6.67\n7.88\n7.47\n7.88\n8.05\n8.19\n7.84\n7.85\nMoonshot-v1-32k-202404*（月之暗面）\n7.22\n6.42\n6.41\n6.43\n8.02\n7.82\n7.58\n8.00\n8.22\n8.19\n8.29\nQwen1.5-72B-Chat*\n7.19\n6.45\n6.58\n6.31\n7.93\n7.38\n7.77\n8.15\n8.02\n8.05\n8.24\nDeepSeek-67B-Chat\n6.43\n5.75\n5.71\n5.79\n7.11\n7.12\n6.52\n7.58\n7.20\n6.91\n7.37\nChatGLM-Turbo（智谱清言）\n6.24\n5.00\n4.74\n5.26\n7.49",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 20,
+      "chunk_id": "1c7433a042792a903692",
+      "retrieval_score": 0.5564570426940918,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-019ae8876d74",
+      "agent": "technical_research",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
+      "evidence_text": ". . . . . . . . . . . . . . . . . . . . . . .\n10\n2.2.4\nToken-Dropping Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n11\n3\nPre-Training\n11\n3.1\nExperimental Setups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n11\n3.1.1\nData Construction\n. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n11\n3.1.2\nHyper-Parameters\n. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n12\n3.1.3\nInfrastructures\n. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n12\n3.1.4\nLong Context Extension . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n13\n3.2\nEvaluations\n. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n13\n3.2.1\nEvaluation Benchmarks . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n13\n3.2.2\nEvaluation Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n14",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 2,
+      "chunk_id": "d099762feadab10ad51e",
+      "retrieval_score": 0.41611552238464355,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-f0779c824898",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "fficacy of our read-priority scheduling; since read\noperations are critical to inference latency, writes are dispatched\nexclusively during idle periods to minimize interference. Even if\na write operation is dropped due to contention, the system en-\nsures architectural reliability by recomputing and restoring the\ncontext in the subsequent turn. While the CMM setup remains\nresilient—sustaining 4–5 GB/s even under extreme contention—the\ncurrent FPGA implementation’s bandwidth degrades below 1 GB/s\nupon cache misses. We are actively optimizing the hardware logic\nto close this gap and reach the theoretical maximum of 23.3 GB/s.\n7\nRelated work\nCXL-based Memory Expansion. Compute Express Link (CXL)\nhas emerged as a key enabling technology for memory expan-\nsion and pooling in modern datacenters. Extensive research has\nexamined the potential of CXL-based memory for disaggregated",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 11,
+      "chunk_id": "48dae6447329b1cddbb5",
+      "retrieval_score": 0.32264161109924316,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-569adb3e3b18",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "recompute-only baseline. In contrast, ITME continues to\nfunction by leveraging its massive CXL-hybrid memory. While the\nITME exhibits some performance fluctuations due to unpredictable\nI/O stalls during intense contention, our read-priority scheduling\neffectively mitigates these bottlenecks. Even under such pressure,\nretrieving data from the remote tier remains far more efficient than\nfull recomputation. Consequently, ITME achieves up to a 35.7%\nthroughput improvement over the CPU-offload baseline in these\nextended turns.\n6.3\nPerformance: Local NVMe-oF (T3) vs. ITME\nFigure 11 compares ITME against a local NVMe-oF baseline. While\nreal-world NVMe-oF typically operates on DPU-based JBOF sys-\ntems where optimization is challenging, we utilize a local configura-\ntion to eliminate network overhead. This setup represents an ideal\nNVMe-oF scenario, providing a high-performance upper-bound",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 10,
+      "chunk_id": "99b29e9cadbedef874cf",
+      "retrieval_score": 0.30964142084121704,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-2151c100ee42",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": "t and memory paging for efficient context handling.\nOur proposed architecture, ITME, is designed to be fully compatible\nand synergistic with these existing software-level policies. Rather\nthan replacing these stacks, ITME serves as a high-performance\nmemory backend that integrates seamlessly with established tiering\nmechanisms. Furthermore, its internal hardware-level prefetching\ncomplements various scheduling policies, effectively hiding access\nlatency by overlapping data movement with ongoing computation.\nThis synergy allows ITME to maximize KV cache reuse and system\nefficiency within any established inference hierarchy.\nDPU-based Storage and KV Caching. The advancement of DPUs\nhas enabled high-density storage disaggregation, leading to the de-\nvelopment of specialized JBOF systems [35]. To optimize data access\nin these environments, several DPU-centric key-value (KV) stores",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 11,
+      "chunk_id": "fc003c5cc1c3cb5fa6cf",
+      "retrieval_score": 0.5260246992111206,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-3f5a3f81e29f",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "get processing, the need for sophisticated software-\nlevel optimization and cost-efficiency burdens remain significant.\nConsequently, the ideal architecture for scaling this shared context\ninfrastructure is still an active area of exploration.\nIn this paper, we propose ITME (Inference Tiered Memory Ex-\npansion), which leverages a CXL-hybrid memory to present a mas-\nsive, TB-scale byte-addressable remote memory expansion. This\napproach enables cost-efficient scaling and simplifies the software\nstack through direct byte-addressability, effectively addressing the\nchallenges of shared context infrastructure. Our key insight is that\nthe deterministic access patterns of voluminous model weights\nand prefix caches enable the system to proactively manage data\nmovement across the memory-storage hierarchy. Leveraging this\npredictability, ITME implements a pipelined, multi-tier DMA-based",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 1,
+      "chunk_id": "3b09733bf042eea6ce54",
+      "retrieval_score": 0.30320072174072266,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-0d449b4c0c09",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What problem does the technology solve, and what is its core mechanism in the paper?",
+      "evidence_text": "production-grade SK Hynix CMM and PCIe Gen5 SSDs, while\ndemonstrating hardware feasibility via an FPGA-based prototype.\nOur evaluation confirms that ITME effectively mitigates memory\ncapacity and I/O bottlenecks through software prefetching and\nread-priority scheduling. Overall, ITME enhances conventional\nCPU-offloading by providing the necessary memory expansion\nto accommodate large KV cache footprints beyond host memory\nlimits, achieving up to a 35.7% throughput improvement.\n11",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 11,
+      "chunk_id": "b989221ece0c9603d8be",
+      "retrieval_score": 0.29654407501220703,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-09814d5e6cf2",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": "oiting the incremental nature of token generation. Instead\nof fragmented updates, the system stores new KV tokens using\nsequential-append writes, which aligns with the internal flash man-\nagement of the NVMe controller. This approach transforms KV\ncache management into large, block-aligned sequential streams,\nsignificantly reducing the write amplification factor (WAF) and\nminimizing internal garbage collection overhead to sustain high\nbackend throughput [14].\n3.2\nUser-Directed Prefetching Interface\nWhile the previously described topology aligns internal data paths\nfor consistent throughput, providing a specialized prefetch API\nat the user level enables direct, high-performance data paths that\nbypass hardware-level LRU management and associated tracking\noverhead. To leverage this, we provide a user-level library that\nexposes explicit software control over the internal prefetch engine.",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 5,
+      "chunk_id": "89c7da16c0793d3f4aff",
+      "retrieval_score": 0.5954247117042542,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-a29f3237c79c",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "rmance of ITME is evaluated using the ShareGPT dataset\nwith a configuration of 128 concurrent conversations, each span-\nning up to 5 turns with a minimum of 2000 tokens per conversation.\nAs memory pressure intensifies in later stages, we focus on Turns\n3–5, where the total KV cache footprint reaches 40 GB.\nFigure 9 illustrates the time to first token (TTFT) speedup for the\nLlama-3.1 8B and 70B models, normalized against a GPU memory\n(T1) baseline utilizing recomputation. To ensure a fair evaluation,\nboth the baselines and ITME are configured with weight offloading\nand prefetching enabled. To establish the upper performance bound\n0\n5\n10\n15\n20\n25\n30\n35\nTurn\n1.00\n1.25\n1.50\n1.75\n2.00\n2.25\n2.50\n2.75\nTTFT Speedup over Recompute\nCPU-offload (128GB) Speedup\nITME (CPU staging buffer 30GB) Speedup\nCPU-offload (128GB) Hit Rate\nITME (CPU staging buffer 30GB) Hit Rate\n0\n20\n40\n60\n80\n100",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 9,
+      "chunk_id": "70f14e2a229663480315",
+      "retrieval_score": 0.5481290221214294,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-e3130ef4987f",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "Turn 3\nTurn 4\nTurn 5\n0\n1\n2\n3\n4\nNormalized TTFT Speedup\n(a) Llama-3.1 8B\nRecomp.\nITME\nAll-caching\nHit Rate\n0\n20\n40\n60\n80\n100\nHit Rate (%)\nTurn 3\nTurn 4\nTurn 5\n0\n1\n2\n3\n4\nNormalized TTFT Speedup\n(b) Llama-3.1 70B\nRecomp.\nITME\nAll-caching\nHit Rate\n0\n20\n40\n60\n80\n100\nHit Rate (%)\nFigure 9: Recomputation is set to 16 GB for 8B and 32 GB for\n70B models, while All-caching consumes 80 GB of GPU mem-\nory. In contrast, ITME maintains a stable 16,GB footprint by\noffloading 10 GB to the Host/CXL staging.\n5.1\nBaselines and Benchmarks\nTo demonstrate the advantages of ITME, we implement and evalu-\nate it within a highly optimized version of vLLM (v0.17.0) [19].\nBaseline (vLLM with CPU Offloading). By default, vLLM han-\ndles host memory pressure by evicting and recomputing KV caches,\nwhich incurs significant overhead. To create a competitive and re-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 9,
+      "chunk_id": "1ed045a34e6cefa6cdce",
+      "retrieval_score": 0.526098906993866,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-20c9ee94611e",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "How does the technology reduce or manage the number of cached key-value elements per token?",
+      "evidence_text": "Q0\nA0\nQ0\nA0\nQ1\nA1\nQ0\nA0\nQ1\nA1\nQ2\nA2\nTurn 0\nTurn 1\nTurn 2\nLayer 0\nLayer 1\nLayer 2\nTime\nAttention (L0)\nFFN (L0)\nAttention (L1)\nFFN (L1)\nAttention (L2)\nFFN (L2)\n(b) Layer-wise prefetching\n(a) Long-context prefix KV cache\nRDMA read\nRDMA read / write\nNetwork (i.e., RDMA)\nCXL-Hybrid Memory\nWeights\nLong-Context Prefix KV Cache\nKV Cache\nWeights\nFigure 2: Access behavior and prefetching opportunities for\nmodel weights and long-context prefix KV cache\nstorage layers. Instead of providing direct, low-overhead hardware\naccess, these solutions impose a heavy management burden, de-\nmanding significant engineering effort to optimize the underlying\nremote storage tiers.\nOur proposed ITME realizes this shared context tier (T3.5) by\ntransforming SSD-backed capacity into a direct-access memory\nexpansion. As illustrated in Figure 1 (b), ITME adopts a more effi-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 3,
+      "chunk_id": "a6c6733019201b8fe2dc",
+      "retrieval_score": 0.5085728168487549,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-7476a36bdc64",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on serving-system compatibility in datacenter cloud LLM serving",
+      "evidence_text": "that minimizes\nthe performance impact of model weights.\nModels and Datasets. We evaluate the system using Llama-3.1 8B\nand 70B models to demonstrate the scalability of our architecture\nacross different model scales. The evaluation utilizes the ShareGPT\ndataset [19] to construct multi-turn conversation workloads with\ndiverse sequence lengths. Furthermore, we conduct a specialized\ncase study using the Mooncake dataset [29] to analyze the system’s\nbehavior. These datasets enable us to measure the system’s effective-\nness in managing the cumulative growth of the KV cache footprint\nand its ability to mask retrieval latencies from the CXL-hybrid\nmemory (T3.5) tier through software prefetching.\n6\nEvaluation\n6.1\nPerformance: GPU Memory (T1) vs. ITME\nThe performance of ITME is evaluated using the ShareGPT dataset\nwith a configuration of 128 concurrent conversations, each span-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 9,
+      "chunk_id": "c37e0e60545f4eb5c66d",
+      "retrieval_score": 0.5444479584693909,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-200e83f46f0c",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What evaluation environment, baselines, metrics, and performance results are reported?",
+      "evidence_text": "hitecture.\n6.4\nImpact of Multi-tier Weight Prefetching\nTo isolate the impact of weight prefetching from prefix KV cache\nprefetching, we evaluate the performance of ITME by prefetching\nmodel weights only. We employ the Mooncake workload with a\nbatch size of 16 and a 4K input sequence length. The primary objec-\ntive of this evaluation is to demonstrate how closely ITME matches\nthe host memory baseline, where all weights reside in host DRAM.\nSince the baseline represents the theoretical performance upper\nbound, this analysis focuses on the efficiency of ITME in hiding\nnetwork and storage overheads through its pipelined prefetching.\nFigure 12 (a) compares end-to-end performance results, where\nthe gaps between baseline, local, and remote configurations quan-\ntify storage and network overheads, respectively. While the 10.5\nGB footprint of the 8B model fits within the CXL-hybrid mem-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 10,
+      "chunk_id": "ac9137c2b7f49830908c",
+      "retrieval_score": 0.3758288025856018,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-b80dc62f0432",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
+      "evidence_text": "also consumes significant read bandwidth, creating re-\nsource contention with KV cache retrieval. Therefore, achieving\noptimal performance requires not only proper buffer sizing but also\neffective scheduling to mitigate performance degradation during\nthese simultaneous data transfers.\n6.5\nFPGA-based Prototype Evaluation\nFigure 13 demonstrates the hardware feasibility of the ITME archi-\ntecture through an FPGA-based prototype. While the CMM-based\nplatform provides an evaluation of peak performance potential, this\nimplementation serves to validate the hardware-level control logic\nand the effectiveness of the software prefetcher in a real-world\nsystem environment.\nFigure 14 compares the bandwidth of the ITME CMM configura-\ntion with its FPGA prototype implementation. The FPGA prototype\nachieves an average of 18 GB/s for reads and 12 GB/s for writes",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 10,
+      "chunk_id": "a112e66b3d6ba9377d1a",
+      "retrieval_score": 0.3601500988006592,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-cb5dd480da85",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What architecture constraints, limitations, and deployment requirements are reported?",
+      "evidence_text": "h-density storage. Figure 1 (a) illustrates this hier-\narchy, which organizes data based on its latency sensitivity and\ncapacity footprint. GPU memory (T1) serves as the highest tier,\nutilizing HBM to provide the peak memory bandwidth necessary\nfor real-time token generation. Directly supporting this is host\nmemory (T2), which functions as a byte-addressable overflow tier\nfor KV blocks evicted from T1. Despite their performance, the phys-\nical scaling constraints of these memory-centric tiers inevitably\nlead to a capacity wall as model parameters and context lengths\nincrease. To provide deeper capacity, the hierarchy incorporates\nstorage-based layers: single-server NVMe SSDs (T3) and cluster-\nwide shared storage (T4), which provide individual node capacity\nand massive cross-node storage, respectively.\nThe emergence of agentic AI and multi-turn workloads has",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 2,
+      "chunk_id": "48874d365624898e9fc5",
+      "retrieval_score": 0.3401775360107422,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-b4eea71f4f9e",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What architecture constraints, limitations, and deployment requirements are reported?",
+      "evidence_text": "al node capacity\nand massive cross-node storage, respectively.\nThe emergence of agentic AI and multi-turn workloads has\nexposed a critical capacity and accessibility gap between server-\ninternal NVMe SSDs (T3) and remote shared storage (T4). While\nlocal storage (T3) provides fast local access, its limited physical ca-\npacity forces the system to frequently evict inference states, losing\nthe opportunity for context reuse in subsequent turns. Conversely,\nwhile remote storage (T4) offers the necessary scale, it acts more\nas a cold archive rather than an active memory tier. The high la-\ntency overhead of retrieving remote states from remote storage\n(T4) makes it impractical to support the frequent, real-time context\nretrieval required by long-context inference workloads. To bridge\nthis gap, recent industry efforts have introduced NVIDIA CMX",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 2,
+      "chunk_id": "506ad92942c658bdaa79",
+      "retrieval_score": 0.3342730402946472,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-677997bdb941",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What architecture constraints, limitations, and deployment requirements are reported?",
+      "evidence_text": "ver-growing\nruntime context data across memory hierarchies.\nExpanding high-speed memory capacity, however, faces funda-\nmental physical and economic constraints. GPU memory, such as\nHBM, can typically be increased only by adding more GPUs, which\nis both costly and often inefficient. Similarly, host memory capacity\nremains limited by CPU-dependent factors such as socket count and\nmemory channel availability [39]. As a result, modern inference\nsystems rely on a multi-tier hierarchy spanning from capacity-\nconstrained GPU memory to elastic remote storage [4, 6, 29].\nRecently, the conventional inference hierarchy has begun to\nevolve beyond local storage toward a more centralized and reusable\ndesign. In large-scale serving systems, keeping KV cache state in lo-\ncal SSDs leads to fragmentation across nodes and limits reuse when\nrequests are rescheduled or migrated. To address this limitation,",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 1,
+      "chunk_id": "eab1cea1be7e52a48b80",
+      "retrieval_score": 0.3315699100494385,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-56d88cbf22fa",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
+      "evidence_text": "h its FPGA prototype implementation. The FPGA prototype\nachieves an average of 18 GB/s for reads and 12 GB/s for writes\nduring DRAM cache hits, representing a 20–25% performance gap\n10",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 10,
+      "chunk_id": "104ccfa5058f24bc78ff",
+      "retrieval_score": 0.33946752548217773,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-738dcf160a37",
+      "agent": "technical_research",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "What evidence indicates system-scale evaluation, prototype validation, or technology readiness?",
+      "evidence_text": "hes the feasibility of our expansion tier, success-\nfully realizing a multi-terabyte, byte-addressable memory footprint\nby leveraging the cost-efficiency of NAND flash.\nPerformance Potential Analysis via CMM. To evaluate the\nperformance potential of the proposed architecture, we developed\na production-grade empirical platform integrating an SK Hynix\nCMM [32] and two KIOXIA PCIe Gen5 NVMe SSDs [18]. To main-\ntain architectural consistency with the FPGA prototype, we utilized\n32 GB of the CMM capacity as the DRAM cache. Leveraging the\nSPDK framework [15] with 8 PCIe lanes (4 lanes per SSD), this setup\nachieves a peak read throughput of approximately 22 GB/s. Unlike\nfixed FPGA logic, this representative platform offers high degrees\nof freedom for prefetcher implementation. By utilizing host-side\nmulti-threading and user-space polling, the system executes com-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 8,
+      "chunk_id": "596b670ce4ab398e6d98",
+      "retrieval_score": 0.3273327946662903,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-2e4ae681b7e4",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "mannix/deepseek-v2-lite-instruct",
+      "claim": "DeepSeek-V2 MLA deployment framework adoption official",
+      "evidence_text": "DeepSeek-V2 adopts innovative architectures to guarantee economical training and efficient inference：\n- For attention, we design MLA (Multi-head Latent Attention), which utilizes low-rank key-value union compression to eliminate the bottleneck of inference-time key-value cache, thus supporting efficient inference.\n- For Feed-Forward Networks (FFNs), we adopt DeepSeekMoE architecture, a high-performance MoE architecture that enables training stronger models at lower costs. [...] DeepSeek-V2, a strong Mixture-of-Experts (MoE) language model characterized by economical training and efficient inference. DeepSeek-V2 adopts innovative architectures including Multi-head Latent Attention (MLA) and DeepSeekMoE. MLA guarantees efficient inference through significantly compressing the Key-Value (KV) cache into a latent vector, while DeepSeekMoE enables training strong models at an economical cost through sparse computation.\n\n## Model Architecture [...] ## Introduction\n\nLast week, the release and buzz around DeepSeek-V2 have ignited widespread interest in MLA (Multi-head Latent Attention)! Many in the community suggested open-sourcing a smaller MoE model for in-depth research. And now DeepSeek-V2-Lite comes out:",
+      "url": "https://ollama.com/mannix/deepseek-v2-lite-instruct",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.64020914,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-79eb55ac7258",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "[2405.04434] DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model",
+      "claim": "DeepSeek-V2 MLA cloud provider deployment cost",
+      "evidence_text": "vector, while DeepSeekMoE enables training strong models at an economical cost through sparse computation. Compared with DeepSeek 67B, DeepSeek-V2 achieves significantly stronger performance, and meanwhile saves 42.5% of training costs, reduces the KV cache by 93.3%, and boosts the maximum generation throughput to 5.76 times. We pretrain DeepSeek-V2 on a high-quality and multi-source corpus consisting of 8.1T tokens, and further perform Supervised Fine-Tuning (SFT) and Reinforcement Learning [...] > Abstract:We present DeepSeek-V2, a strong Mixture-of-Experts (MoE) language model characterized by economical training and efficient inference. It comprises 236B total parameters, of which 21B are activated for each token, and supports a context length of 128K tokens. DeepSeek-V2 adopts innovative architectures including Multi-head Latent Attention (MLA) and DeepSeekMoE. MLA guarantees efficient inference through significantly compressing the Key-Value (KV) cache into a latent vector, while",
+      "url": "https://arxiv.org/abs/2405.04434",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.21280442,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-bbefe1ddb166",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Inside DeepSeek Models: MoE, MLA, and Coder-V2 Explained",
+      "claim": "DeepSeek-V2 MLA hardware vendor ecosystem response",
+      "evidence_text": "Sparse computation due to usage of MoE.\n Faster inference because of MLA.\n Lower training costs: DeepSeek V2 saves about 42.5% in training costs compared to its predecessor, DeepSeek 67B.\n High throughput: DeepSeek V2 achieves a throughput that is 5.76 times higher than DeepSeek 67B. So it’s capable of generating text at over 50,000 tokens per second on standard hardware.\n Managing extremely long text inputs up to 128,000 tokens. [...] Since May 2024, we have been witnessing the development and success of DeepSeek-V2 and DeepSeek-Coder-V2 models. Both are built on DeepSeek’s upgraded Mixture-of-Experts approach, first used in DeepSeekMoE. DeepSeek-V2 brought another of DeepSeek’s innovations – Multi-Head Latent Attention (MLA), a modified attention mechanism for Transformers that allows faster information processing with less memory usage. [...] 3. Multi-Head Latent Attention (MLA): In a Transformer, attention mechanisms help the model focus on the most relevant parts of the input. This usually involves storing a lot of data, Key-Value cache or or KV cache, temporarily, which can be slow and memory-intensive. DeepSeek-V2 introduces Multi-Head Latent Attention (MLA), a modified attention mechanism that compresses the KV cache into a much smaller form. This allows the model to process information faster and with less memory without",
+      "url": "https://www.turingpost.com/p/deepseek",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.38311088,
+      "published_at": "2024-08-28"
+    },
+    {
+      "evidence_id": "web-a90198f8de9c",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek推DeepSeekMath V2模型",
+      "claim": "DeepSeek-V2 MLA deployment framework adoption official",
+      "evidence_text": "AASTOCKS\n\n# DeepSeek推DeepSeekMath V2模型\n\nAASTOCKS\n\nDeepSeek昨晚(27日)推出新型數學推理模型DeepSeekMath-V2，採用可自我驗證的訓練框架。該模型基於DeepSeek-V3.2-Exp-Base構建，通過LLM驗證器自動審查生成的數學證明，並利用高難度樣本持續優化性能。(ta/w)~阿思達克財經新聞網址: www.aastocks.com\n\n條款  及 私隱政策\n\nEU DSA Contact\n\n私隱和 Cookie 設定",
+      "url": "https://hk.finance.yahoo.com/news/deepseek%E6%8E%A8deepseekmath-v2%E6%A8%A1%E5%9E%8B-230813907.html",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.46628717,
+      "published_at": "2025-11-27"
+    },
+    {
+      "evidence_id": "web-b6e0a45a6d02",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "MLA Complete Forklift Solutions Company Overview, Contact Details & Competitors | LeadIQ",
+      "claim": "MLA inference serving ecosystem official",
+      "evidence_text": "Expansion signals Historical expansions into Newcastle and international markets near the UK and Europe indicate growth ambitions and potential cross-border opportunities for fleet deployments, service coverage, and partner networks.\n\nService ecosystem 40+ years of forklift service expertise with branches and dealers nationwide suggests a strong service backbone to offer preventive maintenance programs, extended warranties, and rapid on-site support to reduce downtime.",
+      "url": "https://leadiq.com/c/mla-holdings-pty-ltd/5a1d9a4e2300005a00895d4e",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.26599234,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-708e063d9704",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Multi-Head Latent Attention (MLA) on GPU Cloud: Cut KV Cache ~98% and Serve More Users Per GPU (2026 Guide) | Spheron Blog",
+      "claim": "MLA inference serving ecosystem official",
+      "evidence_text": "Engineering\n\n# Multi-Head Latent Attention (MLA) on GPU Cloud: Cut KV Cache ~98% and Serve More Users Per GPU (2026 Guide)\n\nBack to BlogWritten by Mitrasish, Co-founder & CTO, SpheronPublished Jun 25, 2026Updated\n\nmulti-head latent attentionMLA inferenceMLA KV cache compressiondeploy MLA models GPU cloudDeepSeek V3 MLASGLang MLAvLLM MLAH200B200\n\nMulti-Head Latent Attention (MLA) on GPU Cloud: Cut KV Cache ~98% and Serve More Users Per GPU (2026 Guide) [...] The MLA projection mechanism: MLA adds a down-projection matrix W\\_DKV that maps K and V to a low-dimensional latent vector `c_kv` of dimension `d_c` (512 for DeepSeek models). Only `c_kv` is written to the KV cache. On each decode step, the serving framework applies learned up-projection matrices W\\_UK and W\\_UV to reconstruct the full K and V tensors before computing attention. The stored footprint is `d_c × 2 bytes` per token per layer. For DeepSeek models with `d_c = 512`, `num_heads = [...] compute time. The FlashInfer MLA kernel in SGLang reduces attention compute time a further 20-35% on top by handling the compressed format natively.",
+      "url": "https://www.spheron.network/blog/multi-head-latent-attention-mla-gpu-cloud",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.23741718,
+      "published_at": "2026-06-25"
+    },
+    {
+      "evidence_id": "web-cf5e52c46f93",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "MLA Engineering LLC Company Overview, Contact Details & Competitors | LeadIQ",
+      "claim": "MLA inference serving ecosystem official",
+      "evidence_text": "Boutique Scale Benefit With a small team (2-10 employees) and a flexible, creative culture, MLA can partner on selective, high-value projects requiring customized attention, design iterations, and rapid turnarounds—ideal for clients seeking boutique engineering services within larger procurement ecosystems.",
+      "url": "https://leadiq.com/c/mla-engineering-llc/5a1da1452300005b009290d1",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.18961145,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-e8227144787b",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Multi-Head Latent Attention (MLA)",
+      "claim": "MLA inference serving ecosystem official",
+      "evidence_text": "One of the strongest arguments for MLA came from the DeepSeek-V2 ablations discussed in the article and the local chapter notes. There, GQA looked weaker than full MHA, while MLA held up much better and even slightly exceeded the MHA baseline in some comparisons. That is a strong reason to accept the extra implementation complexity: MLA is not merely a serving trick, it can also be a quality-preserving one. [...] This is why MLA feels more architectural than GQA. It changes the shape of the internal attention computation and asks more of the serving stack. But if you are building a very large model where KV memory dominates, that extra complexity can be worth it.\n\n## Why DeepSeek Chose It [...] On the gallery page, MLA is usually a signal that the model is optimized for frontier-scale inference rather than minimal implementation complexity. DeepSeek V3, Kimi K2, GLM-5, and Mistral 3 Large all use it in different ways. In hybrid models like Kimi Linear, you can also see MLA paired with an even more aggressive linear-attention idea, which shows that these efficiency techniques are not mutually exclusive.\n\nSources\n\nArchitecture articleGitHub chapter\n\nRelated concepts",
+      "url": "https://sebastianraschka.com/llms-from-scratch/ch04/05_mla",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.18728161,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-a1e440b91c17",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek MoE and V2 - by Austin Lyons - Chipstrat",
+      "claim": "DeepSeek-V2 MLA hardware vendor ecosystem response",
+      "evidence_text": "Without getting too into the weeds, the V2 paper introduces an innovative self-attention architecture called Multi-Head Latent Attention (MLA). Traditional Multi-Head Attention (MHA) requires storing full key-value (KV) caches for every token, which scales poorly as the context window grows.\n\nDeepSeek’s MLA does some voodoo matrix math (“low-rank joint compression” and “decoupled rotary position embedding”) to reduce KV cache memory requirements by 93% compared to MHA. [...] > We also customize faster CUDA kernels for communications, routing algorithms, and fused linear computations across different experts. In addition, MLA is also optimized based on an improved version of FlashAttention-2 (Dao, 2023).\n\nEfficient communication and computation translate to higher Model FLOP Utilization (MFU). [...] This allows for much longer context windows without a prohibitive memory cost.\n\n### Long Context Window\n\nMLA enables a significantly expanded context window, increasing it from 4K up to 128K tokens. This helps the model to \"remember\" and process significantly more text—roughly 100,000 words, or about the length of a Harry Potter book.",
+      "url": "https://www.chipstrat.com/p/deepseek-moe-and-v2",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.37113717,
+      "published_at": "2025-02-24"
+    },
+    {
+      "evidence_id": "web-367c9a10a5c3",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek: A Technical and Strategic Analysis for VCs and Startups - Leonis Capital",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "According to SemiAnalysis's detailed investigation, DeepSeek's total server infrastructure investment approaches $1.6B, with approximately $500M dedicated specifically to GPU hardware. This breaks down into their extensive GPU fleet: roughly 50,000 Hopper GPUs distributed across different variants—10,000 H800s, 10,000 H100s, and the remainder being H20s (the China-specific version of Hopper GPUs that Nvidia produced in compliance with export regulations). The $1.6B figure encompasses not just [...] DeepSeek's Multi-Head Latent Attention (MLA) mechanism represents a breakthrough in memory efficiency, reducing memory overhead by an astounding 93.3% compared to standard attention mechanisms. Originally introduced in DeepSeek-v2, this innovation specifically targets the KV Cache—a memory-intensive component that stores conversation context. By dramatically reducing these memory requirements, MLA makes inference significantly more cost-effective, enabling longer conversations without [...] While headlines tout DeepSeek's $5.5M training cost, the reality of their investment is far more substantial. Indeed, their own technical paper acknowledges that the $5.5M figure only accounted for the costs of running the GPUs for training DeepSeek-V3, not prior research, infrastructure, or operating costs. DeepSeek also has many more GPUs than the 2,048 H800s that they mention in their paper, as AI labs need many additional GPUs to run experiments and research before committing to a full",
+      "url": "https://www.leoniscap.com/research/deepseek-a-technical-and-strategic-analysis-for-vcs-and-startups",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6922474,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-9b49f309ecb1",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "How DeepSeek Reduced KV Cache by 93% | Multi Head Latent Attention MLA",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "### Transcript\n[0:00] In 2024, Deepseek V2 was released with modifications around how attention is computed between tokens. It led to a KV\n[0:08] cache memory reduction by more than 90% compared to the previous version of Deepseek. This video is going to get into how exactly they managed to do it and how attention was modified.\n[0:19] Larger KV caches not only consume more GPU memory, but moving these large memory blocks also takes time. And on [...] [19:36] computation so that the expensive highdimensional keys and values never need to be explicitly reconstructed during attention. That combination is\n[19:45] what allows Deepseek V2 to significantly reduce memory usage while still scaling to very long context lens efficiently. [...] # How DeepSeek Reduced KV Cache by 93% | Multi Head Latent Attention MLA\n## Channel: ExplainingAI\n16.2K subscribers\n40 likes\n\n### Description\n1,751 views\nPosted: 2026-06-01\nDeepSeek v2’s Multi-Head Latent Attention (MLA) dramatically reduces KV cache memory while preserving attention quality.",
+      "url": "https://www.youtube.com/watch?v=9y-0rpEnPrg",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.5363378,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-1cbc23bccb6a",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek Debates: Chinese Leadership On Cost, True Training Cost, Closed Model Margin Impacts",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "that at cost. MLA specifically caught the eyes of many leading US labs. MLA was released in DeepSeek V2, released in May 2024. DeepSeek has also enjoyed more efficiencies for inference workloads with the H20, due to higher memory bandwidth and capacity compared to the H100. They have also announced partnerships with Huawei but very little has been done with Ascend compute so far. [...] ## Multi-head Latent Attention (MLA)\n\nMLA is a key innovation responsible for a significant reduction in the inference price for DeepSeek. The reason is MLA reduces the amount of KV Cache required per query by about 93.3% versus standard attention. KV Cache is a memory mechanism in transformer models that stores data representing the context of the conversation, reducing unnecessary computation.",
+      "url": "https://newsletter.semianalysis.com/p/deepseek-debates",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.53123426,
+      "published_at": "2025-01-31"
+    },
+    {
+      "evidence_id": "web-da6e58e6a279",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "ITME: Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories",
+      "claim": "ITME CXL hybrid memory LLM inference adoption",
+      "evidence_text": "LLM inference. In contrast, the CXL-hybrid memory in ITME fully adopts the PCIe Gen5 interface, delivering the high bandwidth essential for rapid KV cache swapping in multi-tier pipelines. [...] In this paper, we propose ITME (Inference Tiered Memory Expansion),which leverages a CXL-hybrid memory to provide cost-efficient, TB-scale memory expansion for large-scale LLM workloads. The remote region functions as a massive, byte-addressable memory, providing GPU servers with a scalable extension of their physical memory via standard RDMA protocols. To maximize the efficiency of this tiered memory architecture, ITME strategically targets LLM data types that exhibit high predictability and [...] In this paper, we propose ITME, which leverages CXL-hybrid memory to provide massive, byte-addressable remote memory expansion. By exploiting the deterministic access patterns of LLM workloads, ITME implements a multi-tier DMA prefetching pipeline that effectively masks storage access latencies. We validated ITME using production-grade SK Hynix CMM and PCIe Gen5 SSDs, while demonstrating hardware feasibility via an FPGA-based prototype. Our evaluation confirms that ITME effectively mitigates",
+      "url": "https://arxiv.org/html/2606.12556v2",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.87166095,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-687f2444f44a",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "ITME: Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories | alphaXiv",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "architectures accelerates NVMe-over-fabrics (NVMe-oF) target processing, the need for sophisticated software-level optimization and cost-efficiency burdens remain significant. Consequently, the ideal architecture for scaling this shared context infrastructure is still an active area of exploration. In this paper, we propose ITME (Inference Tiered Memory Expansion), which leverages a CXL-hybrid memory to present a massive, TB-scale byte-addressable remote memory expansion. This approach enables [...] approach enables cost-efficient scaling and simplifies the software stack through direct byte-addressability, effectively addressing the challenges of shared context infrastructure. Our key insight is that the deterministic access patterns of voluminous model weights and prefix caches enable the system to proactively manage data movement across the memory-storage hierarchy. We validate ITME by evaluating its performance potential with production-grade SK Hynix CMM and PCIe Gen5 NVMe SSDs, while [...] ITME represents a shift in how large-scale AI infrastructure can be built. Its significance lies in several key areas:",
+      "url": "https://www.alphaxiv.org/abs/2606.12556",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.48484412,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-e3bd12f4be55",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "CXL Memory For LLM Inference: Breaking The AI Memory Wall",
+      "claim": "ITME CXL hybrid memory LLM inference adoption",
+      "evidence_text": "CXL introduces a new layer into the memory hierarchy for LLM serving by relieving the KV cache pressure through shared, high-capacity memory pools. This helps extend the available memory beyond high-speed GPU HBM. A CXL-based architecture can add large pools of memory that are accessible to the compute infrastructure.\n\nFigure 4: Memory Hierarchy [Image Source] [...] As seen so far, CXL memory pools can very well complement fast GPU HBM, particularly for spilled and infrequently used KV cache data. It provides the additional memory tier that is instrumental in extending the available capacity beyond HBM and CPU DRAM.\n\nCXL memory augments GPU VRAM for KV cache storage, which helps accelerate token decoding and reduce TTFT for LLM serving.\n\n### Memory Disaggregation [...] As per CXL consortium, CXL memory pooling is already moving beyond the labs and able to benefit across real-world data center and AI environments. CXL memory pools are helping organizations accelerate data-sensitive AI workloads and reduce Total Cost of Ownership (TCO) by improving resource utilization and reducing latency.\n\nHere are some of the major use cases for CXL-attached memory in LLM serving and AI infrastructure:\n\n### LLM Inference and KV Cache Scaling",
+      "url": "https://acecloud.ai/blog/cxl-memory-llm-inference",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.70067,
+      "published_at": "2026-08-25"
+    },
+    {
+      "evidence_id": "web-8296cb80093e",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "Wolley Introduces CXL® Memory Expansion Controller for AI Workstation at FMS2025",
+      "claim": "ITME CXL hybrid memory LLM inference adoption",
+      "evidence_text": "effective memory capacity through DRAM and SSD virtualization. The result is a single plug-in card that unifies memory and storage, eliminates PCIe congestion, and reduces total cost of ownership, empowering on-prem systems to run long-context LLM inference smoothly and at scale.",
+      "url": "https://finance.yahoo.com/news/wolley-introduces-cxl-memory-expansion-130000438.html",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6063825,
+      "published_at": "2025-08-06"
+    },
+    {
+      "evidence_id": "web-61811ba2b609",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "HyMCache: A KV Cache Frameworkfor Multi-Turn LLM Serving with CXL-Hybrid Memory",
+      "claim": "CXL memory expansion LLM serving ecosystem official",
+      "evidence_text": "Recent literature and industry efforts have explored remote KV-cache tiers based on DRAM-backed CXL memory expansion and pooling, as illustrated in Figure 1(a). Such systems aggregate multiple CXL memory expanders through a CXL switch, memory box, or fabric, allowing hosts to dynamically expand and share memory capacity. This direction is increasingly relevant for LLM serving, where large KV-cache states are retained and reused across requests to improve throughput and reduce redundant [...] To build such a shared context layer, the ecosystem is exploring both storage-centric and memory-centric designs. On the storage side, networking and DPU vendors such as NVIDIA (NVIDIA, 2026b; NVIDIA, 2025b), Broadcom (Broadcom, 2020), Marvell (Marvell Technology, 2026a; Marvell Technology, 2026b), Xsight Labs (Xsight Labs, 2026), and Chelsio (Chelsio Communications, 2026) are combining RDMA/NVMe-oF, SmartNICs, and DPUs with dense SSDs from storage vendors such as SK hynix (SK hynix, 2026) and [...] memory expansion, rack-scale memory pooling, and CXL memory appliances.",
+      "url": "https://arxiv.org/html/2607.18141v2",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6399392,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-21c367e13b92",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "Marvell Extends CXL Ecosystem Leadership with Structera Interoperability Across All Major Memory and CPU Platforms",
+      "claim": "CXL memory expansion LLM serving ecosystem official",
+      "evidence_text": "SANTA CLARA, Calif., Sept. 2, 2025 /PRNewswire/ -- Marvell Technology, Inc. (NASDAQ: MRVL), a leader in data infrastructure semiconductor solutions, today announced the Marvell® Structera™ Compute Express Link®(CXL®) memory-expansion controllers and near memory compute accelerators have successfully completed interoperability testing with DDR4 and DDR5 memory solutions from industry leaders Micron Technology, Samsung Electronics, and SK hynix. This milestone follows the recent announcement [...] The Structera product line includes two CXL device families engineered to meet the diverse performance and scalability needs of next-generation cloud data centers. The Structera A CXL near-memory accelerators integrate 16 Arm® Neoverse® V2 cores and multiple memory channels with CXL to address high-bandwidth memory applications such as deep learning recommendation models (DLRM) and machine learning. The Structera X CXL memory-expansion controllers enable terabytes of memory to be added to [...] \"Working with Marvell to validate Structera with SK hynix memory supports our shared goal of making memory expansion more accessible and flexible,\" said Uksong Kang, Head of Next Generation Product Planning and Enabling at SK hynix. \"This gives customers the tools they need to build future-ready architectures with less friction and more choice.\"",
+      "url": "https://finance.yahoo.com/news/marvell-extends-cxl-ecosystem-leadership-130000255.html?fr=sycsrp_catchall",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6241337,
+      "published_at": "2025-09-02"
+    },
+    {
+      "evidence_id": "web-87139f0abe6f",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "Marvell Extends CXL Ecosystem Leadership with Structera Interoperability Across All Major Memory and CPU Platforms",
+      "claim": "CXL memory expansion LLM serving ecosystem official",
+      "evidence_text": "SANTA CLARA, Calif., Sept. 2, 2025 /PRNewswire/ -- Marvell Technology, Inc. (NASDAQ: MRVL), a leader in data infrastructure semiconductor solutions, today announced the Marvell® Structera™ Compute Express Link®(CXL®) memory-expansion controllers and near memory compute accelerators have successfully completed interoperability testing with DDR4 and DDR5 memory solutions from industry leaders Micron Technology, Samsung Electronics, and SK hynix. This milestone follows the recent announcement [...] The Structera product line includes two CXL device families engineered to meet the diverse performance and scalability needs of next-generation cloud data centers. The Structera A CXL near-memory accelerators integrate 16 Arm® Neoverse® V2 cores and multiple memory channels with CXL to address high-bandwidth memory applications such as deep learning recommendation models (DLRM) and machine learning. The Structera X CXL memory-expansion controllers enable terabytes of memory to be added to",
+      "url": "https://finance.yahoo.com/news/marvell-extends-cxl-ecosystem-leadership-130000255.html",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6241337,
+      "published_at": "2025-09-02"
+    },
+    {
+      "evidence_id": "web-e39af51d02fd",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "Accelerating LLM Serving with Prompt Cache Offloading via CXL",
+      "claim": "CXL memory expansion LLM serving ecosystem official",
+      "evidence_text": "via PCIe switches, unlocking multi-terabyte capacity beyond host limits. In ShareGPT benchmarks, augmenting a GPU with an additional 80GB of CXL memory (alongside host DRAM) raised prompt cache hit rates by 2.5x, reduced time-to-first-token by 32.9%, and boost overall throughput by 38.5%. This cost-effective tiered design delivers consistent low-latency responses under heavy load while notably reducing infrastructure costs , making LLM service deployment both faster and economical. [...] [9:42] process fewer request than memory. So as a result as shown in the bottom right graph as QPSC increases the throughput\n[9:50] of SSDs uh saturated earlier than that of memory. Okay, the experiment section is complete. Now I hand it back to Don.\n[10:02] Thank you.\n[10:10] All right. So to summarize uh 6M memory expansion allows for larger uh pump cache and which in turn um enable [...] [5:31] simple u experiment with a single uh request and um\n[5:38] well well I think that's what I just said.\n[5:42] So again, we just saw the potential of CXO memory uh expansion for single requests uh but we wanted to expand it\n[5:50] to more realistic scenarios where multiple requests are processed in parallel under more realistic query per\n[5:57] second uh demand. So we uh sorry\n[6:08] yeah so we set up a environment where we run VLM and LN cache on GPUs and we also",
+      "url": "https://www.youtube.com/watch?v=krB97KQerm8",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6150191,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-13cacb360cb1",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "CXL Memory Market Size, Share & Forecast 2035",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "Semiconductors have started investing more in development and testing of CXL 3.x and new memory technologies characterized by larger capacity, better bandwidth and better memory management.\n The investment is focused on the development of CXL fabric infrastructure, which includes the use of certain controllers, switches and other components necessary to connect many hosts with shared memory on the rack level. [...] CXL memory modules are expensive, which can act as an impediment to their adoption. CXL solutions might involve dedicated memory modules, controllers and other infrastructure components, which means that the total cost of deployment is higher than in case of normal memory expansion. The cost considerations are impacted by the cost of DRAM and the presence of competition for high-density memory in HBM and server DRAM from the field of artificial intelligence. As a consequence, CXL will be [...] CXL 3.x/4.x Rack-Scale Memory Infrastructure:Investment opportunities in new generation CXL memory fabric architecture for multi-host, dynamically configurable capacity and rack-scale memory disaggregation.\n CXL-Aware Memory Tiering Software:Development of software that efficiently organizes and distributes data into various types of memory such as HBM, local DDR and CXL-attached memory.",
+      "url": "https://www.datamintelligence.com/research-report/cxl-memory-market",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.5391051,
+      "published_at": "2026-09-28"
+    },
+    {
+      "evidence_id": "web-472a3e49b78c",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "ITME: Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "In this paper, we propose ITME (Inference Tiered Memory Expansion), which leverages a CXL-hybrid memory to present a massive, TB-scale byte-addressable remote memory expansion. This approach enables cost-efficient scaling and simplifies the software stack through direct byte-addressability, effectively addressing the challenges of shared context infrastructure. Our key insight is that the deterministic access patterns of voluminous model weights and prefix caches enable the system to [...] architectures accelerates NVMe-over-fabrics (NVMe-oF) target processing, the need for sophisticated software-level optimization and cost-efficiency burdens remain significant. Consequently, the ideal architecture for scaling this shared context infrastructure is still an active area of exploration. [...] In this paper, we propose ITME (Inference Tiered Memory Expansion),which leverages a CXL-hybrid memory to provide cost-efficient, TB-scale memory expansion for large-scale LLM workloads. The remote region functions as a massive, byte-addressable memory, providing GPU servers with a scalable extension of their physical memory via standard RDMA protocols. To maximize the efficiency of this tiered memory architecture, ITME strategically targets LLM data types that exhibit high predictability and",
+      "url": "https://arxiv.org/html/2606.12556v1",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.5373576,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-25f05c0f6404",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "How CXL Transforms RAG and KV Cache Performance",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "1. Dramatic Infrastructure Cost Reduction: Production modeling demonstrates that storing KV cache on CXL memory can reduce GPU requirements by up to 87%, with 75% higher GPU utilization for the prefill stage compared to full KV recomputation.  This fundamentally changes the economics of LLM deployment, allowing organizations to serve more users with less infrastructure investment.",
+      "url": "https://www.asteralabs.com/resources/blog/breaking-through-the-memory-wall-how-cxl-transforms-rag-and-kv-cache-performance",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.50564,
+      "published_at": "2025-11-20"
+    },
+    {
+      "evidence_id": "web-f6d969472719",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "CXL Memory Pooling Software Market Size, Share & Forecast Report 2025 to 2034 | Dataintelo",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "of CXL Consortium founding members, including Intel, AMD, Microsoft, and Meta, whose internal deployments and product roadmaps are directly shaping the commercial trajectory of CXL memory pooling software. Federal government initiatives such as the CHIPS and Science Act have further stimulated domestic semiconductor and advanced computing infrastructure investment, creating a favorable demand environment for CXL-based solutions through 2034. Canada is emerging as a secondary growth hub, driven [...] as in-memory risk calculations and algorithmic trading systems require deterministic, ultra-low-latency memory access that cannot tolerate the variable latencies associated with cloud-hosted memory services. The on-premises segment is forecast to grow at a CAGR of 21.8% through 2034, with growth driven primarily by continued data center capex investment from cloud operators who, despite operating cloud platforms, build and manage their own physical infrastructure where CXL is deployed [...] momentum in the Gulf Cooperation Council (GCC) states, particularly the UAE and Saudi Arabia, where Vision 2030 and UAE AI Strategy 2031 programs are funding large-scale AI infrastructure buildouts that increasingly specify CXL-capable hardware. MEA is expected to post a CAGR of 27.4% through 2034, the highest of any region, albeit from a comparatively small base, reflecting the transformative infrastructure investments underway across the Arabian Peninsula and South Africa.",
+      "url": "https://dataintelo.com/report/cxl-memory-pooling-software-market",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.3620896,
+      "published_at": "2025-09-30"
+    },
+    {
+      "evidence_id": "web-5175a77604cd",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek-V2",
+      "claim": "DeepSeek-V2 MLA hardware vendor ecosystem response",
+      "evidence_text": "linear computations across different experts. In addition, MLA is also optimized based on an improved version of FlashAttention-2 (Dao, 2023).\nWe conduct all experiments on a cluster equipped with NVIDIA H800 GPUs. Each node in the H800 cluster contains 8 GPUs connected using NVLink and NVSwitch within nodes. Across nodes, InfiniBand interconnects are utilized to facilitate communications. [...] For DeepSeek-V2, we design an innovative attention mechanism called Multi-head Latent Attention (MLA). Equipped with low-rank key-value joint compression, MLA achieves better performance than MHA, but requires a significantly smaller amount of KV cache. We introduce its architecture in the following, and also provide a comparison between MLA and MHA in Appendix D.2. [...] 2. Architecture By and large, DeepSeek-V2 is still in the Transformer architecture (Vaswani et al., 2017), where each Transformer block consists of an attention module and a Feed-Forward Network (FFN).\nHowever, for both the attention module and the FFN, we design and employ innovative archi-tectures. For attention, we design MLA, which utilizes low-rank key-value joint compression to eliminate the bottleneck of inference-time key-value cache, thus supporting efficient inference.",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.40359092,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-acabf4ee155d",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Multi-Latent Attention (MLA) Implementation from DeepSeek-V2 - Show and Tell - Hugging Face Forums",
+      "claim": "DeepSeek-V2 MLA developer implementation limitations",
+      "evidence_text": "This forum is powered by Discourse and relies on a trust-level system. As a new user, you’re temporarily limited in the number of topics and posts you can create. To lift those restrictions, just spend time reading other posts (to be precise, enter 5 topics, read through 30 posts and spend a total of 10 minutes reading). [...] This implementation is focused on correctness and clarity, aiming to make MLA more accessible for researchers and engineers exploring advanced attention mechanisms. If you’ve worked with similar architectures or have insights into optimization strategies, I’d love to exchange ideas!\n\nLooking forward to technical discussions and perspectives from the community. Image 4: :rocket:\n\n  \n\nImage 5: +1Image 6: heart 5 \n\n ​ \n\n ​ \n\n2.1k views 1 link \n\n## post by bird-of-paradise on Feb 11, 2025\n\nImage 7 [...] ### []( This Implementation?\n\nWhile working through the paper, I found the MLA architecture fascinating but complex. This implementation aims to make it more accessible to others interested in attention mechanisms.\n\n### [](\n\nYou can find the implementation here.\n\n### []( Deep-Dives\n\nThe repository includes detailed write-ups on:\n\n   MLA’s architectural innovations\n   Attention mask handling with caching\n   Dimension flow and optimization insights\n\n### []( Attention Mechanisms",
+      "url": "https://discuss.huggingface.co/t/multi-latent-attention-mla-implementation-from-deepseek-v2/139924",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.71995544,
+      "published_at": "2025-02-10"
+    },
+    {
+      "evidence_id": "web-621ed3782616",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "A Gentle Introduction to Multi-Head Latent Attention (MLA) - MachineLearningMastery.com",
+      "claim": "DeepSeek-V2 MLA developer implementation limitations",
+      "evidence_text": "## Summary\n\nIn this post, you learned how MLA works and how to implement it in PyTorch. MLA is a new attention mechanism proposed in DeepSeek-V2 that uses low-rank approximation of projection matrices in multi-head attention. This approach can significantly reduce computational cost and memory usage while maintaining model performance.\n\n## Building Transformer Models From Scratch with PyTorch\n\nBuilding Transformer Models From Scratch with PyTorch [...] The recent introduction of Multi-Head Latent Attention (MLA) proposed a new approach to running attention operations with a lower memory footprint. First proposed in DeepSeek-V2, it changes how you perform matrix multiplication in the attention operation. In this post, you will learn how MLA works and how to implement it in PyTorch.\n\nKick-start your project with my book Building Transformer Models From Scratch with PyTorch. It provides self-study tutorials with working code. [...] Multi-Head Attention (MHA) and Grouped-Query Attention (GQA) are the attention mechanisms used in almost all transformer models. Recently, a new attention mechanism called Multi-head Latent Attention (MLA) was proposed in DeepSeek-V2 to further reduce computational cost and speed up inference.",
+      "url": "https://machinelearningmastery.com/a-gentle-introduction-to-multi-head-latent-attention-mla",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.4627892,
+      "published_at": "2025-06-23"
+    },
+    {
+      "evidence_id": "web-3ea8781cc686",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Deploy DeepSeek R2 on GPU Cloud: Self-Host the Best Open-Source Reasoning Model (2026) | Spheron Blog",
+      "claim": "DeepSeek-V2 MLA cloud provider deployment cost",
+      "evidence_text": "Total tokens: 6B tokens/month\n DeepSeek API cost: 6B × $1.72/M = $10,320/month\n Self-hosted on 8x H100 spot at $6.40/hr, 75% utilization: 8x H100 at ~1,600 tok/s sustained = 1,600 × 3,600 × 0.75 = ~4.32M tokens/hour. At ~4.32M tokens/hour × 720 hours/month = ~3.1B tokens/month maximum capacity. The workload requires 6B tokens/month, so two 8x H100 clusters are needed: 2 × $4,608/month = $9,216/month spot\n Self-hosting saves ~$1,104/month above 1M queries/month on spot with two clusters [...] | Provider | Model | Input ($/M) | Output ($/M) | Est. Cost per 1M tokens (reasoning mix) |\n ---  --- \n| DeepSeek API | DeepSeek-R1 (R2 est.)\\\\ | ~$0.55 | ~$2.19 | ~$1.72/M |\n| OpenAI | o3 | $2.00 | $8.00 | ~$6.20/M |\n| Spheron (H100, on-demand) | R2 self-hosted | $2.40/hr  ~$1.50-2.18/M |\n| Spheron (H100, spot) | R2 self-hosted | $0.80/hr  ~$0.50-0.73/M |\n\n\\\\DeepSeek R2 API pricing is not yet published. Input/output prices above are DeepSeek R1's published rates, used as a projected estimate. [...] | Model | Total Params | Active Params | Context Window | Architecture | Best For |\n ---  ---  --- |\n| DeepSeek R2 | ~685B\\\\ | ~37B\\\\ | 128K\\\\ | MoE + MLA | Math, logic, scientific reasoning |\n| DeepSeek R1 | 671B | 37B | 128K | MoE + MLA | Reasoning (established baseline) |\n| DeepSeek V4 | ~1T\\\\ | ~37B\\\\ | 1M\\\\ | MoE + MLA | Coding, agentic tasks |",
+      "url": "https://www.spheron.network/blog/deploy-deepseek-r2-gpu-cloud",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.54303354,
+      "published_at": "2026-04-05"
+    },
+    {
+      "evidence_id": "web-107ee275566d",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Fast and Low-cost Deployment of DeepSeek Models of All Sizes Without Complex Coding - Alibaba Cloud",
+      "claim": "DeepSeek-V2 MLA cloud provider deployment cost",
+      "evidence_text": "Enjoy all-in-one access to Qwen, Wan, DeepSeek, GLM models, AI agents and expert support.##### AI Savings PlanHot\n\nSave up to 47% on AI costs. Limited-time offer tailored to your usage.##### AI Image Creation\n\nAll-in-one creative suite for copywriting, image generation, and poster design.\n\n##### AI Token PlanNEW\n\nStarts from $6/mo. Build more, spend less — one plan, every modality.##### AI Video Creation\n\nElevate your professional video production with Wan 2.6.\n\n### Overview [...] Estimated Time:\n\nAround 10 minutes to deploy\n\nRelated Service\n\nPlatform for AI\n\nContact Expert\n\n50% off for first order\n\nEnjoy a 50% discount on first-time purchases, excluding domain name registration, cloud communication, ApsaraVideo, and CDN.\n\nThe coupon can be claimed until March 31, 2025 (UTC/GMT +08:00).\n\nThe coupon is valid for 7 days.\n\nLimited quantity, while supplies last.\n\nCoupon\n\n50% off\n\nAvailable for your first purchase and save up to USD 100\n\nGet Now [...] 1 Million Token\n\nUse industry-leading foundation models (FMs), including Qwen-Max, Qwen-Plus, Qwen-Turbo, and the Qwen 2.5 series. You can also implement RAG on the models.\n\nUser Type: Newly registered users\n\nFree Tokens:  1 million per model\n\nValidity Period: 1 month after first activation\n\nTry Now\n\nDiscover More\n\n### Promo Center\n\nAll the available discounts and offers in one place  \nEnjoy $0.99/month for SAS 2vCPU 1GiB, $5.99 for .com Domain\n\nLearn More\n\n### Referral",
+      "url": "https://www.alibabacloud.com/en/solutions/tech-solution/deepseek-r1-for-platforms?_p_lc=1",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.3863703,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-d5d0ae6e64c7",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "With DeepSeek, China moves to take on Nvidia's CUDA ecosystem",
+      "claim": "DeepSeek-V2 MLA hardware vendor ecosystem response",
+      "evidence_text": "The implications of DeepSeek's AI model breakthrough for Nvidia and other US tech titans have been heatedly talked about in the tech industry over the past weeks.\n\n said on Monday.\n\nKunlun Xin, an AI-focused chip firm controlled by Chinese search and AI giant Baidu, spent less than a week adapting its hardware to DeepSeek's open-source models, a significantly shorter time than required for closed-source models, CEO Ouyang Jian told CCTV. [...] The company said in a blog post last week that it had started supporting DeepSeek's V3 and R1 models, allowing developers to quickly deploy their applications at low cost.\n\nDeepSeek's AI models - which generate responses to queries comparable to top closed-source models, while requiring much lower costs to train and run - are hailed as a sign of China's resilience against US efforts to curb its AI progress. [...] Beijing-based Moore Threads, a GPU design firm established by former Nvidia China general manager Zhang Jianzhong, said earlier this month in a post on WeChat that it would \"pay tribute to DeepSeek\" by \"using locally made GPUs to set China's AI ecosystem on fire\".",
+      "url": "https://finance.yahoo.com/news/deepseek-china-moves-nvidias-cuda-093000950.html",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.4129331,
+      "published_at": "2025-02-12"
+    },
+    {
+      "evidence_id": "web-e1900c38df6b",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "Meet Luo Fuli: The AI pro behind DeepSeek’s open-source model and MLA technology | AI OpenAI | CryptoRank.io",
+      "claim": "DeepSeek-V2 MLA hardware vendor ecosystem response",
+      "evidence_text": "One of DeepSeek-V2’s standout features is its use of Multi-Level Attention (MLA) and Mixture of Experts (MoE) architecture. MLA enables the model to focus on different levels of textual information—akin to how a human reader processes a book. It shifted attention between sentences, paragraphs, and chapters depending on context. [...] Luo Fuli attributed DeepSeek-V2’s success to a combination of innovative architecture, robust infrastructure, and the company’s commitment to transparency. During her time at the company, DeepSeek openly shared its technical reports, model weights, and inference code on GitHub. This was aimed at actualizing its open-source approach to AI development.\n\n### DeepSeek AI – The open-source technology at its peak [...] In-depth token unlock insightsVC Pressure\n\nTokens at risk of price pressure from VCs\n\nAPI\n\nMarket API\n\nReal-time and historical crypto market data via APIMCP\n\nAI-native access to Market DataPricing\n\nExplore API plans, limits, and pricing optionsDocumentation\n\nAPI endpoints, queries, parameters, and response examples\n\nProducts\n\nResearch\n\nCrypto market insights, reports, and mediaPersons\n\nAll-in-one analytics for personsNews\n\nLatest cryptocurrency newsRWA",
+      "url": "https://cryptorank.io/news/feed/29815-meet-luo-fuli-ai-expert-behind-deepseek-mla",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.31374606,
+      "published_at": "2025-01-29"
+    },
+    {
+      "evidence_id": "web-f23a5c6aa837",
+      "agent": "stakeholder_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "Cloud Computing Costs in 2024",
+      "claim": "ITME cloud provider deployment cost",
+      "evidence_text": "$23,922\n\n$29,905\n\n$29,602\n\n$23,360\n\n## Choosing a Cloud Computing Solution\n\nBefore evaluating cloud providers and service offerings, businesses should prioritize their key objectives and then consider the cloud service attributes needed to achieve them. This will help narrow the provider field so companies can assess pricing and service options to check whether their TCO calculations are accurate. Areas to consider when evaluating the cloud economics of each solution include the following: [...] Cloud migration costs include both direct and indirect expenses, such as data transfer fees, architectural design, staff, and consulting labor for implementation, as well as hidden costs including downtime and productivity losses during the transition. Costs can range from $5,000 to $500,000 depending on workload size.\n\nHow much does a cloud server cost per month? [...] Most cloud providers offer workload estimator and cloud cost estimator tools to help businesses analyze and calculate cloud TCO. This analysis should include a review of various cloud provider pricing models and pricing options. For example, some providers offer a discount for a multiyear commitment or higher-volume usage. Businesses should also assess potentially unpredictable or hidden costs, such as early termination or unexpected cloud data egress fees.",
+      "url": "https://www.oracle.com/cloud/cloud-computing-cost",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.170053,
+      "published_at": "2024-01-25"
+    },
+    {
+      "evidence_id": "rag-633dd3db94f2",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "LLaMA 1 65B\nLLaMA 2 13B\nLLaMA 2 34B\nLLaMA 2 70B\nLLaMA 3 8B\nLLaMA 3 70B\nMistral 7B\nMixtral 8x7B\nMixtral 8x22B\nCommand R\nCommand R+\nGrok-1\nDBRX\nQwen1.5 32B\nQwen1.5 72B\nLLaMA 1 Family\nLLaMA 2 Family\nLLaMA 3 Family\nMixtral Family\nCommand R Family\nQwen1.5 Family\n(a)\n0\n50\n100\n150\n200\n250\n300\nDeepSeek-V2\nDeepSeek 67B\nsaving 42.5% of\ntraining costs\nTraining Costs (K GPU Hours/T Tokens)\n0\n100\n200\n300\n400\nDeepSeek-V2\nDeepSeek 67B\nreducing KV cache by 93.3%\nKV Cache for Generation (KB/Token)\n0\n10000\n20000\n30000\n40000\n50000\nDeepSeek-V2\nDeepSeek 67B\n576% of maximum throughput\nMaximum Generation Throughput (Tokens/Sec) \n(b)\nFigure 1 | (a) MMLU accuracy vs. activated parameters, among different open-source models.\n(b) Training costs and inference efficiency of DeepSeek 67B (Dense) and DeepSeek-V2.\narXiv:2405.04434v5 [cs.CL] 19 Jun 2024",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 1,
+      "chunk_id": "982427c9be304c6c5976",
+      "retrieval_score": 0.6264704465866089,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-5daba033de28",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on serving-system compatibility in datacenter cloud LLM serving",
+      "evidence_text": "at, and find that DeepSeek-V2 Chat (SFT) surpasses Qwen1.5 72B Chat\non almost all of English, math, and code benchmarks. On Chinese benchmarks, DeepSeek-\nV2 Chat (SFT) demonstrates slightly lower scores than Qwen1.5 72B Chat on multi-subject\nmultiple-choice tasks, consistent with the performance observed from their base versions. When\ncompared with the state-of-the-art open-source MoE model, Mixtral 8x22B Instruct, DeepSeek-\nV2 Chat (SFT) exhibits better performance on most benchmarks, except for NaturalQuestions\nand IFEval. Furthermore, in comparison to the state-of-the-art open-source model LLaMA3 70B\nChat, DeepSeek-V2 Chat (SFT) shows similar performance in code and math related benchmarks.\nLLaMA3 70B Chat exhibits better performance on MMLU and IFEval, while DeepSeek-V2 Chat\n(SFT) showcases stronger performance on Chinese tasks. Ultimately, DeepSeek-V2 Chat (RL)",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 18,
+      "chunk_id": "9e1b4e7407b034c22b66",
+      "retrieval_score": 0.6005752682685852,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-f530f646f320",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "1. Introduction\nIn the past few years, Large Language Models (LLMs) (Anthropic, 2023; Google, 2023; OpenAI,\n2022, 2023) have undergone rapid development, offering a glimpse into the dawn of Artificial\nGeneral Intelligence (AGI). In general, the intelligence of an LLM tends to improve as the number\nof parameters increases, allowing it to exhibit emergent capabilities across various tasks (Wei\net al., 2022). However, the improvement comes at the cost of larger computing resources for\ntraining and a potential decrease in inference throughput. These constraints present significant\nchallenges that impede the widespread adoption and utilization of LLMs. In order to tackle this\nproblem, we introduce DeepSeek-V2, a strong open-source Mixture-of-Experts (MoE) language\nmodel, characterized by economical training and efficient inference through an innovative\nTransformer architecture.",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 4,
+      "chunk_id": "cf115cecd1045a4d9373",
+      "retrieval_score": 0.5779999494552612,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-0ab43e592500",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "r performance among open-source\nmodels and becomes the strongest open-source MoE language model. Figure 1(a) highlights\nthat, on MMLU, DeepSeek-V2 achieves top-ranking performance with only a small number\nof activated parameters. In addition, as shown in Figure 1(b), compared with DeepSeek 67B,\nDeepSeek-V2 saves 42.5% of training costs, reduces the KV cache by 93.3%, and boosts the\nmaximum generation throughput to 5.76 times. We also evaluate DeepSeek-V2 Chat (SFT) and\n4",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 4,
+      "chunk_id": "430a45f2bcbca3af0d5e",
+      "retrieval_score": 0.5512704253196716,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-5bfa0716dd11",
+      "agent": "domain_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "paper",
+      "title": "deepseek_v2.pdf",
+      "claim": "DeepSeek-V2 MLA impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "DeepSeek-V2: A Strong, Economical, and Efficient\nMixture-of-Experts Language Model\nDeepSeek-AI\nresearch@deepseek.com\nAbstract\nWe present DeepSeek-V2, a strong Mixture-of-Experts (MoE) language model characterized by\neconomical training and efficient inference. It comprises 236B total parameters, of which 21B\nare activated for each token, and supports a context length of 128K tokens. DeepSeek-V2 adopts\ninnovative architectures including Multi-head Latent Attention (MLA) and DeepSeekMoE.\nMLA guarantees efficient inference through significantly compressing the Key-Value (KV) cache\ninto a latent vector, while DeepSeekMoE enables training strong models at an economical\ncost through sparse computation. Compared with DeepSeek 67B, DeepSeek-V2 achieves\nsignificantly stronger performance, and meanwhile saves 42.5% of training costs, reduces the",
+      "url": "https://arxiv.org/pdf/2405.04434",
+      "file_name": "deepseek_v2.pdf",
+      "page": 1,
+      "chunk_id": "77a33cf725d73cd82248",
+      "retrieval_score": 0.5450770854949951,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-b1197c5e1d1f",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "erve highly predictable\nlong-context data to maximize CXL-hybrid-memory performance\nfor subsequent inference turns.\n2.2\nExploiting Predictability in LLM Inference\nThe architectural efficiency of ITME stems from the high predictabil-\nity of specific LLM data types (Table 1). By exploiting these deter-\nministic access patterns, ITME proactively manages data to effec-\ntively mask the latency of the remote CXL-hybrid memory.\n• Model Weights: Weights are consumed in a strict layer-by-\nlayer sequence during the forward pass. This predictability\nenables ITME to utilize layer-wise prefetching, success-\nfully overlapping I/O with computation. Offloading massive\nweight footprints (e.g., 325 GB for OPT-175B in FP16) to\nthe CXL-hybrid memory (T3.5) reclaims valuable T1/T2\ncapacity for latency-sensitive active states.\n• Long-context Prefix KV Cache: Multi-turn and agen-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 3,
+      "chunk_id": "85ae3861e0e7c7f302bc",
+      "retrieval_score": 0.5359688997268677,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-ced232c0209f",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "Table 1: LLM Data Characteristics and Target Tiering\nData Type\nPredict.\nPerf.\nTarget Tier\nCapacity\nWeights\nDeterministic\nCritical\nOur (ITME)\nStatic (Large)\nActivations\nHigh\nCritical\nGPU Mem. / Host Mem.\nTransient (Small)\nWorking KV\nLow\nCritical\nGPU Mem. / Host Mem.\nIncremental (Moderate)\nLong-context KV\nModerate\nModerate\nOur (ITME)\nCumulative (Large)\nthe overall memory footprint. Table1 summarizes the character-\nistics and target tiering for LLM data types. Activations transient\nand small with high performance criticality. Working KV caches,\nalthough larger than activations, are also latency critical, while\nhaving lower predictability. Consequently, activations and working\nKV cache are better placed in high-speed GPU or host memory\ntiers. In contrast, model weights and long-context KV caches, which\nrepresent the vast majority of TB-scale LLM workloads, are charac-",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 2,
+      "chunk_id": "0cf4c81d234f3c3eaf6a",
+      "retrieval_score": 0.5366926789283752,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-c72f816664f2",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on operational complexity and cost in datacenter cloud LLM serving",
+      "evidence_text": "ITME: Inference Tiered Memory Expansion with Disaggregated\nCXL-Hybrid Memories\nHakbeom Jang, Younghoon Min, Sunwoong Kim, Taeyoung Ahn, Hanyee Kim,\nYoungpyo Joo, Hoshik Kim, and Jongryool Kim\nMemory Systems Research, SK hynix\nAbstract\nThe rapid shift toward agentic and long-context workloads in Large\nLanguage Models (LLMs) is pushing the industry beyond the ca-\npacity of individual servers toward disaggregated shared storage to\nhandle TB-scale context states. This movement has led to the emer-\ngence of specialized shared context layers designed to externalize\nand share cumulative inference states across distributed clusters.\nWhile offloading to a data processing unit (DPU) within just-a-\nbunch-of-flash (JBOF) architectures accelerates NVMe-over-fabrics\n(NVMe-oF) target processing, the need for sophisticated software-\nlevel optimization and cost-efficiency burdens remain significant.",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 1,
+      "chunk_id": "e151eeed4fed4bbc55a9",
+      "retrieval_score": 0.5289250612258911,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-a6502f23fc81",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on new infrastructure requirements in datacenter cloud LLM serving",
+      "evidence_text": "ast, model weights and long-context KV caches, which\nrepresent the vast majority of TB-scale LLM workloads, are charac-\nterized by deterministic or moderate predictability and their large\ncapacity. Leveraging this observation, ITME offloads these volumi-\nnous, predictable data types to the remote expansion tier, effectively\nmasking access latencies through proactive placement.\nHigh predictability of these data types allows ITME to effectively\nhide both storage and network overheads through a coordinated\nHW/SW prefetching strategy. Internal storage latencies are over-\ncome by hardware-level prefetching from NVMe SSDs into the\ninternal DRAM cache of the CXL-hybrid-memory, while network\ncommunication overheads are mitigated via a pipelined, multi-tier\nDMA-based prefetching mechanism that orchestrates data trans-\nfers from ITME to the GPU via RDMA and host CPU memory. By",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 2,
+      "chunk_id": "894026d63eb2e88d3150",
+      "retrieval_score": 0.5135797262191772,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-a11079c054f7",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on throughput in datacenter cloud LLM serving",
+      "evidence_text": "ware-\nlevel prefetcher that hides storage overhead by moving data\nfrom SSDs into an integrated DRAM cache. Furthermore,\nwe provide a user-level prefetcher API that allows LLM in-\nference frameworks to explicitly trigger and control these\ntransfers, enabling data delivery at near-maximum PCIe\nbandwidth through application-aware scheduling.\n• Empirical Potential Analysis and FPGA Prototyping:\nWe validate ITME by evaluating its performance poten-\ntial using production-grade SK hynix CMM [32] and Gen5\nNVMe SSDs [18], while further demonstrating functional\nfeasibility through an FPGA-based hardware prototype. Our\nevaluation shows that ITME achieves a 1.80× throughput\nimprovement over NVMe-oF-based disaggregated storage\nbaselines in large-scale LLM inference.\nGPU Memory (T1)\n(a) Baseline: 4-Tier Structure\nHost Memory (T2)\nLocal Storage (T3)\nWorking KV Cache\nSpillover KV Cache\nWarm KV Cache",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 2,
+      "chunk_id": "71c3b191d8903f0bf857",
+      "retrieval_score": 0.5738891959190369,
+      "published_at": null
+    },
+    {
+      "evidence_id": "rag-3c0c767ebf6d",
+      "agent": "domain_evaluation",
+      "technology": "ITME",
+      "source_type": "paper",
+      "title": "itme.pdf",
+      "claim": "ITME impact on throughput in datacenter cloud LLM serving",
+      "evidence_text": "across the memory-storage hierarchy. Leveraging this\npredictability, ITME implements a pipelined, multi-tier DMA-based\nprefetching that orchestrates seamless data movement directly from\nthe CXL-hybrid memory device to GPU memory. We validate ITME\nby evaluating its performance potential with production-grade SK\nHynix CMM and PCIe Gen5 NVMe SSDs, while further demon-\nstrating its functional feasibility through an FPGA-based hardware\nprototype. Overall, ITME enhances conventional CPU-offloading\nby providing additional remote memory expansion to accommodate\nlarge KV cache footprints beyond host memory limits, achieving\nup to a 35.7% throughput improvement.\n1\nIntroduction\nAs Large Language Models (LLMs) continue to grow in scale, the\nprimary bottleneck in inference systems has shifted from raw com-\npute performance to memory capacity [6, 19, 20, 29, 31]. Modern",
+      "url": "https://arxiv.org/pdf/2606.12556",
+      "file_name": "itme.pdf",
+      "page": 1,
+      "chunk_id": "93a4b64e9a64ed1a9e42",
+      "retrieval_score": 0.5587038397789001,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-3de87b93eafc",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek's Low Inference Cost Explained: MoE & Strategy | IntuitionLabs",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "The impact is that compared to a dense model of the same parameter count, the GPU time per inference can be significantly lower. In practical terms, DeepSeek can claim a 236B-parameter model V2, yet serve it at roughly the same cost per query as first-generation GPT-3 or mini-LLMs. In BytePlus’s pricing table (Table above), DeepSeek-V2’s $0.14 input rate is essentially identical to GPT-4o Mini’s $0.15 (( even though V2 is a much larger model. This contradicts the usual assumption that “bigger [...] Break-even analysis: Some analysts have compared the cost of self-hosting DeepSeek vs. paying OpenAI. Consider an enterprise doing 1 billion tokens per month. At DeepSeek’s $0.14/M input and $0.28/M output, the total might be ~$0.42/M on V2—so ~$420 per billion tokens. Using OpenAI GPT-4o at $3/$10 would cost ~$13,000 per billion. If the enterprise instead bought a dedicated GPU server (say an NVIDIA DGX A100 at ~$200k) and ran DeepSeek continuously, amortized cost is on the order of tens of [...] Another driver of cost savings is hardware. Due to export controls, DeepSeek was limited to Chinese versions of NVIDIA GPUs. Rather than more expensive H100/A100 chips, they trained and serve on NVIDIA H800 GPUs (China’s variant of the H100) (( While not as fast per GPU, H800s are significantly cheaper and more available for Chinese companies. DeepSeek’s own reports highlight how they used 512 such chips to train R1 for ~$294k (( This contrasts with Western peers spending tens or hundreds of",
+      "url": "https://intuitionlabs.ai/articles/deepseek-inference-cost-explained",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.71185225,
+      "published_at": "2025-10-24"
+    },
+    {
+      "evidence_id": "web-3edcc8b9feb4",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek's Rise and Industry Impact: A Concise Summary | Hetz",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "DeepSeek is believed to possess around 50,000 Hopper architecture GPUs, a mix of approximately 10,000 H800s (computationally similar to H100s but with lower bandwidth), 10,000 H100s, and orders for H20s (China-specific GPUs, over 1 million produced by Nvidia in 9 months). These GPUs, shared with High-Flyer and geographically distributed, support trading, inference, training, and research. Latest estimates place DeepSeek’s total server CapEx at nearly $1.3B - $500M in GPU investment and $715M in [...] A crucial innovation is Multi-head Latent Attention (MLA), significantly reducing inference costs by decreasing KV Cache requirements by 93.3% compared to standard attention. KV Cache, a memory mechanism, grows with conversation context, creating memory bottlenecks. MLA's reduction in KV Cache lowers hardware needs per query, decreasing costs. MLA has garnered significant attention from US labs. DeepSeek also benefits from H20's higher memory bandwidth and capacity for inference. Therefore, [...] Therefore, there is some logic to the lower price DeepSeek is able to charge. Nevertheless, the cost reduction is still too dramatic as Google Gemini Flash 2 have also used a MLA approach, and their cost is still far off of DeepSeek’s. This has led some to believe that DeepSeek has been receiving subsidies from Partnerships with the likes of Huawei. Partnerships with Huawei exist, but Ascend compute utilization is minimal thus far.",
+      "url": "https://www.hetz.vc/news/deepseeks-rise-and-industry-impact-a-concise-summary",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.5479727,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-d3a45d67e440",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "ITME: CXL-Hybrid Memory Tier for LLM Inference",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "Practically, ITME allows data center operators to scale LLM endpoints elastically by centralizing context storage, efficiently amortizing hardware investment. Theoretically, ITME motivates a new class of memory hierarchy-aware inference scheduling and prefetch policies, in which hardware/software co-design maximally exploits the deterministic structure of transformer inference. [...] accelerates NVMe-over-fabrics (NVMe-oF) target processing, the need for sophisticated software-level optimization and cost-efficiency burdens remain significant. Consequently, the ideal architecture for scaling this shared context infrastructure is still an active area of exploration. In this paper, we propose ITME (Inference Tiered Memory Expansion), which leverages a CXL-hybrid memory to present a massive, TB-scale byte-addressable remote memory expansion. This approach enables cost-efficient [...] The ITME architecture demonstrates that CXL-hybrid memory can function as an efficient, high-bandwidth, low-latency, byte-addressable expansion tier for LLM inference. ITME challenges the reliance on software-heavy DPU/JBOF stacks and presents a path to economically scaling inference context infrastructure without GPU memory overprovisioning.",
+      "url": "https://www.emergentmind.com/papers/2606.12556",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.52685463,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-5713fc05db89",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "ITME: Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "architectures accelerates NVMe-over-fabrics (NVMe-oF) target processing, the need for sophisticated software-level optimization and cost-efficiency burdens remain significant. Consequently, the ideal architecture for scaling this shared context infrastructure is still an active area of exploration. In this paper, we propose ITME (Inference Tiered Memory Expansion), which leverages a CXL-hybrid memory to present a massive, TB-scale byte-addressable remote memory expansion. This approach enables [...] approach enables cost-efficient scaling and simplifies the software stack through direct byte-addressability, effectively addressing the challenges of shared context infrastructure. Our key insight is that the deterministic access patterns of voluminous model weights and prefix caches enable the system to proactively manage data movement across the memory-storage hierarchy. We validate ITME by evaluating its performance potential with production-grade SK Hynix CMM and PCIe Gen5 NVMe SSDs, while",
+      "url": "https://www.thejournal.club/c/paper/955800",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.50490767,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-14df1896283b",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "ITME: Inference Tiered Memory Expansion with Disaggregated CXL-Hybrid Memories | alphaXiv",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "architectures accelerates NVMe-over-fabrics (NVMe-oF) target processing, the need for sophisticated software-level optimization and cost-efficiency burdens remain significant. Consequently, the ideal architecture for scaling this shared context infrastructure is still an active area of exploration. In this paper, we propose ITME (Inference Tiered Memory Expansion), which leverages a CXL-hybrid memory to present a massive, TB-scale byte-addressable remote memory expansion. This approach enables [...] approach enables cost-efficient scaling and simplifies the software stack through direct byte-addressability, effectively addressing the challenges of shared context infrastructure. Our key insight is that the deterministic access patterns of voluminous model weights and prefix caches enable the system to proactively manage data movement across the memory-storage hierarchy. We validate ITME by evaluating its performance potential with production-grade SK Hynix CMM and PCIe Gen5 NVMe SSDs, while [...] ITME represents a shift in how large-scale AI infrastructure can be built. Its significance lies in several key areas:",
+      "url": "https://www.alphaxiv.org/audio/2606.12556v2",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.48484412,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-4f9269787897",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "SK Hynix's ITME uses CXL memory to boost LLM inference by... | The Neural Feed",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "require complex software optimization, ITME leverages CXL's direct byte-addressability to simplify the stack and enable cost-efficient scaling. The key insight: model weights and prefix caches have deterministic access patterns, allowing the system to proactively manage data movement across the memory-storage hierarchy. [...] LLM inference clusters, promising better cost efficiency and simpler deployment for next-generation AI workloads. [...] As large language models move toward agentic and long-context workloads, the industry faces a critical memory bottleneck: TB-scale context states that exceed individual server capacity. Researchers from SK Hynix propose ITME (Inference Tiered Memory Expansion), a disaggregated memory architecture that uses CXL-hybrid memories to deliver massive, byte-addressable remote memory expansion. Unlike traditional offloading to DPU-based JBOF (just-a-bunch-of-flash) architectures, which require complex",
+      "url": "https://theneuralfeed.com/article/itme-inference-tiered-memory-expansion-with-disaggregated-cxl-hybrid-memories/HxcbGQ4G",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.32972667,
+      "published_at": "2026-06-12"
+    },
+    {
+      "evidence_id": "web-d9d44ea68085",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "The DeepSeek Series: A Technical Overview",
+      "claim": "DeepSeek-V2 MLA hardware vendor ecosystem response",
+      "evidence_text": "They systematically design methods (MLA, MoE gating, device-limited routing, FP8 training, DualPipe) to maximize hardware utilization even in constrained environments\n HPC-level scheduling (PTX instructions, warp specialization) hides communication overhead and overcomes the limitations imposed by limited interconnect speeds on H800s\n\n2. Sparse + HPC Co-Design [...] 1. DeepSeek-LLM (Jan '24): an early investigation of scaling laws and data-model tradeoffs.\n2. DeepSeek-V2 (Jun '24): introducing Multi-Head Latent Attention (MLA) and DeepSeekMoE to improve memory and training efficiency.\n3. DeepSeek-V3 (Dec '24): scaling sparse MoE networks to 671B parameters, with FP8 mixed precision training and intricate HPC co-design [...] The major novelties are:\n\n1. Refined MLA\n2. Refined DeepSeekMoE\n3. Co-Designed Training & Inference Frameworks\n\n### Refined MLA\n\nMulti-Head Latent Attention was introduced in V2 to reduce KV cache overhead. In V3, it is further refined with several new features:\n\n Improved RoPE Handling: V2 only partially decoupled keys8, but V3 extends the concept for more stable 128K context. They track a “decoupled shared key” that reduces numerical drift9 in extremely long generations.",
+      "url": "https://martinfowler.com/articles/deepseek-papers.html",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.35750076,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-64388d64ac6b",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek: A Technical and Strategic Analysis for VCs and Startups",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "According to SemiAnalysis's detailed investigation, DeepSeek's total server infrastructure investment approaches $1.6B, with approximately $500M dedicated specifically to GPU hardware. This breaks down into their extensive GPU fleet: roughly 50,000 Hopper GPUs distributed across different variants—10,000 H800s, 10,000 H100s, and the remainder being H20s (the China-specific version of Hopper GPUs that Nvidia produced in compliance with export regulations). The $1.6B figure encompasses not just [...] DeepSeek's Multi-Head Latent Attention (MLA) mechanism represents a breakthrough in memory efficiency, reducing memory overhead by an astounding 93.3% compared to standard attention mechanisms. Originally introduced in DeepSeek-v2, this innovation specifically targets the KV Cache—a memory-intensive component that stores conversation context. By dramatically reducing these memory requirements, MLA makes inference significantly more cost-effective, enabling longer conversations without [...] While headlines tout DeepSeek's $5.5M training cost, the reality of their investment is far more substantial. Indeed, their own technical paper acknowledges that the $5.5M figure only accounted for the costs of running the GPUs for training DeepSeek-V3, not prior research, infrastructure, or operating costs. DeepSeek also has many more GPUs than the 2,048 H800s that they mention in their paper, as AI labs need many additional GPUs to run experiments and research before committing to a full",
+      "url": "https://leonisnewsletter.substack.com/p/deepseek-a-technical-and-strategic",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.70263255,
+      "published_at": "2025-02-05"
+    },
+    {
+      "evidence_id": "web-99949f43a645",
+      "agent": "market_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "$5.6M vs $100M: How DeepSeek V3.2 Achieves 95% Cost Reduction in AI Training - General - 10x.pub",
+      "claim": "DeepSeek-V2 MLA cost savings GPU infrastructure investment",
+      "evidence_text": "DeepSeek likely uses batch sizes of 2048-4096, reducing communication frequency by 8-16x compared to typical training (batch size 256-512).\n\nTradeoff: Large batches can hurt convergence quality. But with proper learning rate scaling and warmup, this is manageable. The cost savings justify the engineering effort.\n\n## Power and Cooling: The Hidden Infrastructure Costs\n\nDavid calculated $236K for power and cooling, which is reasonable. Let me add details:\n\n### Power Consumption\n\nPer GPU: [...] Cloud GPU costs ($3-4/hour) are 2-3x owned GPU costs when amortized:\n\nBreakeven: If you’ll use GPUs >40% of the time over 3 years, buying is cheaper.\n\n### 2. Optimize for Your Workload\n\nDeepSeek optimized every aspect for MoE + FP8 + H800:\n\nDon’t use generic training scripts – invest in workload-specific optimization.\n\n### 3. Data Pipeline Is Critical\n\n10-20% of DeepSeek’s efficiency likely comes from data pipeline optimization:\n\nBudget $500K-1M for data infrastructure, not just GPUs. [...] Per GPU:\n\nSupporting infrastructure:\n\nTotal power draw: ~2 MW continuous\n\nOver 57 days:\n\nDavid’s $157K was conservative (didn’t include CPU/memory/storage overhead). Actual power cost is probably $220-250K.\n\n### Cooling Systems\n\nFor 2 MW of heat dissipation:\n\nAir Cooling (most likely for cost efficiency):\n\nLiquid Cooling (if used for better efficiency):\n\nMy guess: DeepSeek used air cooling for capex efficiency, accepting slightly higher opex.",
+      "url": "https://tianpan.co/forum/t/5-6m-vs-100m-how-deepseek-v3-2-achieves-95-cost-reduction-in-ai-training/107",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.57637566,
+      "published_at": "2025-12-03"
+    },
+    {
+      "evidence_id": "web-49086c7e40ec",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "Accelerating LLM Serving with Prompt Cache Offloading via CXL",
+      "claim": "CXL memory expansion LLM serving ecosystem official",
+      "evidence_text": "via PCIe switches, unlocking multi-terabyte capacity beyond host limits. In ShareGPT benchmarks, augmenting a GPU with an additional 80GB of CXL memory (alongside host DRAM) raised prompt cache hit rates by 2.5x, reduced time-to-first-token by 32.9%, and boost overall throughput by 38.5%. This cost-effective tiered design delivers consistent low-latency responses under heavy load while notably reducing infrastructure costs , making LLM service deployment both faster and economical. [...] [9:42] process fewer request than memory. So as a result as shown in the bottom right graph as QPSC increases the throughput\n[9:50] of SSDs uh saturated earlier than that of memory. Okay, the experiment section is complete. Now I hand it back to Don.\n[10:02] Thank you.\n[10:10] All right. So to summarize uh 6M memory expansion allows for larger uh pump cache and which in turn um enable [...] [5:31] simple u experiment with a single uh request and um\n[5:38] well well I think that's what I just said.\n[5:42] So again, we just saw the potential of CXO memory uh expansion for single requests uh but we wanted to expand it\n[5:50] to more realistic scenarios where multiple requests are processed in parallel under more realistic query per\n[5:57] second uh demand. So we uh sorry\n[6:08] yeah so we set up a environment where we run VLM and LN cache on GPUs and we also",
+      "url": "https://www.youtube.com/watch?v=krB97KQerm8&xstg=CAMSBhUD-7L2Hw%3D%3D",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.6150191,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-2d8f9eb67637",
+      "agent": "market_evaluation",
+      "technology": "ITME",
+      "source_type": "web",
+      "title": "CXL Memory Expansion Market Size, Share and Forecast [2034]",
+      "claim": "ITME CXL memory cost infrastructure investment",
+      "evidence_text": "In 2025, hardware segment recorded the largest share of 77.7% as CXL memory expansion deployments require physical products such as Type-3 memory devices, CXL switches, controllers, interface silicon, retimers, and supporting development equipment. Data center operators also make substantial upfront investments in CXL-enabled server and memory infrastructure before adopting related software and integration services. [...] | 2 | Premium pricing of early-generation CXL memory modules, switches, controllers, and supporting infrastructure may limit deployment beyond hyperscale and high-performance computing environments. | High | 1.1 | High | Medium | Low |\n| 3 | Qualification and interoperability requirements across processors, server firmware, operating systems, CXL devices, and management software may extend testing, validation, and procurement cycles. | Medium | 0.95 | High | Medium | Low |",
+      "url": "https://www.fortunebusinessinsights.com/cxl-memory-expansion-market-119032",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.4398682,
+      "published_at": null
+    },
+    {
+      "evidence_id": "web-46c6e6190519",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "DeepSeek MLA Explained: Complete Beginner to Advanced Guide",
+      "claim": "DeepSeek-V2 MLA developer implementation limitations",
+      "evidence_text": "## Limitations of DeepSeek MLA\n\nNo technology is perfect.\n\n### Drawbacks\n\n Slight accuracy reduction\n Complex implementation\n Requires optimization\n Reconstruction overhead\n\n### Pros vs Cons Summary\n\n#### Advantages\n\n Highly efficient\n Fast processing\n Cost-effective\n Scalable\n\n#### Disadvantages\n\n More complex than traditional methods\n Possible minor detail loss\n Requires expertise\n\n## MLA in DeepSeek V2 & V3\n\n### DeepSeek V2\n\n First implementation of MLA\n Significant performance improvements [...] ### Problem with Traditional Attention (MHA)\n\nBefore MLA, most AI models used Multi-Head Attention (MHA).\n\nWhile powerful, it had serious drawbacks.\n\n### Major Challenges:\n\n Memory consumption increases rapidly\n KV cache becomes extremely large\n GPU resources become expensive\n Processing becomes slower\n\n### Real Problem in Simple Words\n\nWhen an AI model reads long text:\n\n It stores everything\n Memory fills quickly\n Costs increase significantly\n Speed decreases drastically [...] When you have read about modern AI models such as DeepSeek V2 or DeepSeek V3, you might have found that there has been a conversation about:\n\n Faster response times\n Reduced computational cost\n Improved long-context handling\n\nThe core innovation enabling these improvements is MLA.\n\nHowever, there’s a major issue:\n\nMost explanations are overly technical  \nThey rely on complex terminology (latent vectors, projections, KV cache)  \nBeginners struggle to understand the concept",
+      "url": "https://ultraaiguide.com/deepseek-mla-explained-guide",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.86928266,
+      "published_at": "2026-03-23"
+    },
+    {
+      "evidence_id": "web-fffde3bed35a",
+      "agent": "stakeholder_evaluation",
+      "technology": "DeepSeek-V2 MLA",
+      "source_type": "web",
+      "title": "The Pros and Cons of DeepSeek | DigitalOcean",
+      "claim": "DeepSeek-V2 MLA developer implementation limitations",
+      "evidence_text": "What are the key limitations and challenges with DeepSeek?\n\nDeepSeek requires more technical expertise to deploy compared to API-based models, has limited ecosystem integration compared to established alternatives, needs significant GPU resources for larger versions, requires manual implementation of security features and guardrails, and has less universal accessibility since it’s not integrated across as many platforms as models like GPT-4 or Claude. [...] That said, no AI model is perfect for every situation. DeepSeek excels in some areas while falling short in others. Before integrating it into your stack, you need to know where it thrives and where you might want to look elsewhere. Let’s break down what makes DeepSeek special and where its limitations might impact your specific use cases:\n\nPros:\n\n1. Advanced code generation\n2. Technical accuracy\n3. Multilingual support\n\nCons:\n\n1. Security and privacy\n2. Availability\n3. Deployment [...] Yes, the quality does vary somewhat by language, with English still offering the strongest performance. However, for technical content and reasoning tasks, DeepSeek performs remarkably well across all its supported languages.\n\n### Notable limitations of DeepSeek\n\n#### 1. Security and privacy",
+      "url": "https://www.digitalocean.com/resources/articles/deepseek-pros-and-cons",
+      "file_name": null,
+      "page": null,
+      "chunk_id": null,
+      "retrieval_score": 0.67706895,
+      "published_at": null
+    }
+  ],
+  "errors": [],
+  "runtime_metadata": {
+    "python": "3.11.15",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "llm_model": "gpt-4o-mini",
+    "embedding_model": "qwen3-embedding:0.6b",
+    "openai_package": "3.16.2",
+    "fast_mode": false,
+    "chunk_max_chars": 900,
+    "chunk_overlap": 120,
+    "retrieval_top_k": 5,
+    "agent_rag_top_k": 5,
+    "trace_id": "f3fd6a94-ab27-4fbe-b0a2-26425a1abdba",
+    "status": "warning",
+    "step_count": 3,
+    "quality_evaluation": {
+      "result": "pass_with_limitations",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": true,
+        "section_depth": true,
+        "neutrality": false,
+        "bias_control": true,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": [
+        "neutrality"
+      ],
+      "retry_targets": [],
+      "retry_phase": "limit",
+      "method": "1안: 재현 가능한 deterministic rubric gate; 출처 다양성·인용 존재성 포함",
+      "bias_control": {
+        "perspective_source_counts": {
+          "technical_research": 2,
+          "market_evaluation": 5,
+          "stakeholder_evaluation": 5,
+          "domain_evaluation": 2
+        },
+        "max_source_share": 0.333,
+        "failed_perspectives": [],
+        "active_perspectives": [
+          "technical_research",
+          "market_evaluation",
+          "stakeholder_evaluation",
+          "domain_evaluation"
+        ],
+        "passed": true
+      },
+      "scope": "full",
+      "neutrality_matches": [
+        "비용 효율적"
+      ]
+    },
+    "local_trace": "/Users/hyeon-yongchan/Desktop/skala 실습/kv_cache_agent_rag-team/outputs/execution_f3fd6a94-ab27-4fbe-b0a2-26425a1abdba.jsonl",
+    "langsmith_enabled": true
+  }
+}

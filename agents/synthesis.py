@@ -15,22 +15,50 @@ EVIDENCE_TOKEN = re.compile(r"(?:rag|web)-[0-9a-f]{12}")
 
 
 def exclude_unregistered_evidence(text: str, available_ids: set[str]) -> str:
-    """등록되지 않은 인용이 섞인 문단은 최종 보고서에서 제외합니다."""
+    """미등록 인용이 붙은 문장은 제외하고 확인 가능한 문장은 남깁니다."""
     paragraphs = re.split(r"\n{2,}", str(text or "").strip())
     safe = []
     for paragraph in paragraphs:
-        cited = set(EVIDENCE_TOKEN.findall(paragraph))
-        if cited - available_ids:
-            safe.append(
-                "공개 정보 부족으로 이 문단의 주장을 출처와 연결할 수 없어 최종 보고서에서 제외하였다. "
-                "원문 페이지 또는 독립된 자료를 추가 확인한 뒤 다시 검토해야 한다."
-            )
-        else:
-            safe.append(paragraph)
+        sentences = re.split(r"(?<=[.!?。！？])\s+(?!\[)|\n+", paragraph)
+        kept = []
+        for sentence in sentences:
+            if set(EVIDENCE_TOKEN.findall(sentence)) - available_ids:
+                kept.append("공개 정보 부족: 출처와 연결할 수 없어 해당 주장은 제외하였다.")
+            elif sentence.strip():
+                kept.append(sentence.strip())
+        safe.append(" ".join(kept))
     return "\n\n".join(item for item in safe if item).strip()
 
 
 def _depth_fallback(name: str) -> str:
+    if name == "background":
+        return (
+            "평가의 출발점은 KV cache를 단순한 메모리 절감 문제가 아니라 모델 구조, 메모리 계층, 입력 길이와 동시성에 함께 영향을 받는 시스템 문제로 보는 것이다. "
+            "따라서 공개 자료의 기술 설명과 실험 수치를 실제 데이터센터 성능으로 바로 일반화하지 않고, 측정 조건과 적용 범위를 함께 기록해야 한다."
+            "\n\n"
+            "본 보고서는 기술 성숙도, 시장성, 이해관계자 요구, 도메인 적용성의 네 관점으로 두 접근을 검토한다. "
+            "이 범위는 기술 원리만 확인하는 데서 끝나지 않고 도입 장벽과 운영 검증 과제까지 구분하기 위한 것이다."
+        )
+    if name == "selection":
+        return (
+            "두 기술을 함께 선정한 이유는 동일한 KV cache 병목을 모델 내부와 메모리 시스템이라는 서로 다른 계층에서 다루기 때문이다. "
+            "이 차이는 비교의 범위를 넓혀 주지만, 실험 조건과 평가 단위가 다르므로 수치의 직접 대조에는 주의가 필요하다."
+            "\n\n"
+            "따라서 비교 결과는 우열 판정이 아니라 각 기술이 어떤 병목과 요구사항에 대응하는지, 그리고 어떤 추가 실험이 필요한지를 설명하는 데 사용한다."
+        )
+    if name == "comparison_conflicts":
+        return (
+            "두 기술의 비교는 동일한 목표를 서로 다른 계층에서 다루는지부터 구분해야 한다. "
+            "DeepSeek-V2 MLA는 모델의 어텐션과 KV 표현 방식을 바꾸는 접근이고, ITME는 HBM과 확장 메모리 사이의 배치·이동 경로를 다루는 접근이다. "
+            "따라서 메모리 사용량, 긴 컨텍스트, 동시 요청 처리, 데이터 이동 지연, 구현 복잡도는 비교 가능한 항목이지만 동일한 실험 조건에서 측정되지 않았다면 수치를 바로 대조할 수 없다. "
+            "한 기술의 논문 수치가 다른 기술보다 크거나 작다는 사실만으로 전체적인 우열을 판단하는 것도 적절하지 않다. "
+            "각 결과가 어떤 모델, 하드웨어, 입력 길이, 동시성, 소프트웨어 버전에서 측정됐는지를 함께 확인해야 한다."
+            "\n\n"
+            "두 접근은 경쟁 관계로만 볼 필요도 없다. 모델 내부의 KV 표현을 줄이는 방식과 외부 메모리 계층을 확장하는 방식은 동일한 시스템에서 서로 다른 병목을 완화할 가능성이 있지만, 실제 결합 가능성은 구현 호환성과 데이터 이동 비용을 별도로 검증해야 한다. "
+            "비교의 핵심은 전체적인 우열을 정하는 것이 아니라 어떤 조건에서 어떤 병목이 남는지 확인하는 데 있다. "
+            "후속 검증에서는 동일한 모델과 입력 집합을 사용해 HBM 사용량, TTFT, 처리량, tail latency, 정확도, 메모리 이동량을 같은 측정 절차로 기록해야 한다. "
+            "그 결과가 확보되기 전까지는 공개 자료가 보여주는 장점과 실제 운영 효과를 구분해 해석해야 한다."
+        )
     if name == "implications":
         return (
             "이 분석의 시사점은 두 기술 중 하나를 선택하는 결론이 아니라, 적용 조건에 따라 무엇을 먼저 검증해야 하는지를 정리하는 데 있다. "
@@ -55,7 +83,7 @@ def _depth_fallback(name: str) -> str:
         "웹 자료는 게시 시점과 검색 결과의 품질에 영향을 받으며, 자료가 갱신되거나 접근이 제한될 가능성도 있다. "
         "또한 검색된 자료에 특정 관점의 정보가 더 많이 포함되면 시장성이나 이해관계자 분석이 실제보다 풍부하게 보일 수 있다. "
         "이 보고서의 문장은 입력된 근거를 요약하고 연결한 결과이므로, 원문이 말하지 않은 운영 효과나 도입 가능성을 사실처럼 확정하지 않아야 한다. "
-        "근거 ID가 등록되지 않은 문단은 최종 결과에서 제외했으며, 이는 해당 주장이 거짓이라는 뜻이 아니라 현재 자료로 추적할 수 없다는 뜻이다."
+        "등록되지 않은 근거 ID가 붙은 주장은 제외했으며, 이는 해당 주장이 거짓이라는 뜻이 아니라 현재 자료로 완전히 추적할 수 없다는 뜻이다."
         "\n\n"
         "따라서 최종 판단 전에 원문 페이지와 웹 출처를 사람이 다시 대조하고, 동일 조건의 재현 실험을 수행해야 한다. "
         "재현 실험에는 모델과 라이브러리 버전, 하드웨어 구성, 입력 분포, 동시 요청 수, warm-up 방식, 캐시 정책, 측정 구간을 명시해야 한다. "
@@ -126,6 +154,9 @@ def validation_judge(state: AgentState) -> dict:
         "synthesis": "synthesis",
     }
 
+    requested = set(state.get("required_task_ids") or required.values())
+    required = {key: target for key, target in required.items() if target in requested or target == "synthesis"}
+
     for key, target in required.items():
         if not has_usable_analysis(state.get(key)):
             missing.append(f"{key} 누락 또는 오류")
@@ -146,9 +177,8 @@ def validation_judge(state: AgentState) -> dict:
         # 잘못된 인용이 나온 분석 영역만 재실행합니다. 전체 Worker 재실행은
         # 동적 재작업 요구사항을 깨고 검색 비용도 불필요하게 늘립니다.
         for key, target in required.items():
-            # synthesis는 새 근거를 검색하지 않고 조합만 하므로, 잘못된 ID는
-            # 보고서 단계에서 문단을 제외하고 synthesis 재호출은 하지 않습니다.
-            if target != "synthesis" and collect_evidence_ids(state.get(key, {})) & set(unknown_ids):
+            # 합성 결과만 잘못됐다면 조사 Worker 대신 합성 노드만 재실행한다.
+            if collect_evidence_ids(state.get(key, {})) & set(unknown_ids):
                 retry_targets.append(target)
 
     if not state.get("references"):
@@ -190,6 +220,8 @@ def report_generation_agent(state: AgentState) -> dict:
         for item in state.get("references", [])
     ]
     payload = {
+        "quality_feedback": state.get("quality_evaluation", {}),
+        "reference_index": reference_index,
         "selection_reason": state["selection_reason"],
         "technical": state.get("technical_analysis", {}),
         "trl": state.get("trl_analysis", {}),
@@ -201,8 +233,6 @@ def report_generation_agent(state: AgentState) -> dict:
             "result": state.get("validation_result"),
             "limitations": state.get("missing_evidence", []),
         },
-        "quality_feedback": state.get("quality_evaluation", {}),
-        "reference_index": reference_index,
     }
     payload_limit = 12000 if FAST_MODE else 36000
     prompt = f"""
@@ -211,12 +241,14 @@ def report_generation_agent(state: AgentState) -> dict:
 작성 과정이나 생각은 출력하지 말고 지정된 JSON 객체만 반환하세요.
 
 [공통 작성 원칙]
+- 재생성 시 quality_feedback의 neutrality_matches에 표시된 표현을 다시 사용하지 마세요. 해당 주장과 근거를 검토해 조건부 설명이나 확인되지 않은 정보로 구분하세요.
 - JSON 키를 제외한 모든 문자열 값은 반드시 한국어로 작성하세요.
 - 영어 근거도 한국어로 해석하되, 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
 - 하나의 문단에서 사실, 해석, 판단을 섞지 말고 각각 구분해 서술하세요.
 - 각 핵심 주장 또는 문단 끝에 입력 분석 결과의 evidence_id를 대괄호로 표시하세요. 예: [rag-xxxxxxxxxxxx]. 새로운 ID를 만들지 마세요.
 - 허용된 evidence_id는 아래 `reference_index`에 있는 값뿐입니다. 목록에 없는 ID를 추측·수정·생성하지 마세요.
 - 보고서 본문에 표시한 evidence_id는 최종 REFERENCE와 일대일로 연결되어야 하며, 근거가 없는 문장은 '공개 정보 부족'으로 표시하세요.
+- 보고서 본문에서는 `우승`, `최고`, `압도적`, `최적의 선택`, `최적의 조합`, `최적의 솔루션`, `추천`, `상용화가 가속화`, `비용 효율적인`처럼 우열·추천·시장 전망을 단정하는 표현을 사용하지 마세요. 이를 부정하는 설명에서도 해당 표현을 반복하지 말고 '직접 비교에는 한계가 있다', '추가 검증이 필요하다'처럼 쓰세요.
 - 단, 4.1 TRL 절에서는 각 기술의 판정 이유와 근거 출처의 제목·페이지 또는 웹 출처명을 문장으로 명시하세요.
 - 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
@@ -289,7 +321,7 @@ def report_generation_agent(state: AgentState) -> dict:
 
 
     report_sections = [
-        "background", "selection", "deepseek_overview", "itme_overview",
+        "summary", "background", "selection", "deepseek_overview", "itme_overview",
         "trl", "market", "stakeholder", "domain", "comparison_conflicts",
         "implications", "limitations",
     ]
@@ -310,6 +342,8 @@ def report_generation_agent(state: AgentState) -> dict:
     각 절은 최소 700자, 2개 이상의 문단으로 작성하세요.
     각 문단은 관찰 또는 주장, 근거, 해석, 판단의 한계 순서로 전개하세요.
     새로운 수치·사례·기업 반응을 만들지 말고, 각 핵심 주장 또는 문단 끝에 기존 evidence_id를 대괄호로 표시하세요.
+    원래 보고서와 동일한 중립성 기준을 유지하세요. '최적의 조합', '최적의 솔루션', '비용 효율적', '상용화가 가속', 특정 기술의 추천·우열 판정을 넣지 마세요.
+    경제성은 이미 입증된 효과로 단정하지 말고 공개 자료의 조건과 추가 측정이 필요한 항목으로 설명하세요.
     근거가 부족하면 단순히 문장을 반복하지 말고, 확인되지 않은 정보와 그로 인한 비교·판단의 한계를 설명하세요.
 
 확장할 절 초안:
@@ -328,7 +362,7 @@ def report_generation_agent(state: AgentState) -> dict:
             if isinstance(value, str) and len(value) > len(str(report_data.get(name, ""))):
                 report_data[name] = value
 
-    # 최종 본문은 등록된 ID만 사용합니다. 모델이 만든 미등록 ID는 문단 단위로 제외합니다.
+    # 본문과 요약 모두 같은 인용 검사를 적용한다.
     available_ids = {
         item.get("evidence_id")
         for item in state.get("references", [])
@@ -338,7 +372,9 @@ def report_generation_agent(state: AgentState) -> dict:
         report_data[name] = exclude_unregistered_evidence(
             str(report_data.get(name, "")), available_ids
         )
-    for name in ("implications", "limitations"):
+    for name in (
+        "background", "selection", "comparison_conflicts", "implications", "limitations",
+    ):
         report_data[name] = ensure_section_depth(
             report_data[name], name, section_minimums[name]
         )

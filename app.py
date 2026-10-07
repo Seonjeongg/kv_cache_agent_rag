@@ -5,6 +5,8 @@ import argparse
 import json
 import platform
 import re
+import os
+import uuid
 from datetime import datetime
 from importlib.metadata import version
 
@@ -24,6 +26,7 @@ from config import (
 from graph import build_graph, initial_state
 from rag import build_index, download_papers, load_and_chunk_papers
 from state import AgentState
+from tracing import ExecutionTrace
 
 
 REQUIRED_REPORT_HEADINGS = (
@@ -32,6 +35,7 @@ REQUIRED_REPORT_HEADINGS = (
     "# 2. 기술 선정",
     "# 3. 기술 개요",
     "# 4. 관점별 평가",
+    "# 5. 관점별 비교 및 상충 지점",
     "# 6. 시사점",
     "# 7. 분석의 한계",
     "# REFERENCE",
@@ -67,6 +71,8 @@ def validate_report(report: str, references: list[dict] | None = None) -> None:
         available_ids = {item.get("evidence_id") for item in references}
         used_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[:reference_index]))
         missing_ids = sorted(used_ids - available_ids)
+        displayed_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[reference_index:]))
+        missing_ids = sorted(set(missing_ids) | (used_ids - displayed_ids))
         if missing_ids:
             raise ValueError(f"본문에 인용된 Evidence가 REFERENCES에 없습니다: {missing_ids[:10]}")
 
@@ -81,7 +87,20 @@ def run_pipeline(input_request: str | None = None) -> dict:
     graph = build_graph()
     if FAST_MODE:
         print("[WARN] FAST_MODE=True: 제출용 보고서는 FAST_MODE=False로 실행하세요.")
-    result = graph.invoke(initial_state(input_request), config={"recursion_limit": 40})
+    state = initial_state(input_request)
+    trace_id = state["trace_id"]
+    trace_file = OUTPUT_DIR / f"execution_{trace_id}.jsonl"
+    tracing_enabled = os.getenv("LANGSMITH_TRACING", os.getenv("LANGCHAIN_TRACING_V2", "")).lower() == "true"
+    tracing_key = bool(os.getenv("LANGSMITH_API_KEY") or os.getenv("LANGCHAIN_API_KEY"))
+    if not (tracing_enabled and tracing_key):
+        print("[TRACE] 로컬 실행 기록만 저장합니다. LangSmith 제출 캡처는 별도로 필요합니다.")
+    result = graph.invoke(state, config={
+        "recursion_limit": 40,
+        "run_id": uuid.UUID(trace_id),
+        "run_name": "kv-cache-orchestrator",
+        "metadata": {"trace_id": trace_id, "fast_mode": FAST_MODE},
+        "callbacks": [ExecutionTrace(trace_file, trace_id)],
+    })
     result["runtime_metadata"] = {
         "python": platform.python_version(),
         "platform": platform.platform(),
@@ -97,6 +116,8 @@ def run_pipeline(input_request: str | None = None) -> dict:
         "status": result.get("status"),
         "step_count": result.get("step_count"),
         "quality_evaluation": result.get("quality_evaluation", {}),
+        "local_trace": str(trace_file),
+        "langsmith_enabled": tracing_enabled and tracing_key,
     }
 
     print("검증 결과:", result["validation_result"])
@@ -118,7 +139,7 @@ def save_outputs(result: dict) -> dict:
     html_body = markdown_lib.markdown(result["report"], extensions=["tables", "fenced_code"])
     html_document = f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
-<style>body{{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;max-width:900px;margin:40px auto;line-height:1.7;padding:0 24px}} table{{border-collapse:collapse;width:100%}} th,td{{border:1px solid #ccc;padding:8px}} h1,h2{{margin-top:32px}}</style>
+<style>{(PROJECT_DIR / "docs/report.css").read_text(encoding="utf-8")}</style>
 </head><body>{html_body}</body></html>"""
     html_path.write_text(html_document, encoding="utf-8")
 
@@ -127,7 +148,8 @@ def save_outputs(result: dict) -> dict:
     from weasyprint import HTML
     HTML(string=html_document, base_url=str(PROJECT_DIR)).write_pdf(pdf_path)
     import pymupdf
-    page_count = len(pymupdf.open(pdf_path))
+    with pymupdf.open(pdf_path) as document:
+        page_count = len(document)
     if page_count > 10:
         raise ValueError(f"제출 보고서가 10장을 초과했습니다: {page_count}장")
     print(f"PDF ({page_count}장):", pdf_path)

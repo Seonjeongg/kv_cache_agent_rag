@@ -32,7 +32,7 @@ def merge_references(left: list[dict], right: list[dict]) -> list[dict]:
         if item.get("source_type") == "paper" and item.get("chunk_id"):
             key = ("paper", item.get("technology"), item["chunk_id"])
         elif item.get("source_type") == "web" and item.get("url"):
-            key = ("web", item["url"])
+            key = ("web", item["url"], item.get("evidence_id"))
         else:
             key = item.get("evidence_id") or json.dumps(item, sort_keys=True)
         merged[key] = item

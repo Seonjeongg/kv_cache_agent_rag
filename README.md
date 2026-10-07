@@ -47,6 +47,7 @@
   evidence_id 연결, 출처 다양성·단일 출처 집중도, 필수 목차, 중립성, 관점 커버리지를 코드로 검사
 - Retrieval : ChromaDB (Dense Retrieval, 코사인 거리 + 상위 후보 lexical rerank) — `evaluate.py`의 질문별
   `ground_truth_chunk_ids`를 기준으로 Hit@K/MRR을 측정함. 현재 10개 질문의 독립 정답 청크가 등록됨
+  - 2026-10-07 재실행: Hit@5 = 0.50, MRR = 0.3833 (10문항). `outputs/retrieval_metrics.json`에 질문별 결과를 저장했다. 검색 실패 5문항은 개선 과제로 남긴다.
 - Embedding : Ollama 오픈소스 `qwen3-embedding:0.6b` (로컬 실행) — OpenAI API 비용 없이
   논문·질의 임베딩을 생성하며, 모델은 `EMBEDDING_MODEL` 환경변수로 변경 가능
 
@@ -101,23 +102,37 @@ quality_evaluator --pass--> __end__
 
 ## LangSmith Tracing
 
+### 개인 브랜치 실행 확인 (2026-10-07)
+
+- `python tests/test_smoke.py`: 31개 통과.
+- 전체 실행: `f3fd6a94-ab27-4fbe-b0a2-26425a1abdba`. 네 Worker 실행 후 품질 미달 관점만 재조사했다.
+- `outputs/kv_cache_report_20261007_163041.pdf`는 4장이며, 최종 상태는 `warning / pass_with_limitations`다. 중립성 검사에 남은 표현이 있어 제출 완료본으로 간주하지 않는다.
+- 로컬 `docs/tracing-1.png`는 앞선 실행 `5041cb86-4165-46c9-9953-4e886db7db62`의 실제 LangSmith 화면이다. 최종 통과 증빙이 아니며 계정 정보가 표시되어 Git 업로드에서 제외했다.
+- `outputs/fanout_demo.json`: 두 Worker 실행 확인용 결과이며, 보고서 생성 전 의도적으로 중단한 별도 실험이다.
+- 이 브랜치의 실행 추적 보완은 최신 dev의 숫자 인용·출처 등급 코드와 아직 통합하지 않았다. 파일 전체를 덮어쓰지 않는다.
+
 실행 trace를 제출할 때는 다음 환경변수를 설정한 뒤 실제 실행 화면을 캡처하세요.
 
 ```bash
-export LANGCHAIN_TRACING_V2=true
-export LANGCHAIN_API_KEY='발급받은 키'
-export LANGCHAIN_PROJECT='kv-cache-agent-rag'
+# .env에 아래 값을 저장 (키는 Git에 올리지 않음)
+# LANGSMITH_TRACING=true
+# LANGSMITH_API_KEY=발급받은 키
+# LANGSMITH_PROJECT=skala
 python app.py
 # 예시: 기술 성숙도와 도메인 적용성만 조사해 2개 Worker 계획 확인
 python app.py --request "DeepSeek-V2 MLA와 ITME의 기술 성숙도와 도메인 적용성을 비교 평가하라."
+# 기존 색인으로 두 Worker만 실제 실행 (보고서 생성 전 의도적으로 정지)
+python demo_fanout.py
 ```
 
-`decision_log`와 `trace_id`는 State JSON에도 저장됩니다. `docs/local_trace.png`는 API 키 없이 확인한 구조 검증용 로컬 trace이며, LangSmith 캡처로 대체하지 않습니다. 제출 전 실제 LangSmith 화면을 `tracing-1.png`, `tracing-2.png`로 추가하세요.
+`trace_id`를 그래프의 root run_id 및 metadata에도 전달한다. OpenAI 호출은 `wrap_openai`로 감싸 모델 호출을 하위 run으로 남긴다. 로컬에는 `outputs/execution_{trace_id}.jsonl`로 노드 시작·종료와 분기 사유를 저장한다. API 키가 없으면 로컬 기록만 생성하며, 이것을 LangSmith 제출물로 간주하지 않는다. 실제 LangSmith 화면을 `tracing-1.png`, `tracing-2.png`로 제출한다.
 
 Retriever 평가는 별도로 실행합니다.
 
 ```bash
 python evaluate.py
+# 기존 색인으로 평가하려면 (app.py와 동시에 색인을 재생성하지 않음)
+python evaluate.py --reuse-index
 ```
 
 현재 참고문헌 페이지 제외, 900자 청크, 상위 10개 후보 후 lexical rerank,
@@ -150,6 +165,7 @@ python app.py
 `--request`를 생략하면 네 관점을 모두 포함한 기본 요청으로 실행합니다. 요청문에 시장성·이해관계자·도메인·기술 성숙도 관점을 포함하거나 제외하면 Orchestrator가 실행할 Worker 수를 달리 계획합니다. 품질 평가에서 특정 관점의 잘못된 evidence가 발견되면 해당 Worker만 `retry_targets`로 재계획합니다.
 
 제출용 최종 보고서는 `FAST_MODE = False`로 생성하세요.
+부분 관점 요청과 `demo_fanout.py`는 동적 처리 확인용이다. 제출 보고서는 `--request` 없이 네 관점으로 생성하며, 최종 품질 결과의 `scope=full`과 `result=pass`를 확인한다.
 
 ## 과제 필수 항목 대응
 
@@ -171,9 +187,9 @@ python app.py
 | --- | --- | --- |
 | 제어 vs 페이로드 분리 | 라우팅·계획·복구 메타데이터와 조사 결과·근거·보고서를 분리한다. | 제어: `plan`, `required_task_ids`, `current_task`, `plan_reason`, `status`, `step_count`, `retry_targets`; 페이로드: 분석 결과, `references`, `report` |
 | 관측성 위치 | 결정 자체와 결정 사유는 실행 State의 로그에 남기고, 상세 모델 trace는 외부 tracing으로 연결한다. | `decision_log=[ts,node,type,message,...]`, `trace_id`, LangSmith 환경변수 |
-| 지속성 비용 | 원문·벡터 DB를 State에 넣지 않고 식별자·요약·참조만 저장한다. | `references`의 `evidence_id`, `chunk_id`, `page`, URL; 원문은 로컬 Chroma |
+| 지속성 비용 | PDF·벡터 DB는 외부에 저장하고, 검색된 근거의 발췌만 State에 둔다. | `references`에 ID·페이지·URL·evidence_text가 포함된다. 청크·검색 개수와 반복 상한으로 누적량을 제한한다. |
 | 상관 | State와 실행 로그를 하나의 실행 키로 연결한다. | `trace_id`를 State JSON·local trace·LangSmith run의 연결 키로 사용 |
-| 재개·복구 | 중단 지점, 오류, 재시도 대상과 횟수를 저장해 같은 계획을 재구성할 수 있어야 한다. | `status`, `step_count`, `errors`, `retry_targets`, `retry_count`, `task_results` |
+| 재개·복구 | 한 실행 안에서 실패 대상만 재작업할 최소 상태를 관리한다. | `status`, `step_count`, `errors`, `retry_targets`, `retry_count`, `task_results`. 프로세스 중단 후 자동 재개하는 checkpointer는 구현하지 않았다. |
 | 동시 처리 | 동적 fan-out Worker가 같은 누적 필드에 쓰므로 reducer로 병합한다. | `merge_task_results`는 `task_id` 기준 병합, `merge_references`는 논문 청크·웹 URL 중복 제거 |
 | 종료 보장 | 정상 통과, 제한사항 종료, 반복 상한 종료를 분리해 무한 Loop를 막는다. | `MAX_RETRIES`, `max_steps`, `quality_evaluator`, `warning_node`, `END` |
 
@@ -193,16 +209,16 @@ python app.py
 
 ## Contributors
 
-아래 역할은 포크 `hyc`의 현용찬 커밋과 원본 `main`에 반영된 팀원별 기능 커밋을
-변경 파일과 커밋 내용을 기준으로 정리했습니다.
+기존 RAG 구현에서 맡은 Agent와 이번 Orchestrator 과제의 반영·검증 파일을 함께 정리했다.
+공유된 통합 코드를 역할별로 검토·반영한 것이며, 표는 모든 코드를 각자 처음부터 작성했다는 뜻이 아니다.
 
-| 팀원 | 주요 역할 | 주요 변경 영역 | 근거 커밋 |
-| --- | --- | --- | --- |
-| P209 곽민규 | 이해관계자 평가 Agent 담당 | `agents/stakeholder_evaluation.py`의 질의 템플릿 분리 및 보완 | `499e608` |
-| P213 김선정 | Agentic RAG 통합 및 종합·검증·보고서 담당 | OpenAI API 연동, 임베딩·재현성 개선, `agents/synthesis.py`의 종합 평가·Judge·보고서 생성 | `665a43a`, `ac9403a`, `777a720`, `8a26658` |
-| P229 이지원 | 시장성 평가 Agent 담당 | `agents/market_evaluation.py` 리팩토링 및 시장성 조사 흐름 보완 | `fefa828` |
-| P231 임유리 | 기술 선정 및 기술 조사 Agent 담당 | `agents/technology_selection.py`, `agents/technical_research.py`의 기술·TRL 분석 명세 보완 | `52a9e01` |
-| P240 현용찬 | Retriever 평가 및 도메인 평가 담당, 발표·통합 | `evaluate.py`의 정답 청크·재정렬 평가 , `agents/domain_evaluation.py`의 기술별 도메인 질의 구조 정리 | `cbfb7da` |
+| 팀원 | 수행 역할 | 이번 과제의 주요 파일·산출물 |
+| --- | --- | --- |
+| 곽민규 | 이해관계자 평가, Agent JSON 응답 처리 | `llm.py` |
+| 김선정 | 종합 평가·보고서 생성·품질 검증 자료 | `agents/synthesis.py`, 보고서 자료 |
+| 이지원 | 시장성 평가, 근거·참고문헌 처리 | `evidence.py` |
+| 임유리 | 기술 선정·기술 조사, 실행 설정 및 보고서 표현 보완 | `config.py`, 중립성·인용 보완 커밋 `2a4d38a` |
+| 현용찬 | 도메인·검색 평가, 동적 Graph·State·통합 검증 및 실제 Trace | `graph.py`, `state.py`, `app.py`, `tracing.py`, `tests/`, LangSmith 캡처 |
 
 각 Agent는 독립된 역할을 수행하지만, 최종 결과는 LangGraph의 State와
 Fan-out/Fan-in 흐름을 통해 하나의 평가 보고서로 통합됩니다.
