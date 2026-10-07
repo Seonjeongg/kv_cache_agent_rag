@@ -80,6 +80,10 @@ def validation_judge(state: AgentState) -> dict:
     )
     if unknown_ids:
         missing.append(f"존재하지 않는 evidence_id: {unknown_ids[:10]}")
+        # 잘못된 인용이 나온 분석 영역만 재실행합니다.
+        for key, target in required.items():
+            if collect_evidence_ids(state.get(key, {})) & set(unknown_ids):
+                retry_targets.append(target)
 
     if not state.get("references"):
         missing.append("Reference 근거 누락")
@@ -143,7 +147,8 @@ def report_generation_agent(state: AgentState) -> dict:
 - JSON 키를 제외한 모든 문자열 값은 반드시 한국어로 작성하세요.
 - 영어 근거도 한국어로 해석하되, 기술명·고유명사·약어·논문 제목은 원문 표기를 허용합니다.
 - 하나의 문단에서 사실, 해석, 판단을 섞지 말고 각각 구분해 서술하세요.
-- 보고서 본문에는 evidence_id를 표시하지 마세요. 근거 연결은 내부 분석 결과와 최종 REFERENCE에서만 유지하세요.
+- 각 핵심 주장 또는 문단 끝에 입력 분석 결과의 evidence_id를 대괄호로 표시하세요. 예: [rag-xxxxxxxxxxxx]. 새로운 ID를 만들지 마세요.
+- 보고서 본문에 표시한 evidence_id는 최종 REFERENCE와 일대일로 연결되어야 하며, 근거가 없는 문장은 '공개 정보 부족'으로 표시하세요.
 - 단, 4.1 TRL 절에서는 각 기술의 판정 이유와 근거 출처의 제목·페이지 또는 웹 출처명을 문장으로 명시하세요.
 - 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
@@ -218,10 +223,13 @@ def report_generation_agent(state: AgentState) -> dict:
         "trl", "market", "stakeholder", "domain", "comparison_conflicts",
         "implications", "limitations",
     ]
+    section_minimums = {name: 650 for name in report_sections}
+    section_minimums.update({"implications": 900, "limitations": 900})
     short_sections = {
         name: report_data.get(name, "")
         for name in report_sections
-        if len(str(report_data.get(name, ""))) < 650
+        if len(str(report_data.get(name, ""))) < section_minimums[name]
+        or str(report_data.get(name, "")).count("\n\n") < 1
     }
     if short_sections:
         expansion_prompt = f"""
@@ -230,7 +238,7 @@ def report_generation_agent(state: AgentState) -> dict:
     모든 문자열은 한국어로 작성하고, JSON 키는 입력 키를 그대로 유지하세요.
     각 절은 최소 700자, 2개 이상의 문단으로 작성하세요.
     각 문단은 관찰 또는 주장, 근거, 해석, 판단의 한계 순서로 전개하세요.
-    새로운 수치·사례·기업 반응을 만들지 말고, 보고서 본문에는 evidence_id를 표시하지 마세요.
+    새로운 수치·사례·기업 반응을 만들지 말고, 각 핵심 주장 또는 문단 끝에 기존 evidence_id를 대괄호로 표시하세요.
     근거가 부족하면 단순히 문장을 반복하지 말고, 확인되지 않은 정보와 그로 인한 비교·판단의 한계를 설명하세요.
 
 확장할 절 초안:
@@ -305,10 +313,10 @@ def report_generation_agent(state: AgentState) -> dict:
 
 {section('limitations')}"""
     used_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", body))
-    # 본문에서 ID를 숨겨도 모든 분석 결과의 근거를 참고문헌에 유지합니다.
-    used_ids.update(collect_evidence_ids(payload))
     body = re.sub(r"\s*\[?(?:rag|web)-[a-f0-9]{12}\]?", "", body)
     references = format_references(state.get("references", []), used_ids=used_ids)
     report = body + "\n\n# REFERENCE\n\n" + references
+    reference_count = sum(1 for line in references.splitlines() if line.startswith("- ["))
+    print(f"[REFERENCE] 고유 출처 {reference_count}개 (누적 evidence {len(state.get('references', []))}건)")
     print("[6/6] 보고서 생성 완료")
     return {"report": report}

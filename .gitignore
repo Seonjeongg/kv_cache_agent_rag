@@ -20,4 +20,7 @@ venv/
 # Generated local data and reports
 data/raw/
 data/chroma_kv/
-outputs/
+outputs/*
+!outputs/*.md
+!outputs/*.pdf
+!outputs/*.json
