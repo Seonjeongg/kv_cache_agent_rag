@@ -1,5 +1,5 @@
 {
-  "trace_id": "d97064f9-0a55-4f78-aba1-43b536bb1aea",
+  "trace_id": "549bc458-de78-4f2a-bb04-fa6aea48dd78",
   "purpose": "두 Worker 실행 후 의도적으로 정지한 동적 fan-out 실증",
   "plan": [
     {
@@ -26,7 +26,7 @@
       "task_id": "technical_research",
       "agent": "technical_research",
       "status": "success",
-      "attempt": 2,
+      "attempt": 1,
       "output_keys": [
         "technical_analysis",
         "trl_analysis"
@@ -36,7 +36,7 @@
       "task_id": "domain_evaluation",
       "agent": "domain_evaluation",
       "status": "success",
-      "attempt": 2,
+      "attempt": 1,
       "output_keys": [
         "domain_analysis"
       ]

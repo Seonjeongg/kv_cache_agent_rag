@@ -9,6 +9,7 @@ import os
 import uuid
 from datetime import datetime
 from importlib.metadata import version
+from pathlib import Path
 
 import markdown as markdown_lib
 
@@ -23,7 +24,9 @@ from config import (
     PROJECT_DIR,
     TOP_K,
 )
-from graph import build_graph, initial_state
+from graph import build_graph, initial_state, quality_evaluator_node, warning_node
+from agents.synthesis import report_generation_agent
+from langgraph.graph import END, START, StateGraph
 from rag import build_index, download_papers, load_and_chunk_papers
 from state import AgentState
 from tracing import ExecutionTrace
@@ -64,7 +67,7 @@ def validate_report(
         raise ValueError("REFERENCE 항목이 비어 있습니다.")
     body = report[:reference_index]
     reference_section = report[reference_index:]
-    if re.search(r"\[(?:rag|web)-[0-9a-f]{12}\]", body):
+    if re.search(r"(?:rag|web)-[0-9a-f]{12}", body):
         raise ValueError("최종 보고서 본문에 내부 Evidence ID가 남아 있습니다.")
     body_numbers = set(re.findall(r"\[(\d+)\]", body))
     reference_numbers = set(re.findall(r"^- \[(\d+)\]", reference_section, flags=re.MULTILINE))
@@ -185,13 +188,69 @@ def save_outputs(result: dict) -> dict:
     return {"markdown": markdown_path, "html": html_path, "pdf": pdf_path, "json": json_path}
 
 
+def regenerate_report(state_path: str) -> dict:
+    """저장된 조사 결과로 보고서 단계만 재실행한다. 새 조사 실행과 구분한다."""
+    state = json.loads(Path(state_path).read_text(encoding="utf-8"))
+    source_trace_id = state.get("trace_id")
+    state.update(
+        trace_id=str(uuid.uuid4()), report="", citation_map={},
+        report_retry_count=0, status="running",
+    )
+    builder = StateGraph(AgentState)
+    builder.add_node("report_generation", report_generation_agent)
+    builder.add_node("quality_evaluator", quality_evaluator_node)
+    builder.add_node("warning", warning_node)
+    builder.add_edge(START, "report_generation")
+    builder.add_edge("report_generation", "quality_evaluator")
+
+    def next_step(current):
+        verdict = current.get("quality_evaluation", {}).get("result")
+        if verdict == "pass":
+            return "finish"
+        if verdict == "report_retry":
+            return "report"
+        # 추가 조사가 필요한 결과를 보고서 편집만으로 통과시키지 않는다.
+        return "warning"
+    builder.add_conditional_edges(
+        "quality_evaluator", next_step,
+        {"finish": END, "report": "report_generation", "warning": "warning"},
+    )
+    builder.add_edge("warning", END)
+    trace_file = OUTPUT_DIR / f"execution_{state['trace_id']}.jsonl"
+    correlation = {
+        "trace_id": state["trace_id"], "source_trace_id": source_trace_id,
+        "report_only": True,
+    }
+    result = builder.compile().invoke(state, config={
+        "recursion_limit": 20, "run_id": uuid.UUID(state["trace_id"]),
+        "run_name": "kv-cache-report-regeneration",
+        "metadata": correlation,
+        "callbacks": [ExecutionTrace(trace_file, state["trace_id"])],
+    })
+    result["runtime_metadata"] = {
+        **state.get("runtime_metadata", {}), **correlation,
+        "local_trace": str(trace_file), "status": result.get("status"),
+        "quality_evaluation": result.get("quality_evaluation", {}),
+    }
+    print("보고서 재생성 결과:", result["quality_evaluation"]["result"])
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="KV-cache Agentic RAG 실행")
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--request",
         default=None,
         help="조사 관점이 포함된 요청문. 생략하면 네 관점을 모두 조사합니다.",
     )
+    mode.add_argument(
+        "--report-from-state",
+        help="기존 조사 State JSON으로 보고서만 재생성 (전체 실행과 별도 trace)",
+    )
     args = parser.parse_args()
-    pipeline_result = run_pipeline(args.request)
+    if args.report_from_state:
+        pipeline_result = regenerate_report(args.report_from_state)
+    else:
+        pipeline_result = run_pipeline(args.request)
     save_outputs(pipeline_result)

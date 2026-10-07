@@ -501,6 +501,27 @@ def test_report_payload_keeps_late_perspective_after_large_analysis():
     assert result["citation_map"] == {"1": ["rag-aaaaaaaaaaaa"]}
 
 
+def test_grouped_internal_citations_are_numbered_and_deduplicated():
+    from agents.synthesis import number_report_citations
+    mapping = {"rag-aaaaaaaaaaaa": 1, "rag-bbbbbbbbbbbb": 1, "web-cccccccccccc": 2}
+    body = number_report_citations("주장 [rag-aaaaaaaaaaaa, rag-bbbbbbbbbbbb, web-cccccccccccc]", mapping)
+    assert body == "주장 [1] [2]"
+    assert "rag-" not in body and "web-" not in body
+
+
+def test_report_rejects_grouped_internal_citations():
+    text = "가" * 450 + "\n\n" + "나" * 450
+    report = "\n\n".join([heading for heading in __import__('app').REQUIRED_REPORT_HEADINGS[:-1]])
+    report = report.replace("# 6. 시사점", "# 6. 시사점\n" + text).replace("# 7. 분석의 한계", "# 7. 분석의 한계\n" + text)
+    report += "\n주장 [rag-aaaaaaaaaaaa, web-bbbbbbbbbbbb]\n# REFERENCE\n- [1] Paper"
+    try:
+        validate_report(report)
+    except ValueError as error:
+        assert "내부 Evidence ID" in str(error)
+        return
+    raise AssertionError("묶음 내부 ID가 최종 보고서에서 통과했습니다.")
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in list(globals().items()) if name.startswith("test_")]
     for test in tests:

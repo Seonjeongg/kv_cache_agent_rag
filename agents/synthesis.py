@@ -14,6 +14,20 @@ VALID_EVIDENCE_ID = re.compile(r"^(?:rag|web)-[0-9a-f]{12}$")
 EVIDENCE_TOKEN = re.compile(r"(?:rag|web)-[0-9a-f]{12}")
 
 
+def number_report_citations(text: str, evidence_to_number: dict[str, int]) -> str:
+    """단일 인용과 [id1, id2] 묶음 인용을 모두 숫자 인용으로 바꾼다."""
+    def replace_group(match):
+        content = match.group(1)
+        ids = EVIDENCE_TOKEN.findall(content)
+        if not ids or EVIDENCE_TOKEN.sub("", content).strip(" ,;\t"):
+            return match.group()
+        if any(evidence_id not in evidence_to_number for evidence_id in ids):
+            raise ValueError("숫자 인용으로 바꿀 수 없는 Evidence ID가 있습니다.")
+        numbers = dict.fromkeys(evidence_to_number[evidence_id] for evidence_id in ids)
+        return " ".join(f"[{number}]" for number in numbers)
+    return re.sub(r"\[([^\]\n]+)\]", replace_group, text)
+
+
 def exclude_unregistered_evidence(text: str, available_ids: set[str]) -> str:
     """미등록 인용이 붙은 문장은 제외하고 확인 가능한 문장은 남깁니다."""
     paragraphs = re.split(r"\n{2,}", str(text or "").strip())
@@ -256,6 +270,7 @@ def report_generation_agent(state: AgentState) -> dict:
 - 시장성 절과 이해관계자 절은 수집된 웹 근거를 반영하세요. 웹 근거가 없을 때만 공개 정보 부족이라고 쓰세요.
 - 입력에 없는 수치, 기업 도입 사례, 시장 반응, 운영 결과를 추론해 사실처럼 쓰지 마세요.
 - DeepSeek-V2 모델 전체의 학습 비용·벤치마크 결과를 MLA 단독의 효과로 귀속하지 마세요. CXL 일반 자료를 ITME 제품의 채택·상용화 증거로 사용하지 마세요.
+- 장치 균형 손실·전문가 라우팅·로드 밸런싱은 DeepSeekMoE의 설명이며 MLA의 동작이나 제약으로 쓰지 마세요. MLA의 핵심은 저차원 KV 공동 압축과 분리된 RoPE입니다.
 - 출처의 존재만으로 주장이 검증되는 것은 아닙니다. 입력에 직접 확인된 수치만 조건과 함께 쓰고, 출처가 뒷받침하지 않는 인과·도입·성숙도 판단은 유보하세요.
 - 직접 근거가 없으면 '공개 정보 부족'이라고 쓰고, 무엇이 부족한지와 판단에 미치는 영향을 설명하세요.
 - '상용화 가능성이 높다', '비용 효율적이다', '효과적이다'처럼 전망이나 우열을 단정하는 표현은 직접 근거가 있을 때만 사용하세요. 직접 근거가 없으면 '공개 정보 부족', '잠정 해석', '추가 검증 필요'로 표현하세요.
@@ -353,6 +368,12 @@ def report_generation_agent(state: AgentState) -> dict:
     새로운 수치·사례·기업 반응을 만들지 말고, 각 핵심 주장 또는 문단 끝에 기존 evidence_id를 대괄호로 표시하세요.
     원래 보고서와 동일한 중립성 기준을 유지하세요. '최적의 조합', '최적의 솔루션', '비용 효율적', '상용화가 가속', 특정 기술의 추천·우열 판정을 넣지 마세요.
     경제성은 이미 입증된 효과로 단정하지 말고 공개 자료의 조건과 추가 측정이 필요한 항목으로 설명하세요.
+    초안이나 Agent 분석에 오류가 있어도 그대로 확대하지 마세요. 다음 원칙이 초안보다 우선합니다.
+    - MLA는 저차원 KV 공동 압축과 decoupled RoPE입니다. 장치 균형 손실·전문가 라우팅·로드 밸런싱은 DeepSeekMoE이며 MLA의 원리나 제약으로 서술하지 마세요.
+    - 42.5% 학습 비용 감소와 MMLU 점수는 DeepSeek-V2 모델 전체의 결과이며 MLA 단독의 인과 효과가 아닙니다.
+    - MLA와 ITME는 서로 다른 계층입니다. 직접 경쟁 관계라고 단정하지 말고 결합 가능성은 검증되지 않은 가설로 구분하세요.
+    - TRL은 본 보고서의 공개 근거 기반 잠정 추정입니다. 실제 운영 증거가 없으면 운영 검증이 완료됐다고 쓰지 마세요.
+    - 시장·이해관계자 문장은 실제 조사된 반응과 분석자의 예상 요구를 구분하고, 일반 CXL 자료를 ITME 채택 증거로 쓰지 마세요.
     근거가 부족하면 단순히 문장을 반복하지 말고, 확인되지 않은 정보와 그로 인한 비교·판단의 한계를 설명하세요.
 
 확장할 절 초안:
@@ -362,13 +383,14 @@ def report_generation_agent(state: AgentState) -> dict:
 {json.dumps(payload, ensure_ascii=False)}
 """
         expanded = ask_json(
-            "당신은 한국어 기술 평가 보고서의 부족한 절을 보완하는 편집자입니다.",
+            "당신은 한국어 기술 평가 보고서 편집자입니다. 초안의 오류는 수정하고, MLA와 MoE를 구분하며 기술 성숙도와 운영 효과는 공개 근거 기반 잠정 해석으로 표시하세요.",
             expansion_prompt,
             num_predict=5000,
         )
         for name in batch_sections:
             value = expanded.get(name)
-            if isinstance(value, str) and len(value) > len(str(report_data.get(name, ""))):
+            # 짧아졌더라도 잘못된 인과·기술 귀속을 고친 편집 결과를 버리지 않는다.
+            if isinstance(value, str) and value.strip():
                 report_data[name] = value
 
     # 본문과 요약 모두 같은 인용 검사를 적용한다.
@@ -449,8 +471,7 @@ def report_generation_agent(state: AgentState) -> dict:
     evidence_to_number, references, citation_map = build_numbered_references(
         state.get("references", []), used_ids
     )
-    for evidence_id, number in evidence_to_number.items():
-        body = body.replace(f"[{evidence_id}]", f"[{number}]")
+    body = number_report_citations(body, evidence_to_number)
     # 같은 출처의 여러 청크를 연속으로 인용한 경우 중복 숫자를 정리합니다.
     body = re.sub(r"\[(\d+)\](?:\s+\[\1\])+", r"[\1]", body)
     report = body + "\n\n# REFERENCE\n\n" + references
