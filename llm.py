@@ -18,6 +18,8 @@ def strip_model_reasoning(content: str) -> str:
 
 
 def ask_json(system_prompt: str, user_prompt: str, num_predict: int | None = None) -> dict:
+    if openai_client is None:
+        raise RuntimeError("OPENAI_API_KEY를 설정한 뒤 LLM 노드를 실행하세요.")
     response = openai_client.chat.completions.create(
         model=LLM_MODEL,
         messages=[
@@ -59,6 +61,8 @@ def ask_json(system_prompt: str, user_prompt: str, num_predict: int | None = Non
 
 
 def ask_text(system_prompt: str, user_prompt: str, num_predict: int | None = None) -> str:
+    if openai_client is None:
+        raise RuntimeError("OPENAI_API_KEY를 설정한 뒤 LLM 노드를 실행하세요.")
     response = openai_client.chat.completions.create(
         model=LLM_MODEL,
         messages=[
