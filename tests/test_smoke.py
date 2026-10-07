@@ -88,6 +88,7 @@ def test_reference_display_deduplicates_same_source():
     rendered = format_references(references)
     assert rendered.count("paper.pdf") == 1
     assert "pp.1, 2" in rendered
+    assert "[rag-aaaaaaaaaaaa] [rag-bbbbbbbbbbbb]" in rendered
     assert rendered.count("https://example.com/a") == 1
 
 
@@ -259,6 +260,19 @@ def test_neutrality_does_not_flag_optimization_as_recommendation():
     report = "MLA 기반으로 긴 문맥 처리에 최적화되어 있다."
     assert not any(re.search(pattern, report, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
 
+    neutral_comparison = "비교의 핵심은 승자를 정하는 것이 아니라 조건별 병목을 확인하는 것이다."
+    assert not any(re.search(pattern, neutral_comparison, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+
+    winner_claim = "MLA가 승자다."
+    assert any(re.search(pattern, winner_claim, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+
+
+def test_neutrality_flags_recommendation_like_market_language():
+    import re
+
+    report = "최적의 조합이며 상용화가 가속화될 수 있다."
+    assert any(re.search(pattern, report, flags=re.IGNORECASE) for pattern in NEUTRALITY_PATTERNS)
+
 
 def test_validation_can_retry_synthesis_without_unknown_worker_task():
     assert route_after_validation({"validation_result": "retry", "retry_targets": ["synthesis"]}) == "synthesis"
@@ -305,6 +319,12 @@ def test_short_implications_and_limitations_get_safe_depth_fallback():
         section = ensure_section_depth("짧은 초안", name, 900)
         assert len(section) >= 900
         assert section.count("\n\n") >= 1
+
+
+def test_short_comparison_gets_safe_depth_fallback():
+    section = ensure_section_depth("짧은 초안", "comparison_conflicts", 650)
+    assert len(section) >= 650
+    assert section.count("\n\n") >= 1
 
 
 def test_worker_filters_only_unregistered_evidence_ids():
