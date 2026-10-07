@@ -31,6 +31,10 @@ def rag_evidence(query: str, technology: str, agent: str, top_k: int = TOP_K) ->
             page=int(item["page"]),
             chunk_id=item["chunk_id"],
             retrieval_score=item["similarity"],
+            source_tier=1,
+            source_category="primary_research",
+            publisher="arXiv",
+            is_independent=True,
         ).model_dump())
     return evidence
 
@@ -146,3 +150,39 @@ def format_references(references: list[dict], used_ids: set[str] | None = None) 
         for key, item in grouped.items()
     ]
     return "\n".join(lines) or "- 실제 활용 자료 없음"
+
+
+def _reference_key(item: dict) -> tuple:
+    if item.get("source_type") == "paper":
+        return ("paper", item.get("url") or item.get("file_name") or item.get("title"))
+    if item.get("source_type") == "web":
+        return ("web", item.get("url") or item.get("title"))
+    return (item.get("source_type"), item.get("url") or item.get("file_name") or item.get("title"))
+
+
+def build_numbered_references(
+    references: list[dict],
+    used_ids: set[str],
+) -> tuple[dict[str, int], str, dict[str, list[str]]]:
+    """사용된 Evidence를 출처 단위로 묶어 최종 숫자 인용을 만든다."""
+    groups: dict[tuple, list[dict]] = {}
+    for item in references:
+        evidence_id = item.get("evidence_id")
+        if evidence_id not in used_ids:
+            continue
+        groups.setdefault(_reference_key(item), []).append(item)
+
+    evidence_to_number: dict[str, int] = {}
+    citation_map: dict[str, list[str]] = {}
+    lines = []
+    for number, items in enumerate(groups.values(), start=1):
+        evidence_ids = list(dict.fromkeys(
+            item["evidence_id"] for item in items if item.get("evidence_id")
+        ))
+        for evidence_id in evidence_ids:
+            evidence_to_number[evidence_id] = number
+        citation_map[str(number)] = evidence_ids
+        pages = [int(item["page"]) for item in items if item.get("page") is not None]
+        lines.append(f"- [{number}] {_format_citation(items[0], pages)}")
+
+    return evidence_to_number, "\n".join(lines) or "- 실제 활용 자료 없음", citation_map

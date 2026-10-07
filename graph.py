@@ -6,6 +6,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Literal
+from urllib.parse import urlparse
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
@@ -88,9 +89,19 @@ NEUTRALITY_PATTERNS = (
     r"가장\s*(?:우수|좋|적합)|최적(?:의|인)?\s*선택|추천(?:한다|함|하는 것이)",
     r"(?:MLA|ITME).{0,24}(?:더\s*우수|우월|최적(?:의|인)?\s*선택|추천)",
     r"최적(?:의|인)?\s*(?:조합|솔루션)",
-    r"상용화가\s*가속",
-    r"비용\s*효율(?:적|성을)",
+    r"상용화가\s*가속(?:된다|되었다|됩니다)",
 )
+
+
+def neutrality_violations(report: str) -> list[str]:
+    """참고문헌 제목은 제외하고 본문의 추천·우열 단정을 검사한다."""
+    body = report.split("# REFERENCE", 1)[0]
+    # 추천을 하지 않는다는 방법론 설명과 실제 추천을 구분한다.
+    body = re.sub(r"추천(?:하지\s*않|할\s*수\s*없|하지\s*말|하지\s*못)[^.!?\n]*", "", body)
+    return sorted({
+        match.group() for pattern in NEUTRALITY_PATTERNS
+        for match in re.finditer(pattern, body, flags=re.IGNORECASE)
+    })
 
 
 def _event(node: str, event_type: str, message: str, **extra: Any) -> dict[str, Any]:
@@ -204,9 +215,28 @@ def _report_section_text(report: str, heading: str) -> str:
     return remainder[:next_heading.start()] if next_heading else remainder
 
 
-def _report_evidence_ids(report: str, headings: tuple[str, ...] = ()) -> set[str]:
+def _report_evidence_ids(
+    report: str,
+    headings: tuple[str, ...] = (),
+    citation_map: dict[str, list[str]] | None = None,
+) -> set[str]:
     text = "\n".join(_report_section_text(report, heading) for heading in headings) if headings else report.split("# REFERENCE", 1)[0]
-    return set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", text))
+    evidence_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", text))
+    for number in re.findall(r"\[(\d+)\]", text):
+        evidence_ids.update((citation_map or {}).get(number, []))
+    return evidence_ids
+
+
+def _source_domain(item: dict) -> str | None:
+    domain = urlparse(item.get("url") or "").netloc.lower().split(":")[0]
+    return domain.removeprefix("www.") or None
+
+
+def _source_category(item: dict) -> str:
+    if item.get("source_category"):
+        return str(item["source_category"])
+    # 이전 State와 직접 만든 테스트 fixture도 논문은 원 연구로 해석한다.
+    return "primary_research" if item.get("source_type") == "paper" else "unclassified"
 
 
 def _report_depth_ok(report: str) -> bool:
@@ -252,7 +282,7 @@ def worker_node(state: AgentState) -> dict[str, Any]:
             "task_id": task_id,
             "agent": task_id,
             "status": status,
-            "attempt": int(task.get("attempt", 0)) + 1,
+            "attempt": int(task.get("attempt", 1)),
             "output_keys": list(TASK_OUTPUT_KEYS[task_id]),
         }]
         result["decision_log"] = [_event("worker", "fallback" if failed else "worker", message, task_id=task_id)]
@@ -272,7 +302,7 @@ def worker_node(state: AgentState) -> dict[str, Any]:
                 "task_id": task_id,
                 "agent": task_id,
                 "status": "failed",
-                "attempt": int(task.get("attempt", 0)) + 1,
+                "attempt": int(task.get("attempt", 1)),
                 "error": f"{type(error).__name__}: {error}",
             }],
             "decision_log": [_event(
@@ -296,13 +326,16 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
     available_ids = {item.get("evidence_id") for item in references}
     displayed_ids = set(re.findall(r"(?:rag|web)-[a-f0-9]{12}", report.split("# REFERENCE", 1)[-1])) if "# REFERENCE" in report else set()
     # 분석 State의 전체 evidence가 아니라 최종 보고서 본문에 실제 표시된 ID만 사용합니다.
-    used_ids = _report_evidence_ids(report)
+    citation_map = state.get("citation_map") or {}
+    used_ids = _report_evidence_ids(report, citation_map=citation_map)
     active_task_ids = [
         task_id for task_id in (state.get("required_task_ids") or PERSPECTIVE_TASKS)
         if task_id in PERSPECTIVE_TASKS
     ]
     perspective_used_ids = {
-        task_id: _report_evidence_ids(report, REPORT_PERSPECTIVE_HEADINGS[task_id])
+        task_id: _report_evidence_ids(
+            report, REPORT_PERSPECTIVE_HEADINGS[task_id], citation_map
+        )
         for task_id in PERSPECTIVE_TASKS
     }
     evidence_by_id = {item.get("evidence_id"): item for item in references}
@@ -333,24 +366,91 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
         "active_perspectives": active_task_ids,
         "passed": bool(used_ids) and bool(active_task_ids) and not bias_failures and max_source_share <= 0.5,
     }
-    report_body = report.split("# REFERENCE", 1)[0]
-    neutrality_matches = sorted({
-        match.group() for pattern in NEUTRALITY_PATTERNS
-        for match in re.finditer(pattern, report_body, flags=re.IGNORECASE)
-    })
+    used_sources = {
+        source_by_id[evidence_id]: evidence_by_id[evidence_id]
+        for evidence_id in used_ids
+        if evidence_id in evidence_by_id
+    }
+    category_counts = Counter(_source_category(item) for item in used_sources.values())
+    market_domains = {
+        domain for evidence_id in perspective_used_ids["market_evaluation"]
+        if evidence_id in evidence_by_id
+        for domain in [_source_domain(evidence_by_id[evidence_id])]
+        if domain
+    }
+    stakeholder_domains = {
+        domain for evidence_id in perspective_used_ids["stakeholder_evaluation"]
+        if evidence_id in evidence_by_id
+        for domain in [_source_domain(evidence_by_id[evidence_id])]
+        if domain
+    }
+    core_ids = (
+        perspective_used_ids["technical_research"]
+        | perspective_used_ids["domain_evaluation"]
+    )
+    low_quality_core_claims = sorted(
+        evidence_id for evidence_id in core_ids
+        if evidence_id in evidence_by_id
+        and evidence_by_id[evidence_id].get("source_tier") in {4, 5}
+    )
+    failed_reliability = []
+    reliability_reasons = []
+    if "technical_research" in active_task_ids:
+        technical_primary = any(
+            _source_category(evidence_by_id[evidence_id]) == "primary_research"
+            for evidence_id in perspective_used_ids["technical_research"]
+            if evidence_id in evidence_by_id
+        )
+        if not technical_primary:
+            failed_reliability.append("technical_research")
+            reliability_reasons.append("기술 핵심 수치를 뒷받침하는 원 논문 근거가 없습니다.")
+    if "market_evaluation" in active_task_ids and len(market_domains) < 2:
+        failed_reliability.append("market_evaluation")
+        reliability_reasons.append("시장성 근거가 서로 다른 두 도메인에 미치지 못합니다.")
+    if "stakeholder_evaluation" in active_task_ids and len(stakeholder_domains) < 2:
+        failed_reliability.append("stakeholder_evaluation")
+        reliability_reasons.append("이해관계자 근거가 서로 다른 두 도메인에 미치지 못합니다.")
+    if low_quality_core_claims:
+        affected = [
+            task_id for task_id in ("technical_research", "domain_evaluation")
+            if perspective_used_ids[task_id] & set(low_quality_core_claims)
+        ]
+        failed_reliability.extend(affected)
+        reliability_reasons.append("4~5등급 출처가 핵심 기술 주장 또는 지표를 뒷받침합니다.")
+    source_reliability = {
+        "passed": not failed_reliability,
+        "market_distinct_domains": len(market_domains),
+        "stakeholder_distinct_domains": len(stakeholder_domains),
+        "primary_source_count": category_counts["primary_research"],
+        "official_source_count": category_counts["official"],
+        "independent_source_count": category_counts["independent"],
+        "low_quality_core_claims": low_quality_core_claims,
+        "failed_perspectives": sorted(set(failed_reliability)),
+        "reasons": reliability_reasons,
+    }
+    neutrality_matches = neutrality_violations(report)
     neutrality_failed = bool(neutrality_matches)
+    body_numbers = set(re.findall(r"\[(\d+)\]", report.split("# REFERENCE", 1)[0]))
+    reference_numbers = set(re.findall(
+        r"^- \[(\d+)\]", report.split("# REFERENCE", 1)[-1], flags=re.MULTILINE
+    )) if "# REFERENCE" in report else set()
+    numeric_connection_ok = (
+        (body_numbers <= reference_numbers and body_numbers <= set(citation_map))
+        if body_numbers else used_ids <= displayed_ids
+    )
     criteria = {
-        "groundedness": bool(references) and bool(used_ids) and used_ids <= available_ids and used_ids <= displayed_ids,
+        "groundedness": bool(references) and bool(used_ids) and used_ids <= available_ids and numeric_connection_ok,
         "required_structure": all(heading in report for heading in REQUIRED_REPORT_HEADINGS),
         "section_depth": _report_depth_ok(report),
         "neutrality": not neutrality_failed,
         "bias_control": bias_control["passed"],
+        "source_reliability": source_reliability["passed"],
         "perspective_coverage": all(
             all(_usable(state.get(key)) for key in PERSPECTIVE_TASKS[task_id])
             and bool(perspective_used_ids[task_id])
             for task_id in active_task_ids
         ) and _usable(state.get("synthesis")),
-        "reference_connection": bool(used_ids) and used_ids <= displayed_ids,
+        "reference_connection": bool(used_ids) and numeric_connection_ok and used_ids <= available_ids,
     }
     issues = [name for name, passed in criteria.items() if not passed]
     retry_targets = []
@@ -361,6 +461,8 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
                 retry_targets.append(task_id)
     if not criteria["bias_control"] and used_ids:
         retry_targets.extend(bias_control["failed_perspectives"] or list(PERSPECTIVE_TASKS))
+    if not criteria["source_reliability"]:
+        retry_targets.extend(source_reliability["failed_perspectives"])
     if not criteria["groundedness"]:
         # 본문 인용 누락·잘못된 ID는 조사 문제가 아니라 보고서 생성 문제입니다.
         # bias_control이 함께 실패해도 Worker를 재실행하지 않고 보고서를 다시 만듭니다.
@@ -396,6 +498,7 @@ def quality_evaluator_node(state: AgentState) -> dict[str, Any]:
         "bias_control": bias_control,
         "scope": "full" if len(active_task_ids) == 4 else "partial",
         "neutrality_matches": neutrality_matches,
+        "source_reliability": source_reliability,
     }
     return {
         "quality_evaluation": quality,
@@ -468,6 +571,7 @@ def initial_state(input_request: str | None = None) -> AgentState:
     return {
         "input_request": input_request or DEFAULT_REQUEST,
         "references": [],
+        "citation_map": {},
         "errors": [],
         "decision_log": [],
         "trace_id": str(uuid.uuid4()),

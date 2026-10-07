@@ -46,7 +46,11 @@ REPORT_DEPTH_REQUIREMENTS = {
 }
 
 
-def validate_report(report: str, references: list[dict] | None = None) -> None:
+def validate_report(
+    report: str,
+    references: list[dict] | None = None,
+    citation_map: dict[str, list[str]] | None = None,
+) -> None:
     missing = [heading for heading in REQUIRED_REPORT_HEADINGS if heading not in report]
     if missing:
         raise ValueError(f"보고서 필수 목차 누락: {missing}")
@@ -56,8 +60,17 @@ def validate_report(report: str, references: list[dict] | None = None) -> None:
     trailing_headings = re.findall(r"^#\s+.+$", report[reference_index:], flags=re.MULTILINE)
     if len(trailing_headings) != 1:
         raise ValueError("REFERENCE 뒤에 다른 보고서 제목이 있거나 REFERENCE가 중복됩니다.")
-    if not re.search(r"^- \[[a-z]+-[0-9a-f]{12}\]", report[reference_index:], flags=re.MULTILINE):
+    if not re.search(r"^- \[\d+\]", report[reference_index:], flags=re.MULTILINE):
         raise ValueError("REFERENCE 항목이 비어 있습니다.")
+    body = report[:reference_index]
+    reference_section = report[reference_index:]
+    if re.search(r"\[(?:rag|web)-[0-9a-f]{12}\]", body):
+        raise ValueError("최종 보고서 본문에 내부 Evidence ID가 남아 있습니다.")
+    body_numbers = set(re.findall(r"\[(\d+)\]", body))
+    reference_numbers = set(re.findall(r"^- \[(\d+)\]", reference_section, flags=re.MULTILINE))
+    missing_numbers = body_numbers - reference_numbers
+    if missing_numbers:
+        raise ValueError(f"본문 인용이 REFERENCE에 없습니다: {sorted(missing_numbers, key=int)}")
     for heading, minimum in REPORT_DEPTH_REQUIREMENTS.items():
         match = re.search(rf"^{re.escape(heading)}\s*$", report, flags=re.MULTILINE)
         if not match:
@@ -69,12 +82,24 @@ def validate_report(report: str, references: list[dict] | None = None) -> None:
             raise ValueError(f"보고서 절이 너무 짧습니다: {heading} (최소 {minimum}자, 2문단)")
     if references is not None:
         available_ids = {item.get("evidence_id") for item in references}
-        used_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[:reference_index]))
-        missing_ids = sorted(used_ids - available_ids)
-        displayed_ids = set(re.findall(r"(?:rag|web)-[0-9a-f]{12}", report[reference_index:]))
-        missing_ids = sorted(set(missing_ids) | (used_ids - displayed_ids))
+        mapped_ids = {
+            evidence_id
+            for number in body_numbers
+            for evidence_id in (citation_map or {}).get(number, [])
+        }
+        missing_ids = sorted(mapped_ids - available_ids)
         if missing_ids:
-            raise ValueError(f"본문에 인용된 Evidence가 REFERENCES에 없습니다: {missing_ids[:10]}")
+            raise ValueError(f"citation_map의 Evidence가 State references에 없습니다: {missing_ids[:10]}")
+    if citation_map is not None:
+        map_numbers = set(citation_map)
+        if reference_numbers != map_numbers:
+            raise ValueError(
+                f"REFERENCE 번호와 citation_map 번호가 일치하지 않습니다: "
+                f"reference={sorted(reference_numbers, key=int)}, map={sorted(map_numbers, key=int)}"
+            )
+        unmapped_body = body_numbers - map_numbers
+        if unmapped_body:
+            raise ValueError(f"본문 인용이 citation_map에 없습니다: {sorted(unmapped_body, key=int)}")
 
 
 def run_pipeline(input_request: str | None = None) -> dict:
@@ -134,7 +159,7 @@ def save_outputs(result: dict) -> dict:
     pdf_path = OUTPUT_DIR / f"kv_cache_report_{timestamp}.pdf"
     json_path = OUTPUT_DIR / f"kv_cache_state_{timestamp}.json"
 
-    validate_report(result["report"], result.get("references", []))
+    validate_report(result["report"], result.get("references", []), result.get("citation_map", {}))
     markdown_path.write_text(result["report"], encoding="utf-8")
     html_body = markdown_lib.markdown(result["report"], extensions=["tables", "fenced_code"])
     html_document = f"""<!doctype html>
