@@ -1,0 +1,106 @@
+{
+  "note": "offline structural smoke test; not LangSmith",
+  "status": "success",
+  "retry_count": 1,
+  "decision_log": [
+    {
+      "ts": "2026-10-07T02:36:27.649423+00:00",
+      "node": "orchestrator",
+      "type": "plan",
+      "message": "실행 시점에 4개 subtask를 구조화",
+      "task_ids": [
+        "technical_research",
+        "market_evaluation",
+        "stakeholder_evaluation",
+        "domain_evaluation"
+      ],
+      "retry_targets": []
+    },
+    {
+      "ts": "2026-10-07T02:36:27.650543+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "technical_research 완료",
+      "task_id": "technical_research"
+    },
+    {
+      "ts": "2026-10-07T02:36:27.650762+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "market_evaluation 완료",
+      "task_id": "market_evaluation"
+    },
+    {
+      "ts": "2026-10-07T02:36:27.650855+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "stakeholder_evaluation 완료",
+      "task_id": "stakeholder_evaluation"
+    },
+    {
+      "ts": "2026-10-07T02:36:27.651079+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "domain_evaluation 완료",
+      "task_id": "domain_evaluation"
+    },
+    {
+      "ts": "2026-10-07T02:36:27.652161+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: retry",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": false,
+        "neutrality": true,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": [
+        "required_structure"
+      ]
+    },
+    {
+      "ts": "2026-10-07T02:36:27.652425+00:00",
+      "node": "orchestrator",
+      "type": "plan",
+      "message": "실행 시점에 2개 subtask를 구조화",
+      "task_ids": [
+        "technical_research",
+        "domain_evaluation"
+      ],
+      "retry_targets": [
+        "domain_evaluation",
+        "technical_research"
+      ]
+    },
+    {
+      "ts": "2026-10-07T02:36:27.652772+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "technical_research 완료",
+      "task_id": "technical_research"
+    },
+    {
+      "ts": "2026-10-07T02:36:27.652865+00:00",
+      "node": "worker",
+      "type": "worker",
+      "message": "domain_evaluation 완료",
+      "task_id": "domain_evaluation"
+    },
+    {
+      "ts": "2026-10-07T02:36:27.653687+00:00",
+      "node": "quality_evaluator",
+      "type": "quality_gate",
+      "message": "보고서 품질 평가: pass",
+      "criteria": {
+        "groundedness": true,
+        "required_structure": true,
+        "neutrality": true,
+        "perspective_coverage": true,
+        "reference_connection": true
+      },
+      "issues": []
+    }
+  ]
+}
